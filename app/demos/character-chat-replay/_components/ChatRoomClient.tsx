@@ -2,6 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  aiChatDemoKeys,
+  useDeleteDemoChatRoomMutation,
+  useDemoChatHistoryQuery,
+  useStreamingChatMutation,
+} from "@/lib/ai-chat-demo/api";
 import type {
   DemoChatMessage,
   DemoPublicCharacter,
@@ -24,13 +31,32 @@ export default function ChatRoomClient({
   initialRoomId,
 }: ChatRoomClientProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const streamingChatMutation = useStreamingChatMutation();
+  const deleteRoomMutation = useDeleteDemoChatRoomMutation();
   const [roomId, setRoomId] = useState(initialRoomId);
-  const [messages, setMessages] = useState<DemoChatMessage[]>(initialMessages);
+  const historyQuery = useDemoChatHistoryQuery(
+    roomId,
+    roomId === initialRoomId ? initialMessages : undefined,
+  );
+  const [localMessages, setLocalMessages] = useState<
+    DemoChatMessage[] | null
+  >(
+    null,
+  );
+  const messages = localMessages ?? historyQuery.data ?? initialMessages;
   const [inputText, setInputText] = useState("");
   const [streamingText, setStreamingText] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [deletingRoom, setDeletingRoom] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const loading = streamingChatMutation.isPending;
+  const deletingRoom = deleteRoomMutation.isPending;
+
+  function setCachedMessages(
+    nextRoomId: string,
+    nextMessages: DemoChatMessage[],
+  ) {
+    queryClient.setQueryData(aiChatDemoKeys.history(nextRoomId), nextMessages);
+  }
 
   const visibleMessages = useMemo(() => {
     const openingMessage = character.openingMessage.trim();
@@ -68,36 +94,32 @@ export default function ChatRoomClient({
     if (!trimmedMessage || loading) return;
 
     setInputText("");
-    setLoading(true);
     setStreamingText("");
-    setMessages((current) => [
-      ...current,
-      makeLocalMessage({
-        roomId,
-        characterId: character.id,
-        role: "human",
-        content: trimmedMessage,
-      }),
-    ]);
+    const requestRoomId = roomId;
+    const humanMessage = makeLocalMessage({
+      roomId: requestRoomId,
+      characterId: character.id,
+      role: "human",
+      content: trimmedMessage,
+    });
+    const optimisticMessages = [...messages, humanMessage];
 
-    const response = await fetch("/api/ai-chat-demo/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        roomId,
+    setLocalMessages(optimisticMessages);
+    setCachedMessages(requestRoomId, optimisticMessages);
+
+    let response: Response;
+
+    try {
+      response = await streamingChatMutation.mutateAsync({
+        roomId: requestRoomId,
         characterId: character.id,
         message: trimmedMessage,
-      }),
-    });
-
-    if (!response.ok || !response.body) {
-      setLoading(false);
-      setMessages((current) => [
-        ...current,
+      });
+    } catch {
+      setLocalMessages((current) => [
+        ...(current ?? optimisticMessages),
         makeLocalMessage({
-          roomId,
+          roomId: requestRoomId,
           characterId: character.id,
           role: "ai",
           content:
@@ -107,10 +129,11 @@ export default function ChatRoomClient({
       return;
     }
 
-    const reader = response.body.getReader();
+    const reader = response.body!.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
     let completedText = "";
+    let responseRoomId = requestRoomId;
 
     while (true) {
       const { done, value } = await reader.read();
@@ -131,6 +154,7 @@ export default function ChatRoomClient({
         };
 
         if (eventType === "meta" && data.roomId) {
+          responseRoomId = data.roomId;
           setRoomId(data.roomId);
         }
 
@@ -141,17 +165,19 @@ export default function ChatRoomClient({
       }
     }
 
-    setMessages((current) => [
-      ...current,
+    const completedMessages = [
+      ...optimisticMessages,
       makeLocalMessage({
-        roomId,
+        roomId: responseRoomId,
         characterId: character.id,
         role: "ai",
         content: completedText,
       }),
-    ]);
+    ];
+
+    setLocalMessages(completedMessages);
+    setCachedMessages(responseRoomId, completedMessages);
     setStreamingText("");
-    setLoading(false);
   }
 
   function handleSubmit() {
@@ -167,22 +193,14 @@ export default function ChatRoomClient({
 
     if (!confirmed) return;
 
-    setDeletingRoom(true);
-
-    const response = await fetch(
-      `/api/ai-chat-demo/rooms/${encodeURIComponent(roomId)}`,
-      {
-        method: "DELETE",
-      },
-    );
-
-    const data = (await response.json()) as {
-      error?: string;
-    };
-
-    if (!response.ok) {
-      setDeletingRoom(false);
-      window.alert(data.error || "채팅방을 삭제하지 못했습니다.");
+    try {
+      await deleteRoomMutation.mutateAsync(roomId);
+    } catch (error) {
+      window.alert(
+        error instanceof Error
+          ? error.message
+          : "채팅방을 삭제하지 못했습니다.",
+      );
       return;
     }
 

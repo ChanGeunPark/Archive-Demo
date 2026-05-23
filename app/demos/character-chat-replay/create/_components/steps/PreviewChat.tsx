@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import SendFillIcon from "@/components/icons/SendFillIcon";
+import { usePreviewChatMutation } from "@/lib/ai-chat-demo/api";
 import type { FormState } from "../create-character.types";
 import { parseSampleMessages } from "./message-utils";
 
@@ -27,7 +28,8 @@ export function PreviewChat({
       : [];
   });
   const [inputText, setInputText] = useState("");
-  const [isThinking, setIsThinking] = useState(false);
+  const previewChatMutation = usePreviewChatMutation();
+  const isThinking = previewChatMutation.isPending;
   const sampleMessages = useMemo(
     () => parseSampleMessages(form.sampleMessages),
     [form.sampleMessages],
@@ -49,30 +51,14 @@ export function PreviewChat({
       { id: `human-${Date.now()}`, role: "human", content },
     ]);
     setInputText("");
-    setIsThinking(true);
 
     try {
-      const response = await fetch("/api/ai-chat-demo/characters/preview-chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...form,
-          message: content,
-          history,
-        }),
+      const aiMessage = await previewChatMutation.mutateAsync({
+        form,
+        message: content,
+        history,
       });
-      const data = (await response.json()) as {
-        message?: string;
-        error?: string;
-      };
 
-      if (!response.ok || !data.message) {
-        throw new Error(data.error || "Failed to generate preview chat.");
-      }
-
-      const aiMessage = data.message;
       setMessages((current) => [
         ...current,
         {
@@ -90,8 +76,6 @@ export function PreviewChat({
           content: "미안해요 잘 못들었어요 다시 말해주세요.",
         },
       ]);
-    } finally {
-      setIsThinking(false);
     }
   }
 

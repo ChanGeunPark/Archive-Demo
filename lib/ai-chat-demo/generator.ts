@@ -3,6 +3,7 @@ import {
   ChatPromptTemplate,
   MessagesPlaceholder,
 } from "@langchain/core/prompts";
+import { ChatGoogle } from "@langchain/google";
 import { ChatOpenAI } from "@langchain/openai";
 import type { DemoCharacter, DemoChatMessage } from "./types";
 
@@ -17,6 +18,24 @@ const SESSION_HISTORY_LIMIT = Number(
 );
 
 const AI_RESPONSE_FALLBACK_MESSAGE = "미안해요 잘 못들었어요 다시 말해주세요.";
+
+type AiChatModelProvider = "gpt" | "gemini";
+
+function getAiChatModelProvider(): AiChatModelProvider {
+  return process.env.AI_CHAT_MODEL_PROVIDER === "gemini" ? "gemini" : "gpt";
+}
+
+function getGeminiApiKey() {
+  return process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+}
+
+function hasConfiguredAiProviderKey() {
+  const provider = getAiChatModelProvider();
+
+  if (provider === "gemini") return Boolean(getGeminiApiKey());
+
+  return Boolean(process.env.OPENAI_API_KEY);
+}
 
 // 캐릭터 세계관 뷰 생성
 export function buildDemoCharacterWorldView(input: {
@@ -154,10 +173,28 @@ function createCharacterPrompt(character: DemoCharacter) {
 function createCharacterChain(
   prompt: ReturnType<typeof createCharacterPrompt>,
 ) {
-  const model = new ChatOpenAI({
-    model: process.env.LANGCHAIN_OPENAI_MODEL || "gpt-4o-mini",
-    temperature: 0.8,
-  });
+  const provider = getAiChatModelProvider();
+  const model =
+    provider === "gemini"
+      ? new ChatGoogle({
+          apiKey: getGeminiApiKey(),
+          model: process.env.AI_CHAT_GEMINI_MODEL || "gemini-2.5-flash",
+          temperature: 0.8,
+          safetySettings: [
+            {
+              category: "HARM_CATEGORY_HATE_SPEECH",
+              threshold: "BLOCK_ONLY_HIGH",
+            },
+            {
+              category: "HARM_CATEGORY_HARASSMENT",
+              threshold: "BLOCK_ONLY_HIGH",
+            },
+          ],
+        })
+      : new ChatOpenAI({
+          model: process.env.LANGCHAIN_OPENAI_MODEL || "gpt-4o-mini",
+          temperature: 0.8,
+        });
 
   return prompt.pipe(model);
 }
@@ -325,7 +362,7 @@ export async function* streamLangChainCharacterResponse(input: {
   history: DemoChatMessage[];
   cacheSession?: boolean;
 }) {
-  if (!process.env.OPENAI_API_KEY) {
+  if (!hasConfiguredAiProviderKey()) {
     const fallback = createDemoAiResponse(input);
 
     for (const chunk of splitForStream(fallback)) {

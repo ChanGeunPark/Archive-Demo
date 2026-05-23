@@ -4,6 +4,10 @@ import { FormEvent, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
+import {
+  useCreateDemoChatRoomMutation,
+  useDeleteDemoCharacterMutation,
+} from "@/lib/ai-chat-demo/api";
 import type { DemoPublicCharacter } from "@/lib/ai-chat-demo/types";
 
 type CharacterPreviewBottomSheetProps = {
@@ -16,12 +20,14 @@ export function CharacterPreviewBottomSheet({
   onClose,
 }: CharacterPreviewBottomSheetProps) {
   const router = useRouter();
+  const createRoomMutation = useCreateDemoChatRoomMutation();
+  const deleteCharacterMutation = useDeleteDemoCharacterMutation();
   const [roomId, setRoomId] = useState("");
   const [deleteId, setDeleteId] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [deleteMessage, setDeleteMessage] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
+  const loading = createRoomMutation.isPending;
+  const deleteLoading = deleteCharacterMutation.isPending;
   const normalizedRoomId = useMemo(
     () => roomId.trim().replace(/\s+/g, "-").slice(0, 80),
     [roomId],
@@ -35,35 +41,23 @@ export function CharacterPreviewBottomSheet({
     event.preventDefault();
     if (!character || !normalizedRoomId || loading) return;
 
-    setLoading(true);
     setErrorMessage("");
 
-    const response = await fetch("/api/ai-chat-demo/rooms/create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    try {
+      const { roomId, characterId } = await createRoomMutation.mutateAsync({
         characterId: character.id,
         roomId: normalizedRoomId,
-      }),
-    });
+      });
 
-    const data = (await response.json()) as {
-      roomId?: string;
-      error?: string;
-    };
-
-    setLoading(false);
-
-    if (!response.ok || !data.roomId) {
-      setErrorMessage(data.error || "채팅방을 만들지 못했습니다.");
+      router.push(
+        `/demos/character-chat-replay/chat/${characterId}?roomId=${encodeURIComponent(roomId)}`,
+      );
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "채팅방을 만들지 못했습니다.",
+      );
       return;
     }
-
-    router.push(
-      `/demos/character-chat-replay/chat/${character.id}?roomId=${encodeURIComponent(data.roomId)}`,
-    );
   }
 
   async function handleDeleteCharacter() {
@@ -75,30 +69,19 @@ export function CharacterPreviewBottomSheet({
 
     if (!confirmed) return;
 
-    setDeleteLoading(true);
     setDeleteMessage("");
 
-    const response = await fetch(
-      `/api/ai-chat-demo/characters/${character.id}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          deleteId: normalizedDeleteId,
-        }),
-      },
-    );
-
-    const data = (await response.json()) as {
-      error?: string;
-    };
-
-    setDeleteLoading(false);
-
-    if (!response.ok) {
-      setDeleteMessage(data.error || "캐릭터를 삭제하지 못했습니다.");
+    try {
+      await deleteCharacterMutation.mutateAsync({
+        characterId: character.id,
+        deleteId: normalizedDeleteId,
+      });
+    } catch (error) {
+      setDeleteMessage(
+        error instanceof Error
+          ? error.message
+          : "캐릭터를 삭제하지 못했습니다.",
+      );
       return;
     }
 

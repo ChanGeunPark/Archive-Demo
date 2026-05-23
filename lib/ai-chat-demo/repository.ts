@@ -1,11 +1,18 @@
-import { createSupabaseAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
+import {
+  createSupabaseAdminClient,
+  hasSupabaseAdminEnv,
+} from "@/lib/supabase/admin";
 import {
   addDemoCharacter,
   deleteDemoCharacter,
   demoCharacters,
   findDemoCharacter,
 } from "./mock-data";
-import type { DemoCharacter, DemoChatMessage, DemoPublicCharacter } from "./types";
+import type {
+  DemoCharacter,
+  DemoChatMessage,
+  DemoPublicCharacter,
+} from "./types";
 
 type CharacterRow = {
   id: string;
@@ -68,7 +75,9 @@ function mapCharacter(row: CharacterRow): DemoCharacter {
   };
 }
 
-export function toPublicCharacter(character: DemoCharacter): DemoPublicCharacter {
+export function toPublicCharacter(
+  character: DemoCharacter,
+): DemoPublicCharacter {
   return {
     id: character.id,
     name: character.name,
@@ -163,7 +172,10 @@ export async function createDemoCharacter(input: {
       );
 
     if (privateConfigError) {
-      throw new Error(privateConfigError.message || "Failed to save private character config.");
+      throw new Error(
+        privateConfigError.message ||
+          "Failed to save private character config.",
+      );
     }
   }
 
@@ -280,12 +292,16 @@ export async function getDemoCharacter(characterId: string) {
     .maybeSingle();
 
   if (privateConfigError) {
-    logSupabaseFallback("Failed to load private character config", privateConfigError);
+    logSupabaseFallback(
+      "Failed to load private character config",
+      privateConfigError,
+    );
   }
 
   return {
     ...character,
-    secretContext: (privateConfig as PrivateConfigRow | null)?.secret_context ?? "",
+    secretContext:
+      (privateConfig as PrivateConfigRow | null)?.secret_context ?? "",
   };
 }
 
@@ -327,9 +343,31 @@ export async function createDemoChatRoom(input: {
     { onConflict: "id" },
   );
 
+  const { data: character, error: characterError } = await supabase
+    .from("ai_demo_characters")
+    .select("total_chat_count")
+    .eq("id", input.characterId)
+    .single();
+
+  if (characterError) {
+    logSupabaseFallback("Failed to load character", characterError);
+    return null;
+  }
+
   if (roomError) {
     logSupabaseFallback("Failed to upsert chat room", roomError);
     return null;
+  }
+
+  const { error: updateCharacterError } = await supabase
+    .from("ai_demo_characters")
+    .update({
+      total_chat_count: (character.total_chat_count ?? 0) + 1,
+    })
+    .eq("id", input.characterId);
+
+  if (updateCharacterError) {
+    logSupabaseFallback("Failed to update character", updateCharacterError);
   }
 
   return {

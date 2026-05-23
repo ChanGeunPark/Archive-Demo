@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { DemoPublicCharacter } from "@/lib/ai-chat-demo/types";
+import { useDemoCharactersQuery } from "@/lib/ai-chat-demo/api";
 import { CharacterGrid } from "./CharacterGrid";
 import { CharacterPreviewBottomSheet } from "./CharacterPreviewBottomSheet";
 import { CharacterSelectHeader } from "./CharacterSelectHeader";
@@ -14,6 +15,9 @@ type CharacterSelectClientProps = {
 export default function CharacterSelectClient({
   characters,
 }: CharacterSelectClientProps) {
+  const { data: cachedCharacters = characters } =
+    useDemoCharactersQuery(characters);
+
   const [selectedCharacter, setSelectedCharacter] =
     useState<DemoPublicCharacter | null>(null);
 
@@ -22,7 +26,10 @@ export default function CharacterSelectClient({
       <section className="mx-auto min-h-screen w-full max-w-[620px] bg-white">
         <CharacterSelectHeader />
         <CharacterSelectHero />
-        <CharacterGrid characters={characters} onSelect={setSelectedCharacter} />
+        <CharacterGrid
+          characters={cachedCharacters}
+          onSelect={setSelectedCharacter}
+        />
       </section>
 
       <CharacterPreviewBottomSheet

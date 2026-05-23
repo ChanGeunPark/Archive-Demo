@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
-import type { DemoPublicCharacter } from "@/lib/ai-chat-demo/types";
+import { useCreateDemoCharacterMutation } from "@/lib/ai-chat-demo/api";
 import { createCharacterMockForms } from "@/lib/ai-chat-demo/mock-data";
 import { StepButton, Stepper } from "./_components/CreateCharacterPrimitives";
 import {
@@ -21,6 +21,7 @@ import {
 
 export default function CreateCharacterClient() {
   const router = useRouter();
+  const createCharacterMutation = useCreateDemoCharacterMutation();
   const {
     control,
     handleSubmit: handleFormSubmit,
@@ -35,7 +36,6 @@ export default function CreateCharacterClient() {
   const [bannerImage, setBannerImage] = useState<File | null>(null);
   const [profilePreview, setProfilePreview] = useState("");
   const [bannerPreview, setBannerPreview] = useState("");
-  const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [canCreateFromTestStep, setCanCreateFromTestStep] = useState(false);
   const [creatorId, setCreatorId] = useState("");
@@ -44,6 +44,7 @@ export default function CreateCharacterClient() {
   const [pendingFormValues, setPendingFormValues] =
     useState<FormState | null>(null);
   const form = useWatch({ control }) as FormState;
+  const loading = createCharacterMutation.isPending;
 
   useEffect(() => {
     (Object.keys(initialForm) as (keyof FormState)[]).forEach((key) => {
@@ -192,42 +193,26 @@ export default function CreateCharacterClient() {
       return;
     }
 
-    setLoading(true);
     setErrorMessage("");
     setCreatorIdModalOpen(false);
 
-    const body = new FormData();
-    Object.entries(values).forEach(([key, value]) => {
-      body.append(key, value);
-    });
-    body.append("profileImage", profileImage);
-    body.append("creatorId", normalizedCreatorId);
+    try {
+      const data = await createCharacterMutation.mutateAsync({
+        values,
+        profileImage,
+        bannerImage,
+        creatorId: normalizedCreatorId,
+      });
 
-    if (bannerImage) {
-      body.append("bannerImage", bannerImage);
-    }
-
-    const response = await fetch("/api/ai-chat-demo/characters/create", {
-      method: "POST",
-      body,
-    });
-
-    const data = (await response.json()) as {
-      character?: DemoPublicCharacter;
-      roomId?: string;
-      error?: string;
-    };
-
-    setLoading(false);
-
-    if (!response.ok || !data.character) {
-      setErrorMessage(data.error || "캐릭터 생성에 실패했습니다.");
+      router.push(
+        `/demos/character-chat-replay/chat/${data.character.id}?roomId=${encodeURIComponent(data.roomId || normalizedCreatorId)}`,
+      );
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "캐릭터 생성에 실패했습니다.",
+      );
       return;
     }
-
-    router.push(
-      `/demos/character-chat-replay/chat/${data.character.id}?roomId=${encodeURIComponent(data.roomId || normalizedCreatorId)}`,
-    );
   }
 
   return (

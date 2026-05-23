@@ -1,3 +1,7 @@
+import type { FormState } from "@/lib/ai-chat-demo/types";
+
+export type { FormState } from "@/lib/ai-chat-demo/types";
+
 export const categories = [
   { ko: "셀럽", en: "PERSON" },
   { ko: "캐릭터", en: "CHARACTER" },
@@ -17,20 +21,6 @@ export const genders = [
   { ko: "남자", en: "MALE" },
   { ko: "기타", en: "ETC" },
 ];
-
-export type FormState = {
-  category: string;
-  gender: string;
-  name: string;
-  statusMessage: string;
-  description: string;
-  personality: string;
-  secretContext: string;
-  openingMessage: string;
-  tags: string;
-  seedChat: string;
-  sampleMessages: string;
-};
 
 export type DescriptionDraft = {
   concept: string;

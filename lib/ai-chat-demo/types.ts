@@ -34,3 +34,17 @@ export type DemoChatMessage = {
   content: string;
   createdAt: string;
 };
+
+export type FormState = {
+  category: string;
+  gender: string;
+  name: string;
+  statusMessage: string;
+  description: string;
+  personality: string;
+  secretContext: string;
+  openingMessage: string;
+  tags: string;
+  seedChat: string;
+  sampleMessages: string;
+};

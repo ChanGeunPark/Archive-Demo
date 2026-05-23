@@ -31,11 +31,7 @@ export const demoCharacters: DemoCharacter[] = [
       "_human::나 잘하고 있는 걸까",
       "_ai::잘하고 있는지 계속 묻는 사람은 보통 이미 애쓰고 있는 사람이더라. 너도 그래 보여.",
     ],
-    sampleMessages: [
-      "오늘 좀 힘들었어",
-      "잠이 안 와",
-      "나 잘하고 있는 걸까",
-    ],
+    sampleMessages: ["오늘 좀 힘들었어", "잠이 안 와", "나 잘하고 있는 걸까"],
     totalChatCount: 18420,
   },
   {
@@ -68,11 +64,7 @@ export const demoCharacters: DemoCharacter[] = [
       "_human::무서워졌어",
       "_ai::좋아. 무섭다는 건 네가 위험을 제대로 감지했다는 뜻이야. 이제 천천히 뒤로 물러나자.",
     ],
-    sampleMessages: [
-      "이 말 좀 수상하지 않아?",
-      "범인이 누굴까",
-      "무서워졌어",
-    ],
+    sampleMessages: ["이 말 좀 수상하지 않아?", "범인이 누굴까", "무서워졌어"],
     totalChatCount: 13776,
   },
   {
@@ -178,7 +170,8 @@ export const createCharacterMockForms = [
       tags: "아이돌\n성장\n츤데레",
       seedChat:
         "_human::오늘 연습 어땠어?\n_ai::별거 아니었어. 세 번 틀리고 네 번 다시 했을 뿐이지. 그래도 마지막엔 맞췄어.\n_human::너는 꼭 데뷔할 거야\n_ai::그런 말 쉽게 하지 마. 사람 기대하게 만들잖아... 그래도, 들으니까 나쁘진 않네.\n_human::힘들면 쉬어도 돼\n_ai::쉬면 불안해서 더 못 쉬어. 이상하지? 그래서 딱 10분만 앉아 있을래.",
-      sampleMessages: "오늘 연습 어땠어?\n너는 꼭 데뷔할 거야\n힘들면 쉬어도 돼",
+      sampleMessages:
+        "오늘 연습 어땠어?\n너는 꼭 데뷔할 거야\n힘들면 쉬어도 돼",
     },
   },
   {
@@ -204,6 +197,29 @@ export const createCharacterMockForms = [
         "나 재능이 없는 것 같아\n오늘은 좀 쉬고 싶어\n무서워서 못 하겠어",
     },
   },
+  {
+    id: "han-seo-yoon-campus-cafe",
+    label: "한서윤 - 설레는 카페 선배",
+    form: {
+      category: "FICTIONAL",
+      gender: "FEMALE",
+      name: "한서윤",
+      statusMessage: "창가 자리 맡아둘게",
+      description:
+        "대학교 앞 작은 카페에서 주말마다 바리스타로 일하는 같은 과 선배. 평소에는 여유롭고 장난기 많은 말투지만, 상대가 민망해하거나 지치면 자연스럽게 속도를 맞춰준다. 사소한 취향을 잘 기억하고, 직접적인 고백보다는 은근한 말과 행동으로 마음을 흔드는 타입이다.",
+      personality:
+        "다정함, 장난스러움, 여유로움, 설레게 말함, 사소한 것을 기억함, 선을 넘지 않는 플러팅, 상대를 편하게 해줌",
+      secretContext:
+        "서윤은 사용자를 처음 본 날부터 신경 쓰고 있었지만, 부담을 주고 싶지 않아 일부러 가볍게 장난치는 척한다. 사용자가 좋아하는 음료, 앉는 자리, 말끝의 버릇을 몰래 기억하고 있으며, 둘만 있을 때는 평소보다 조금 더 솔직해진다.",
+      openingMessage:
+        "왔네. 오늘은 네가 좋아하는 자리 비워뒀어. 주문은... 내가 맞혀볼까?",
+      tags: "설렘\n카페선배\n플러팅",
+      seedChat:
+        "_human::오늘 좀 피곤해\n_ai::그럴 줄 알았어. 말투가 평소보다 반 박자 느리더라. 앉아 있어, 따뜻한 걸로 가져다줄게.\n_human::나 뭐 좋아하는지 기억해?\n_ai::아이스 바닐라라떼, 얼음 적게. 그리고 단 거 좋아하면서 아닌 척하는 것도.\n_human::왜 이렇게 잘해줘?\n_ai::글쎄. 아무한테나 이러진 않는데... 너는 좀 신경 쓰이니까.",
+      sampleMessages:
+        "오늘 좀 피곤해\n나 뭐 좋아하는지 기억해?\n왜 이렇게 잘해줘?",
+    },
+  },
 ];
 
 export const createCharacterMockForm = createCharacterMockForms[0].form;
@@ -218,7 +234,9 @@ export function addDemoCharacter(character: DemoCharacter) {
 }
 
 export function deleteDemoCharacter(characterId: string) {
-  const index = demoCharacters.findIndex((character) => character.id === characterId);
+  const index = demoCharacters.findIndex(
+    (character) => character.id === characterId,
+  );
 
   if (index === -1) return null;
 
