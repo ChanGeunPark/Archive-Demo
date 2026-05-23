@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { DemoPublicCharacter } from "@/lib/ai-chat-demo/types";
 
 type CharacterCardProps = {
@@ -14,11 +15,13 @@ export function CharacterCard({ character, onSelect }: CharacterCardProps) {
     >
       <div className="relative overflow-hidden rounded-xl border border-[#F4F5F6]">
         {character.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={character.imageUrl}
             alt={`${character.name} profile`}
+            width={92}
+            height={92}
             className="h-[92px] w-[92px] object-cover"
+            unoptimized
           />
         ) : (
           <div

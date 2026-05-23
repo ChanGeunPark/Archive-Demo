@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import type {
   DemoChatMessage,
   DemoPublicCharacter,
@@ -22,24 +23,37 @@ export default function ChatRoomClient({
   initialMessages,
   initialRoomId,
 }: ChatRoomClientProps) {
+  const router = useRouter();
   const [roomId, setRoomId] = useState(initialRoomId);
   const [messages, setMessages] = useState<DemoChatMessage[]>(initialMessages);
   const [inputText, setInputText] = useState("");
   const [streamingText, setStreamingText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [deletingRoom, setDeletingRoom] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   const visibleMessages = useMemo(() => {
-    if (messages.length > 0) return messages;
+    const openingMessage = character.openingMessage.trim();
+    if (!openingMessage) return messages;
 
-    return [
-      makeLocalMessage({
-        roomId,
-        characterId: character.id,
-        role: "ai",
-        content: character.openingMessage,
-      }),
-    ];
+    const firstMessage = messages[0];
+    if (
+      firstMessage?.role === "ai" &&
+      firstMessage.content.trim() === openingMessage
+    ) {
+      return messages;
+    }
+
+    const openingChatMessage: DemoChatMessage = {
+      id: `opening-${character.id}`,
+      roomId,
+      characterId: character.id,
+      role: "ai",
+      content: openingMessage,
+      createdAt: "",
+    };
+
+    return [openingChatMessage, ...messages];
   }, [character.id, character.openingMessage, messages, roomId]);
 
   useEffect(() => {
@@ -144,10 +158,47 @@ export default function ChatRoomClient({
     sendMessage(inputText);
   }
 
+  async function handleDeleteRoom() {
+    if (deletingRoom || loading) return;
+
+    const confirmed = window.confirm(
+      "이 채팅방을 삭제할까요? 삭제한 대화 내용은 복구할 수 없습니다.",
+    );
+
+    if (!confirmed) return;
+
+    setDeletingRoom(true);
+
+    const response = await fetch(
+      `/api/ai-chat-demo/rooms/${encodeURIComponent(roomId)}`,
+      {
+        method: "DELETE",
+      },
+    );
+
+    const data = (await response.json()) as {
+      error?: string;
+    };
+
+    if (!response.ok) {
+      setDeletingRoom(false);
+      window.alert(data.error || "채팅방을 삭제하지 못했습니다.");
+      return;
+    }
+
+    router.push("/demos/character-chat-replay");
+    router.refresh();
+  }
+
   return (
     <main className="min-h-screen bg-[#F4F5F6] text-[#17191C]">
       <section className="mx-auto flex h-screen w-full max-w-[620px] flex-col bg-[#F4F5F6]">
-        <ChatRoomHeader character={character} />
+        <ChatRoomHeader
+          character={character}
+          deleteDisabled={loading || deletingRoom}
+          deletingRoom={deletingRoom}
+          onDeleteRoom={handleDeleteRoom}
+        />
         <ChatMessageList
           character={character}
           loading={loading}

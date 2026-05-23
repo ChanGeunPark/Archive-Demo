@@ -13,11 +13,19 @@ create table if not exists public.ai_demo_characters (
   description text not null,
   status_message text,
   world_view text not null,
+  creator_id text not null default 'admin',
   opening_message text not null,
   seed_chat text[] not null default '{}',
   sample_messages text[] not null default '{}',
   total_chat_count integer not null default 0,
   created_at timestamptz not null default now()
+);
+
+create table if not exists public.ai_demo_character_private_configs (
+  character_id text primary key references public.ai_demo_characters(id) on delete cascade,
+  secret_context text not null default '',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
 alter table public.ai_demo_characters
@@ -42,7 +50,13 @@ alter table public.ai_demo_characters
 add column if not exists status_message text;
 
 alter table public.ai_demo_characters
+add column if not exists creator_id text not null default 'admin';
+
+alter table public.ai_demo_characters
 add column if not exists seed_chat text[] not null default '{}';
+
+alter table public.ai_demo_character_private_configs
+add column if not exists secret_context text not null default '';
 
 create table if not exists public.ai_demo_chat_rooms (
   id text primary key,
@@ -61,6 +75,7 @@ create table if not exists public.ai_demo_chat_messages (
 );
 
 alter table public.ai_demo_characters enable row level security;
+alter table public.ai_demo_character_private_configs enable row level security;
 alter table public.ai_demo_chat_rooms enable row level security;
 alter table public.ai_demo_chat_messages enable row level security;
 
@@ -97,6 +112,14 @@ before update on public.ai_demo_chat_rooms
 for each row
 execute function public.set_ai_demo_updated_at();
 
+drop trigger if exists set_ai_demo_character_private_configs_updated_at
+on public.ai_demo_character_private_configs;
+
+create trigger set_ai_demo_character_private_configs_updated_at
+before update on public.ai_demo_character_private_configs
+for each row
+execute function public.set_ai_demo_updated_at();
+
 insert into public.ai_demo_characters (
   id,
   name,
@@ -112,6 +135,7 @@ insert into public.ai_demo_characters (
   description,
   status_message,
   world_view,
+  creator_id,
   opening_message,
   seed_chat,
   sample_messages,
@@ -132,6 +156,7 @@ insert into public.ai_demo_characters (
   '흩어진 대화와 장면의 의미를 정리해 주는 캐릭터입니다.',
   '기록을 정리하는 중',
   '레이나는 오래된 대화 기록을 보관하는 디지털 아카이브의 큐레이터입니다.',
+  'admin',
   '어서 와요. 오늘은 어떤 장면을 다시 꺼내 볼까요?',
   array[]::text[],
   array['이전 대화에서 중요한 감정 변화를 찾아줘.', '캐릭터가 망설였던 이유를 다시 설명해줘.', '이 장면을 포트폴리오용으로 요약해줘.'],
@@ -152,6 +177,7 @@ insert into public.ai_demo_characters (
   '대화 속 단서와 모순을 찾아 다음 전개를 제안합니다.',
   '사건 기록 열람 가능',
   '노엘은 도시의 이상한 사건들을 채팅 로그로 추적합니다.',
+  'admin',
   '기록은 거짓말을 못 해. 지금 남아 있는 문장부터 살펴보자.',
   array[]::text[],
   array['방금 대화에서 단서가 될 만한 부분은 뭐야?', '다음 장면을 미스터리 톤으로 이어줘.', '사용자 선택지를 세 가지 만들어줘.'],
@@ -172,6 +198,7 @@ insert into public.ai_demo_characters (
   '캐릭터의 말투와 속마음을 살려 대화를 이어갑니다.',
   '커튼콜 이후',
   '미카는 공연이 끝난 뒤에도 무대의 여운을 듣습니다.',
+  'admin',
   '조명이 꺼진 뒤에야 진짜 이야기가 시작되잖아.',
   array[]::text[],
   array['조금 더 다정한 톤으로 답해줘.', '캐릭터의 속마음을 행동 묘사로 보여줘.', '방금 답변을 짧은 채팅 말투로 바꿔줘.'],
@@ -191,6 +218,7 @@ on conflict (id) do update set
   description = excluded.description,
   status_message = excluded.status_message,
   world_view = excluded.world_view,
+  creator_id = excluded.creator_id,
   opening_message = excluded.opening_message,
   seed_chat = excluded.seed_chat,
   sample_messages = excluded.sample_messages,

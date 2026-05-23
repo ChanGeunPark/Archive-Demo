@@ -21,7 +21,10 @@ export function ChatBubble({
     <div className="flex flex-col px-0 py-2">
       {!isHuman && (
         <div className="mb-2 flex cursor-pointer items-center gap-2">
-          <CharacterAvatar character={character} className="h-8 w-8 rounded-full" />
+          <CharacterAvatar
+            character={character}
+            className="h-8 w-8 rounded-full"
+          />
           <span className="text-sm font-bold">{character.name}</span>
         </div>
       )}

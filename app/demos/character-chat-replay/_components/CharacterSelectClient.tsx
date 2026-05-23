@@ -26,7 +26,6 @@ export default function CharacterSelectClient({
       </section>
 
       <CharacterPreviewBottomSheet
-        key={selectedCharacter?.id ?? "empty"}
         character={selectedCharacter}
         onClose={() => setSelectedCharacter(null)}
       />

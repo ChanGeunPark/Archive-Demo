@@ -1,5 +1,10 @@
 import { createSupabaseAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
-import { addDemoCharacter, demoCharacters, findDemoCharacter } from "./mock-data";
+import {
+  addDemoCharacter,
+  deleteDemoCharacter,
+  demoCharacters,
+  findDemoCharacter,
+} from "./mock-data";
 import type { DemoCharacter, DemoChatMessage, DemoPublicCharacter } from "./types";
 
 type CharacterRow = {
@@ -17,10 +22,16 @@ type CharacterRow = {
   description: string;
   status_message: string | null;
   world_view: string;
+  creator_id: string | null;
   opening_message: string;
   seed_chat: string[] | null;
   sample_messages: string[] | null;
   total_chat_count: number | null;
+};
+
+type PrivateConfigRow = {
+  character_id: string;
+  secret_context: string | null;
 };
 
 type MessageRow = {
@@ -48,6 +59,8 @@ function mapCharacter(row: CharacterRow): DemoCharacter {
     description: row.description,
     statusMessage: row.status_message,
     worldView: row.world_view,
+    secretContext: "",
+    creatorId: row.creator_id ?? "admin",
     openingMessage: row.opening_message,
     seedChat: row.seed_chat ?? [],
     sampleMessages: row.sample_messages ?? [],
@@ -92,6 +105,8 @@ export async function createDemoCharacter(input: {
   description: string;
   statusMessage: string | null;
   worldView: string;
+  secretContext: string;
+  creatorId: string;
   openingMessage: string;
   seedChat: string[];
   sampleMessages: string[];
@@ -121,6 +136,7 @@ export async function createDemoCharacter(input: {
       description: input.description,
       status_message: input.statusMessage,
       world_view: input.worldView,
+      creator_id: input.creatorId,
       opening_message: input.openingMessage,
       seed_chat: input.seedChat,
       sample_messages: input.sampleMessages,
@@ -133,7 +149,52 @@ export async function createDemoCharacter(input: {
     throw new Error(error?.message || "Failed to create character.");
   }
 
-  return mapCharacter(data as CharacterRow);
+  const character = mapCharacter(data as CharacterRow);
+
+  if (input.secretContext) {
+    const { error: privateConfigError } = await supabase
+      .from("ai_demo_character_private_configs")
+      .upsert(
+        {
+          character_id: input.id,
+          secret_context: input.secretContext,
+        },
+        { onConflict: "character_id" },
+      );
+
+    if (privateConfigError) {
+      throw new Error(privateConfigError.message || "Failed to save private character config.");
+    }
+  }
+
+  return {
+    ...character,
+    secretContext: input.secretContext,
+  };
+}
+
+export async function deleteDemoCharacterById(characterId: string) {
+  if (!hasSupabaseAdminEnv()) {
+    return deleteDemoCharacter(characterId);
+  }
+
+  const character = await getDemoCharacter(characterId);
+
+  if (!character) {
+    return null;
+  }
+
+  const supabase = createSupabaseAdminClient();
+  const { error } = await supabase
+    .from("ai_demo_characters")
+    .delete()
+    .eq("id", characterId);
+
+  if (error) {
+    throw new Error(error.message || "Failed to delete character.");
+  }
+
+  return character;
 }
 
 function mapMessage(row: MessageRow): DemoChatMessage {
@@ -145,6 +206,25 @@ function mapMessage(row: MessageRow): DemoChatMessage {
     content: row.content,
     createdAt: row.created_at,
   };
+}
+
+function normalizeRoomIdSegment(value: string, maxLength: number) {
+  return value
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[/?#&=]+/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, maxLength);
+}
+
+export function buildDemoChatRoomId(input: {
+  characterId: string;
+  roomId: string;
+}) {
+  const characterId = normalizeRoomIdSegment(input.characterId, 80);
+  const roomId = normalizeRoomIdSegment(input.roomId, 80);
+
+  return [characterId, roomId].filter(Boolean).join("-");
 }
 
 function logSupabaseFallback(scope: string, error: unknown) {
@@ -192,7 +272,21 @@ export async function getDemoCharacter(characterId: string) {
     return findDemoCharacter(characterId) ?? null;
   }
 
-  return mapCharacter(data as CharacterRow);
+  const character = mapCharacter(data as CharacterRow);
+  const { data: privateConfig, error: privateConfigError } = await supabase
+    .from("ai_demo_character_private_configs")
+    .select("character_id, secret_context")
+    .eq("character_id", characterId)
+    .maybeSingle();
+
+  if (privateConfigError) {
+    logSupabaseFallback("Failed to load private character config", privateConfigError);
+  }
+
+  return {
+    ...character,
+    secretContext: (privateConfig as PrivateConfigRow | null)?.secret_context ?? "",
+  };
 }
 
 export async function getDemoChatHistory(roomId: string) {
@@ -242,6 +336,24 @@ export async function createDemoChatRoom(input: {
     id: input.roomId,
     characterId: input.characterId,
   };
+}
+
+export async function deleteDemoChatRoomById(roomId: string) {
+  if (!hasSupabaseAdminEnv()) {
+    return { id: roomId };
+  }
+
+  const supabase = createSupabaseAdminClient();
+  const { error } = await supabase
+    .from("ai_demo_chat_rooms")
+    .delete()
+    .eq("id", roomId);
+
+  if (error) {
+    throw new Error(error.message || "Failed to delete chat room.");
+  }
+
+  return { id: roomId };
 }
 
 export async function saveDemoMessage(input: {

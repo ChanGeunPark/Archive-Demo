@@ -62,3 +62,32 @@ export async function uploadImageToCloudflare(input: {
     variants: data.result.variants ?? [],
   };
 }
+
+export async function deleteImageFromCloudflare(imageId: string) {
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const token = process.env.CLOUDFLARE_IMAGES_API_TOKEN;
+
+  if (!accountId || !token) {
+    throw new Error("Missing Cloudflare Images environment variables.");
+  }
+
+  const response = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v1/${encodeURIComponent(imageId)}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  const data = (await response.json()) as {
+    success: boolean;
+    errors?: { message?: string }[];
+  };
+
+  if (!response.ok || !data.success) {
+    const message = data.errors?.map((error) => error.message).filter(Boolean).join(", ");
+    throw new Error(message || "Failed to delete image from Cloudflare Images.");
+  }
+}

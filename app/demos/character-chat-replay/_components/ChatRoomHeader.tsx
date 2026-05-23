@@ -1,14 +1,51 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { DemoPublicCharacter } from "@/lib/ai-chat-demo/types";
 import { CharacterAvatar } from "./CharacterAvatar";
 
 type ChatRoomHeaderProps = {
   character: DemoPublicCharacter;
+  deleteDisabled?: boolean;
+  deletingRoom?: boolean;
+  onDeleteRoom: () => void | Promise<void>;
 };
 
-export function ChatRoomHeader({ character }: ChatRoomHeaderProps) {
+export function ChatRoomHeader({
+  character,
+  deleteDisabled = false,
+  deletingRoom = false,
+  onDeleteRoom,
+}: ChatRoomHeaderProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    function handlePointerDown(event: PointerEvent) {
+      const target = event.target;
+
+      if (!(target instanceof Node) || !menuRef.current?.contains(target)) {
+        setMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [menuOpen]);
+
+  function handleDeleteClick() {
+    setMenuOpen(false);
+    void onDeleteRoom();
+  }
+
   return (
-    <header className="flex h-16 flex-shrink-0 items-center justify-between border-b border-[#EDEEEF] bg-white px-4">
+    <header className="flex h-16 shrink-0 items-center justify-between border-b border-[#EDEEEF] bg-white px-4">
       <Link
         href="/demos/character-chat-replay"
         className="text-sm font-semibold text-[#60656C]"
@@ -19,7 +56,33 @@ export function ChatRoomHeader({ character }: ChatRoomHeaderProps) {
         <h1 className="text-base font-bold">{character.name}</h1>
         <p className="text-xs text-[#93989F]">{character.role}</p>
       </div>
-      <CharacterAvatar character={character} className="h-9 w-9 rounded-full" />
+      <div ref={menuRef} className="relative">
+        <button
+          type="button"
+          aria-expanded={menuOpen}
+          aria-label="채팅방 옵션 열기"
+          onClick={() => setMenuOpen((current) => !current)}
+          className="rounded-full outline-none ring-[#FFE55C] transition-transform active:scale-95 focus-visible:ring-2"
+        >
+          <CharacterAvatar
+            character={character}
+            className="h-9 w-9 rounded-full"
+          />
+        </button>
+
+        {menuOpen && (
+          <div className="absolute right-0 top-11 z-20 w-40 overflow-hidden rounded-xl border border-[#EDEEEF] bg-white py-1 shadow-[0_10px_30px_rgba(0,0,0,0.14)]">
+            <button
+              type="button"
+              disabled={deleteDisabled}
+              onClick={handleDeleteClick}
+              className="w-full px-4 py-3 text-left text-sm font-bold text-[#EE4553] transition-colors hover:bg-[#FFF4F5] disabled:text-[#C6C9CE] disabled:hover:bg-white"
+            >
+              {deletingRoom ? "삭제 중..." : "채팅방 삭제"}
+            </button>
+          </div>
+        )}
+      </div>
     </header>
   );
 }
