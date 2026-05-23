@@ -80,6 +80,10 @@ export default function CreateCharacterClient() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (step < 3) {
+      setStep(3);
+      return;
+    }
     if (!profileImage) return;
 
     setLoading(true);
@@ -205,7 +209,13 @@ function CreateCharacterStep({
   }
 
   if (step === 2) {
-    return <ChatSettingsStep form={form} updateForm={updateForm} />;
+    return (
+      <ChatSettingsStep
+        form={form}
+        profilePreview={profilePreview}
+        updateForm={updateForm}
+      />
+    );
   }
 
   return (

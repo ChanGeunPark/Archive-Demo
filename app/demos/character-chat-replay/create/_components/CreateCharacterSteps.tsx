@@ -376,9 +376,11 @@ export function CharacterSettingsStep({
 
 export function ChatSettingsStep({
   form,
+  profilePreview,
   updateForm,
 }: {
   form: FormState;
+  profilePreview: string;
   updateForm: UpdateForm;
 }) {
   return (
@@ -396,24 +398,292 @@ export function ChatSettingsStep({
         placeholder="채팅방 첫 메시지"
         onChange={(value) => updateForm("openingMessage", value)}
       />
-      <TextArea
-        className="mt-6"
-        label="시드 채팅"
+      <SeedChatEditor
+        className="mt-10"
+        characterName={form.name}
+        profilePreview={profilePreview}
         value={form.seedChat}
-        placeholder={"_human::안녕\n_ai::어서 와."}
         onChange={(value) => updateForm("seedChat", value)}
       />
-      <TextArea
-        className="mt-6"
-        label="예시 메시지"
+      <SampleMessageEditor
+        className="mt-10"
         value={form.sampleMessages}
-        placeholder={
-          "한 줄에 하나씩 입력\n오늘 기분은 어때?\n이 장면을 요약해줘."
-        }
         onChange={(value) => updateForm("sampleMessages", value)}
       />
     </Card>
   );
+}
+
+function SeedChatEditor({
+  characterName,
+  className = "",
+  onChange,
+  profilePreview,
+  value,
+}: {
+  characterName: string;
+  className?: string;
+  onChange: (value: string) => void;
+  profilePreview: string;
+  value: string;
+}) {
+  const parsedPairs = parseSeedChat(value);
+  const [pairCount, setPairCount] = useState(() => parsedPairs.length);
+  const pairs = Array.from(
+    { length: Math.max(pairCount, parsedPairs.length, 1) },
+    (_, index) => parsedPairs[index] ?? { human: "", ai: "" },
+  ).slice(0, 8);
+
+  function updatePair(index: number, key: keyof SeedPair, nextValue: string) {
+    const nextPairs = pairs.map((pair, pairIndex) =>
+      pairIndex === index ? { ...pair, [key]: nextValue.slice(0, 50) } : pair,
+    );
+    onChange(formatSeedChat(nextPairs));
+  }
+
+  function addPair() {
+    if (pairs.length >= 8) return;
+    setPairCount((current) => Math.min(8, Math.max(current, pairs.length) + 1));
+  }
+
+  function removePair(index: number) {
+    const nextPairs = pairs.filter((_, pairIndex) => pairIndex !== index);
+    setPairCount(Math.max(1, nextPairs.length));
+    onChange(formatSeedChat(nextPairs.length > 0 ? nextPairs : [{ human: "", ai: "" }]));
+  }
+
+  return (
+    <section className={className}>
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <SectionTitle title="AI 학습" />
+          <span className="ml-1 text-xs font-medium text-[#93989F]">(수정불가)</span>
+        </div>
+        <InfoTooltip>
+          캐릭터가 실제로 말할 것 같은 짧은 대화 예시를 넣으면, 말투와 반응을 더 안정적으로 따라갑니다.
+        </InfoTooltip>
+      </div>
+
+      <div className="rounded-lg bg-[#F8F9FA] p-2">
+        <div className="space-y-5">
+          {pairs.map((pair, index) => (
+            <div key={`seed-${index}`} className="space-y-3">
+              <div className="flex justify-end">
+                <label className="block w-[78%] max-w-[420px]">
+                  <span className="sr-only">유저 예상 대사 {index + 1}</span>
+                  <input
+                    value={pair.human}
+                    maxLength={50}
+                    placeholder="유저 대사 입력 (최대 50자)"
+                    onChange={(event) => updatePair(index, "human", event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") event.preventDefault();
+                    }}
+                    className="h-12 w-full rounded-lg rounded-tr-none border-2 border-[#FFE55C] bg-white px-3 text-sm outline-none placeholder:text-[#AEB2B8]"
+                  />
+                </label>
+              </div>
+              <div>
+                <div className="mb-2 flex items-center gap-2">
+                  {profilePreview ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={profilePreview} alt="" className="h-10 w-10 rounded-full object-cover" />
+                  ) : (
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FFE55C] text-xs font-bold text-[#17191C]">
+                      AI
+                    </span>
+                  )}
+                  <span className="text-sm font-bold text-[#17191C]">
+                    {characterName || "캐릭터 이름"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 pl-[50px]">
+                  <label className="block w-[78%] max-w-[420px]">
+                    <span className="sr-only">캐릭터 답변 {index + 1}</span>
+                    <input
+                      value={pair.ai}
+                      maxLength={50}
+                      placeholder="캐릭터 대사 입력 (최대 50자)"
+                      onChange={(event) => updatePair(index, "ai", event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") event.preventDefault();
+                      }}
+                      className="h-12 w-full rounded-lg rounded-tl-none border-2 border-white bg-white px-3 text-sm outline-none placeholder:text-[#AEB2B8] focus:border-[#FFE55C]"
+                    />
+                  </label>
+                  {pairs.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removePair(index)}
+                      className="h-9 w-9 rounded-full border border-[#D8DBDE] text-sm font-bold text-[#60656C]"
+                      aria-label={`${index + 1}번째 시드 채팅 삭제`}
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          disabled={pairs.length >= 8}
+          onClick={addPair}
+          className="ml-auto mt-4 flex h-10 w-10 items-center justify-center rounded-full bg-[#17191C] text-2xl leading-none text-white disabled:bg-[#D8DBDE]"
+          aria-label="시드 채팅 추가"
+        >
+          +
+        </button>
+      </div>
+      <p className="mt-2 text-right text-xs font-medium text-[#93989F]">
+        {pairs.length}/8
+      </p>
+    </section>
+  );
+}
+
+function SampleMessageEditor({
+  className = "",
+  onChange,
+  value,
+}: {
+  className?: string;
+  onChange: (value: string) => void;
+  value: string;
+}) {
+  const [input, setInput] = useState("");
+  const messages = useMemo(() => parseSampleMessages(value), [value]);
+
+  function addMessage() {
+    const nextMessage = input.trim().slice(0, 20);
+    if (!nextMessage || messages.includes(nextMessage) || messages.length >= 5) return;
+    onChange([...messages, nextMessage].join("\n"));
+    setInput("");
+  }
+
+  function removeMessage(message: string) {
+    onChange(messages.filter((item) => item !== message).join("\n"));
+  }
+
+  return (
+    <section className={className}>
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <SectionTitle title="예시 대화" />
+        <InfoTooltip>
+          채팅방에 빠른 시작 문장으로 보여줄 메시지예요. 유저가 누르면 바로 대화를 시작할 수 있습니다.
+        </InfoTooltip>
+      </div>
+      <div className="flex gap-2">
+        <input
+          value={input}
+          maxLength={20}
+          placeholder="예시 대화 작성 (최대 20자)"
+          onChange={(event) => setInput(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              addMessage();
+            }
+          }}
+          className="h-12 min-w-0 flex-1 rounded-lg border-2 border-[#F4F5F6] bg-transparent px-3 text-sm outline-none placeholder:text-[#AEB2B8] focus:border-[#FFE55C]"
+        />
+        <button
+          type="button"
+          disabled={!input.trim() || messages.length >= 5}
+          onClick={addMessage}
+          className="h-12 rounded-lg bg-[#FFE55C] px-4 text-sm font-bold text-[#17191C] disabled:bg-[#EDEEEF] disabled:text-[#AEB2B8]"
+        >
+          추가
+        </button>
+      </div>
+      <div className="mt-3 flex min-h-12 flex-wrap gap-2 rounded-lg bg-[#F8F9FA] p-3">
+        {messages.length === 0 ? (
+          <p className="text-sm font-medium text-[#AEB2B8]">예시 대화를 추가해주세요.</p>
+        ) : (
+          messages.map((message) => (
+            <button
+              key={message}
+              type="button"
+              onClick={() => removeMessage(message)}
+              className="rounded-full bg-[#17191C] px-3 py-1.5 text-xs font-bold text-white"
+            >
+              {message} ×
+            </button>
+          ))
+        )}
+      </div>
+      <p className="mt-1 text-right text-xs font-medium text-[#93989F]">
+        {messages.length}/5
+      </p>
+    </section>
+  );
+}
+
+function InfoTooltip({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        className="flex h-8 w-8 items-center justify-center rounded-full border border-[#D8DBDE] text-sm font-bold text-[#60656C]"
+        aria-label="도움말"
+      >
+        i
+      </button>
+      {open && (
+        <div className="absolute right-0 top-10 z-20 w-[min(300px,calc(100vw-48px))] rounded-lg bg-[#17191C] p-3 text-xs font-medium leading-5 text-white shadow-lg">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+type SeedPair = {
+  human: string;
+  ai: string;
+};
+
+function parseSeedChat(value: string): SeedPair[] {
+  const lines = value.split("\n").map((line) => line.trim());
+  const pairs: SeedPair[] = [];
+
+  for (let index = 0; index < lines.length; index += 2) {
+    const human = lines[index]?.replace(/^_human::/, "") ?? "";
+    const ai = lines[index + 1]?.replace(/^_ai::/, "") ?? "";
+    pairs.push({ human, ai });
+  }
+
+  const nonTrailingPairs = [...pairs];
+  while (
+    nonTrailingPairs.length > 1 &&
+    !nonTrailingPairs[nonTrailingPairs.length - 1]?.human &&
+    !nonTrailingPairs[nonTrailingPairs.length - 1]?.ai
+  ) {
+    nonTrailingPairs.pop();
+  }
+
+  return nonTrailingPairs.length > 0 ? nonTrailingPairs.slice(0, 8) : [{ human: "", ai: "" }];
+}
+
+function formatSeedChat(pairs: SeedPair[]) {
+  return pairs
+    .flatMap((pair) => [
+      pair.human ? `_human::${pair.human}` : "",
+      pair.ai ? `_ai::${pair.ai}` : "",
+    ])
+    .join("\n");
+}
+
+function parseSampleMessages(value: string) {
+  return value
+    .split("\n")
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 5);
 }
 
 function BuilderInput({
@@ -603,8 +873,44 @@ export function PreviewChat({
   profilePreview: string;
   bannerPreview: string;
 }) {
+  const [messages, setMessages] = useState<PreviewMessage[]>(() => [
+    {
+      id: "opening",
+      role: "ai",
+      content: form.openingMessage || `${form.name || "캐릭터"}와 대화를 시작합니다.`,
+    },
+  ]);
+  const [inputText, setInputText] = useState("");
+  const [isThinking, setIsThinking] = useState(false);
+  const sampleMessages = useMemo(() => parseSampleMessages(form.sampleMessages), [form.sampleMessages]);
+  const limitReached = messages.filter((message) => message.role === "human").length >= 5;
+
+  function submitPreviewMessage(message: string) {
+    const content = message.trim();
+    if (!content || isThinking || limitReached) return;
+
+    setMessages((current) => [
+      ...current,
+      { id: `human-${Date.now()}`, role: "human", content },
+    ]);
+    setInputText("");
+    setIsThinking(true);
+
+    window.setTimeout(() => {
+      setMessages((current) => [
+        ...current,
+        {
+          id: `ai-${Date.now()}`,
+          role: "ai",
+          content: buildPreviewReply(form, content),
+        },
+      ]);
+      setIsThinking(false);
+    }, 450);
+  }
+
   return (
-    <div className="mx-auto min-h-[calc(100vh-112px)] w-full max-w-[620px] overflow-hidden rounded-lg bg-white shadow-[0_2px_5px_rgba(0,0,0,0.03),0_8px_40px_rgba(0,0,0,0.03)]">
+    <div className="mx-auto w-full max-w-[620px] overflow-hidden rounded-lg bg-white shadow-[0_2px_5px_rgba(0,0,0,0.03),0_8px_40px_rgba(0,0,0,0.03)]">
       <div className="relative h-52 bg-[#17191C]">
         {bannerPreview && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -633,30 +939,138 @@ export function PreviewChat({
           </p>
         </div>
       </div>
-      <div className="space-y-4 p-4 pb-20">
-        <p className="rounded-lg bg-[#F4F5F6] p-4 text-sm leading-6 text-[#60656C]">
-          {form.description}
-        </p>
-        <div className="flex items-end gap-2">
-          {profilePreview ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={profilePreview}
-              alt=""
-              className="h-8 w-8 rounded-full object-cover"
-            />
-          ) : (
-            <span className="h-8 w-8 rounded-full bg-[#FFE55C]" />
-          )}
-          <p className="max-w-[75%] rounded-2xl rounded-bl-none bg-[#F4F5F6] px-4 py-3 text-sm leading-6">
-            {form.openingMessage ||
-              `${form.name || "캐릭터"}와 대화를 시작합니다.`}
-          </p>
+      <div className="flex h-[calc(100vh-360px)] min-h-[360px] flex-col bg-[#F4F5F6]">
+        <div className="flex h-10 items-center justify-center bg-[#17191C] px-3 text-center text-xs font-bold text-white/80">
+          채팅 테스트는 최대 5회의 대화까지 가능합니다.
         </div>
-        <div className="ml-auto max-w-[75%] rounded-2xl rounded-br-none bg-[#FFE55C] px-4 py-3 text-sm font-medium">
-          안녕, 오늘은 어떤 이야기를 해볼까?
+        <div className="flex-1 space-y-3 overflow-y-auto p-4">
+          <p className="rounded-lg bg-white p-4 text-sm leading-6 text-[#60656C]">
+            {form.description}
+          </p>
+          {messages.map((message) => (
+            <PreviewChatBubble
+              key={message.id}
+              characterName={form.name}
+              message={message}
+              profilePreview={profilePreview}
+            />
+          ))}
+          {isThinking && (
+            <PreviewChatBubble
+              characterName={form.name}
+              message={{ id: "thinking", role: "ai", content: "입력 중..." }}
+              profilePreview={profilePreview}
+            />
+          )}
+        </div>
+        {sampleMessages.length > 0 && (
+          <div className="border-t border-[#EDEEEF] bg-white px-4 py-3">
+            <div className="flex gap-2 overflow-x-auto">
+              {sampleMessages.map((message) => (
+                <button
+                  key={message}
+                  type="button"
+                  disabled={isThinking || limitReached}
+                  onClick={() => submitPreviewMessage(message)}
+                  className="h-9 shrink-0 rounded-full border border-[#D8DBDE] px-3 text-xs font-bold text-[#17191C] disabled:text-[#AEB2B8]"
+                >
+                  {message}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        <div
+          className="flex h-[82px] items-center gap-2 bg-white px-4"
+        >
+          <input
+            value={inputText}
+            disabled={limitReached}
+            onChange={(event) => setInputText(event.target.value.slice(0, 300))}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                submitPreviewMessage(inputText);
+              }
+            }}
+            placeholder={limitReached ? "5회의 테스트 채팅을 완료했습니다." : "채팅 내용 입력"}
+            className="h-12 min-w-0 flex-1 rounded-xl border-2 border-[#F4F5F6] bg-white px-3 text-sm outline-none placeholder:text-[#AEB2B8] focus:border-[#FFE55C] disabled:bg-[#F4F5F6]"
+          />
+          <button
+            type="submit"
+            disabled={!inputText.trim() || isThinking || limitReached}
+            className="h-12 w-12 shrink-0 rounded-full bg-[#17191C] text-sm font-bold text-white disabled:bg-[#D8DBDE]"
+            aria-label="테스트 메시지 보내기"
+          >
+            ↑
+          </button>
         </div>
       </div>
     </div>
   );
+}
+
+type PreviewMessage = {
+  id: string;
+  role: "human" | "ai";
+  content: string;
+};
+
+function PreviewChatBubble({
+  characterName,
+  message,
+  profilePreview,
+}: {
+  characterName: string;
+  message: PreviewMessage;
+  profilePreview: string;
+}) {
+  const isHuman = message.role === "human";
+
+  return (
+    <div className={`flex flex-col py-1 ${isHuman ? "items-end" : "items-start"}`}>
+      {!isHuman && (
+        <div className="mb-2 flex items-center gap-2">
+          {profilePreview ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={profilePreview} alt="" className="h-8 w-8 rounded-full object-cover" />
+          ) : (
+            <span className="h-8 w-8 rounded-full bg-[#FFE55C]" />
+          )}
+          <span className="text-sm font-bold">{characterName || "캐릭터 이름"}</span>
+        </div>
+      )}
+      <p
+        className={`max-w-[80%] break-words rounded-2xl px-4 py-3 text-sm leading-6 ${
+          isHuman
+            ? "rounded-br-none bg-[#FFE55C] text-[#17191C]"
+            : "ml-10 rounded-bl-none bg-white text-[#17191C]"
+        }`}
+      >
+        {message.content}
+      </p>
+    </div>
+  );
+}
+
+function buildPreviewReply(form: FormState, userMessage: string) {
+  const seedReply = findSeedReply(form.seedChat, userMessage);
+  if (seedReply) return seedReply;
+
+  const personality = form.personality.split(",").map((item) => item.trim()).filter(Boolean)[0];
+  const tone = personality ? `${personality} 느낌으로 ` : "";
+  const name = form.name || "캐릭터";
+
+  return `${name}은 ${tone}"${userMessage}"에 반응합니다. 실제 생성 후에는 입력한 설정과 시드 채팅을 바탕으로 더 자연스럽게 답변해요.`;
+}
+
+function findSeedReply(seedChat: string, userMessage: string) {
+  const pairs = parseSeedChat(seedChat);
+  const normalizedMessage = userMessage.replace(/\s/g, "");
+  const matchedPair = pairs.find((pair) => {
+    const normalizedSeed = pair.human.replace(/\s/g, "");
+    return normalizedSeed && (normalizedMessage.includes(normalizedSeed) || normalizedSeed.includes(normalizedMessage));
+  });
+
+  return matchedPair?.ai || "";
 }
