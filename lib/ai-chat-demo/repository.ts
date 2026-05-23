@@ -1,16 +1,24 @@
 import { createSupabaseAdminClient, hasSupabaseAdminEnv } from "@/lib/supabase/admin";
-import { demoCharacters, findDemoCharacter } from "./mock-data";
-import type { DemoCharacter, DemoChatMessage } from "./types";
+import { addDemoCharacter, demoCharacters, findDemoCharacter } from "./mock-data";
+import type { DemoCharacter, DemoChatMessage, DemoPublicCharacter } from "./types";
 
 type CharacterRow = {
   id: string;
   name: string;
   role: string;
+  category: string | null;
+  gender: string | null;
+  image_url: string | null;
+  image_id: string | null;
+  banner_image_url: string | null;
+  banner_image_id: string | null;
   image_gradient: string;
   tags: string[] | null;
   description: string;
+  status_message: string | null;
   world_view: string;
   opening_message: string;
+  seed_chat: string[] | null;
   sample_messages: string[] | null;
   total_chat_count: number | null;
 };
@@ -29,14 +37,103 @@ function mapCharacter(row: CharacterRow): DemoCharacter {
     id: row.id,
     name: row.name,
     role: row.role,
+    category: row.category ?? "CHARACTER",
+    gender: row.gender ?? "ETC",
+    imageUrl: row.image_url,
+    imageId: row.image_id,
+    bannerImageUrl: row.banner_image_url,
+    bannerImageId: row.banner_image_id,
     imageGradient: row.image_gradient,
     tags: row.tags ?? [],
     description: row.description,
+    statusMessage: row.status_message,
     worldView: row.world_view,
     openingMessage: row.opening_message,
+    seedChat: row.seed_chat ?? [],
     sampleMessages: row.sample_messages ?? [],
     totalChatCount: row.total_chat_count ?? 0,
   };
+}
+
+export function toPublicCharacter(character: DemoCharacter): DemoPublicCharacter {
+  return {
+    id: character.id,
+    name: character.name,
+    role: character.role,
+    category: character.category,
+    gender: character.gender,
+    imageUrl: character.imageUrl,
+    imageId: character.imageId,
+    bannerImageUrl: character.bannerImageUrl,
+    bannerImageId: character.bannerImageId,
+    imageGradient: character.imageGradient,
+    tags: character.tags,
+    description: character.description,
+    statusMessage: character.statusMessage,
+    openingMessage: character.openingMessage,
+    seedChat: character.seedChat,
+    sampleMessages: character.sampleMessages,
+    totalChatCount: character.totalChatCount,
+  };
+}
+
+export async function createDemoCharacter(input: {
+  id: string;
+  name: string;
+  role: string;
+  category: string;
+  gender: string;
+  imageUrl: string | null;
+  imageId: string | null;
+  bannerImageUrl: string | null;
+  bannerImageId: string | null;
+  imageGradient: string;
+  tags: string[];
+  description: string;
+  statusMessage: string | null;
+  worldView: string;
+  openingMessage: string;
+  seedChat: string[];
+  sampleMessages: string[];
+}) {
+  if (!hasSupabaseAdminEnv()) {
+    return addDemoCharacter({
+      ...input,
+      totalChatCount: 0,
+    } satisfies DemoCharacter);
+  }
+
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("ai_demo_characters")
+    .insert({
+      id: input.id,
+      name: input.name,
+      role: input.role,
+      category: input.category,
+      gender: input.gender,
+      image_url: input.imageUrl,
+      image_id: input.imageId,
+      banner_image_url: input.bannerImageUrl,
+      banner_image_id: input.bannerImageId,
+      image_gradient: input.imageGradient,
+      tags: input.tags,
+      description: input.description,
+      status_message: input.statusMessage,
+      world_view: input.worldView,
+      opening_message: input.openingMessage,
+      seed_chat: input.seedChat,
+      sample_messages: input.sampleMessages,
+      total_chat_count: 0,
+    })
+    .select("*")
+    .single();
+
+  if (error || !data) {
+    throw new Error(error?.message || "Failed to create character.");
+  }
+
+  return mapCharacter(data as CharacterRow);
 }
 
 function mapMessage(row: MessageRow): DemoChatMessage {
@@ -48,6 +145,15 @@ function mapMessage(row: MessageRow): DemoChatMessage {
     content: row.content,
     createdAt: row.created_at,
   };
+}
+
+function logSupabaseFallback(scope: string, error: unknown) {
+  const details =
+    error && typeof error === "object"
+      ? JSON.stringify(error, Object.getOwnPropertyNames(error))
+      : String(error);
+
+  console.warn(`[ai-demo] ${scope}. Falling back to local demo data.`, details);
 }
 
 export async function getDemoCharacters() {
@@ -62,7 +168,7 @@ export async function getDemoCharacters() {
     .order("created_at", { ascending: true });
 
   if (error || !data) {
-    console.error("[ai-demo] Failed to load characters:", error);
+    logSupabaseFallback("Failed to load characters", error);
     return demoCharacters;
   }
 
@@ -82,7 +188,7 @@ export async function getDemoCharacter(characterId: string) {
     .maybeSingle();
 
   if (error || !data) {
-    console.error("[ai-demo] Failed to load character:", error);
+    logSupabaseFallback("Failed to load character", error);
     return findDemoCharacter(characterId) ?? null;
   }
 
@@ -102,11 +208,40 @@ export async function getDemoChatHistory(roomId: string) {
     .order("created_at", { ascending: true });
 
   if (error || !data) {
-    console.error("[ai-demo] Failed to load chat history:", error);
+    logSupabaseFallback("Failed to load chat history", error);
     return [];
   }
 
   return (data as MessageRow[]).map(mapMessage);
+}
+
+export async function createDemoChatRoom(input: {
+  roomId: string;
+  characterId: string;
+}) {
+  if (!hasSupabaseAdminEnv()) {
+    return null;
+  }
+
+  const supabase = createSupabaseAdminClient();
+  const { error: roomError } = await supabase.from("ai_demo_chat_rooms").upsert(
+    {
+      id: input.roomId,
+      character_id: input.characterId,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "id" },
+  );
+
+  if (roomError) {
+    logSupabaseFallback("Failed to upsert chat room", roomError);
+    return null;
+  }
+
+  return {
+    id: input.roomId,
+    characterId: input.characterId,
+  };
 }
 
 export async function saveDemoMessage(input: {
@@ -119,21 +254,12 @@ export async function saveDemoMessage(input: {
     return null;
   }
 
+  await createDemoChatRoom({
+    roomId: input.roomId,
+    characterId: input.characterId,
+  });
+
   const supabase = createSupabaseAdminClient();
-
-  const { error: roomError } = await supabase.from("ai_demo_chat_rooms").upsert(
-    {
-      id: input.roomId,
-      character_id: input.characterId,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "id" },
-  );
-
-  if (roomError) {
-    console.error("[ai-demo] Failed to upsert chat room:", roomError);
-    return null;
-  }
 
   const { data, error } = await supabase
     .from("ai_demo_chat_messages")
@@ -147,7 +273,7 @@ export async function saveDemoMessage(input: {
     .single();
 
   if (error || !data) {
-    console.error("[ai-demo] Failed to save message:", error);
+    logSupabaseFallback("Failed to save message", error);
     return null;
   }
 

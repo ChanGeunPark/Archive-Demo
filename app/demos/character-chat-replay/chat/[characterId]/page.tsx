@@ -1,6 +1,11 @@
+import { randomUUID } from "node:crypto";
 import { notFound } from "next/navigation";
 import ChatRoomClient from "../../_components/ChatRoomClient";
-import { getDemoCharacter, getDemoChatHistory } from "@/lib/ai-chat-demo/repository";
+import {
+  getDemoCharacter,
+  getDemoChatHistory,
+  toPublicCharacter,
+} from "@/lib/ai-chat-demo/repository";
 
 type ChatPageProps = {
   params: Promise<{
@@ -23,13 +28,12 @@ export default async function CharacterChatRoomPage({
     notFound();
   }
 
-  const initialRoomId =
-    roomId || `demo-${characterId}-${new Date().toISOString().slice(0, 10)}`;
+  const initialRoomId = roomId || randomUUID();
   const initialMessages = await getDemoChatHistory(initialRoomId);
 
   return (
     <ChatRoomClient
-      character={character}
+      character={toPublicCharacter(character)}
       initialMessages={initialMessages}
       initialRoomId={initialRoomId}
     />
