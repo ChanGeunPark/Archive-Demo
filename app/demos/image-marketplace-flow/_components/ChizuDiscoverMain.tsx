@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import { cls } from "@/lib/client/utils";
 import MasonryImageCard from "./card/MasonryImageCard";
+import { works, type WorkItem } from "./chizuData";
 import OrderedMasonry from "./layout/OrderedMasonry";
 
 const AUCTION_DURATION_MS = 12 * 60 * 60 * 1000;
@@ -16,125 +17,11 @@ function getAuctionEndTime() {
 
 type DiscoverTab = "work" | "collection" | "artist" | "tag";
 
-type WorkItem = {
-  id: string;
-  title: string;
-  artist: string;
-  image: string;
-  price: number;
-  width: number;
-  height: number;
-  tags: string[];
-  status: "Buy now" | "Auction" | "Offer";
-};
-
 const tabs: { id: DiscoverTab; label: string }[] = [
   { id: "work", label: "작품" },
   { id: "collection", label: "컬렉션" },
   { id: "artist", label: "작가" },
   { id: "tag", label: "태그" },
-];
-
-const works: WorkItem[] = [
-  {
-    id: "work-01",
-    title: "Archive Bloom",
-    artist: "Min Park",
-    image: "/images/chizu/main1.jpg",
-    price: 280_000,
-    width: 1200,
-    height: 1600,
-    tags: ["illustration", "character"],
-    status: "Buy now",
-  },
-  {
-    id: "work-02",
-    title: "Blue Signal",
-    artist: "Haru Studio",
-    image: "/images/chizu/main2.jpg",
-    price: 160_000,
-    width: 1400,
-    height: 1100,
-    tags: ["anime", "blue"],
-    status: "Auction",
-  },
-  {
-    id: "work-03",
-    title: "Soft Protocol",
-    artist: "Noah Kim",
-    image: "/images/chizu/main3.jpg",
-    price: 420_000,
-    width: 1200,
-    height: 1800,
-    tags: ["portrait", "license"],
-    status: "Offer",
-  },
-  {
-    id: "work-04",
-    title: "Creator Room",
-    artist: "Yuna Lee",
-    image: "/images/chizu/main4.jpg",
-    price: 310_000,
-    width: 1300,
-    height: 1500,
-    tags: ["3d", "interior"],
-    status: "Buy now",
-  },
-  {
-    id: "work-05",
-    title: "Layered Dream",
-    artist: "Studio Oji",
-    image: "/images/chizu/main5.jpg",
-    price: 190_000,
-    width: 1500,
-    height: 1200,
-    tags: ["concept", "dream"],
-    status: "Auction",
-  },
-  {
-    id: "work-06",
-    title: "Neon Field",
-    artist: "Kira",
-    image: "/images/chizu/main6.jpg",
-    price: 350_000,
-    width: 1200,
-    height: 1600,
-    tags: ["neon", "landscape"],
-    status: "Buy now",
-  },
-  {
-    id: "work-07",
-    title: "Silent Light",
-    artist: "Jun Seo",
-    image: "/images/chizu/main7.jpg",
-    price: 220_000,
-    width: 1100,
-    height: 1500,
-    tags: ["archive", "quiet"],
-    status: "Offer",
-  },
-  {
-    id: "work-08",
-    title: "Pixel Memory",
-    artist: "Mori",
-    image: "/images/chizu/main8.png",
-    price: 130_000,
-    width: 1200,
-    height: 1200,
-    tags: ["pixel", "memory"],
-    status: "Buy now",
-  },
-  {
-    id: "work-09",
-    title: "Open Canvas",
-    artist: "Sora",
-    image: "/images/chizu/main9.png",
-    price: 480_000,
-    width: 1500,
-    height: 1700,
-    tags: ["canvas", "exclusive"],
-    status: "Auction",
-  },
 ];
 
 const collections = [
@@ -328,8 +215,8 @@ export default function ChizuDiscoverMain() {
           )} */}
           <nav className="flex w-full justify-between">
             <div className="flex w-full flex-col content-center items-start justify-between xl:flex-row">
-              <section className="flex w-full items-center justify-between border-b border-[#D8DBDE]">
-                <nav className="flex h-[3.75rem] w-full items-center overflow-hidden overflow-x-auto">
+              <section className="flex w-full items-center justify-between border-b border-zinc-100">
+                <nav className="flex h-10 w-full items-center overflow-hidden overflow-x-auto">
                   {tabs.map((tab) => (
                     <div
                       key={tab.id}
@@ -379,11 +266,6 @@ export default function ChizuDiscoverMain() {
           {activeTab === "tag" && <TagGrid />}
         </section>
       </div>
-      <style jsx>{`
-        body {
-          background-color: white !important;
-        }
-      `}</style>
     </main>
   );
 }
@@ -418,7 +300,7 @@ function WorkGrid({ works }: { works: WorkItem[] }) {
             width={work.width}
             height={work.height}
             title={work.title}
-            link="/demos/image-marketplace-flow"
+            link={`/demos/image-marketplace-flow/work/${work.id}`}
             buyNowPrice={work.status === "Buy now" ? work.price : undefined}
             auctionTime={work.status === "Auction" ? auctionEndTime : null}
             userProfile="/images/chizu/profile_default_180x180_00.png"
