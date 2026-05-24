@@ -4,6 +4,7 @@ import ChatRoomClient from "../../_components/chat-room/ChatRoomClient";
 import {
   getDemoCharacter,
   getDemoChatHistory,
+  resolveDemoChatRoomId,
   toPublicCharacter,
 } from "@/lib/ai-chat-demo/repository";
 
@@ -28,12 +29,15 @@ export default async function CharacterChatRoomPage({
     notFound();
   }
 
-  const initialRoomId = roomId || randomUUID();
+  const initialRoomId =
+    resolveDemoChatRoomId({ characterId: character.id, roomId }) ??
+    randomUUID();
   const initialMessages = await getDemoChatHistory(initialRoomId);
 
   // --- Render ---
   return (
     <ChatRoomClient
+      key={initialRoomId}
       character={toPublicCharacter(character)}
       initialMessages={initialMessages}
       initialRoomId={initialRoomId}

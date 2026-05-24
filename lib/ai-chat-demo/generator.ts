@@ -335,19 +335,30 @@ function getOrCreateSession(input: {
 }
 
 // LangChain 스트림 청크의 다양한 content 형태를 화면에 보낼 문자열로 정규화합니다.
-function stringifyChunkContent(content: unknown) {
+function stringifyChunkContent(content: unknown): string {
   if (typeof content === "string") return content;
 
   if (Array.isArray(content)) {
-    return content
-      .map((item) => {
-        if (typeof item === "string") return item;
-        if (item && typeof item === "object" && "text" in item) {
-          return String(item.text ?? "");
-        }
-        return "";
-      })
-      .join("");
+    let result = "";
+    for (const item of content) {
+      result += stringifyChunkContent(item);
+    }
+    return result;
+  }
+
+  if (content && typeof content === "object") {
+    const record = content as Record<string, unknown>;
+
+    if (typeof record.text === "string") return record.text;
+    if (typeof record.content === "string") return record.content;
+
+    if ("parts" in record && Array.isArray(record.parts)) {
+      let result = "";
+      for (const part of record.parts) {
+        result += stringifyChunkContent(part);
+      }
+      return result;
+    }
   }
 
   return "";
@@ -383,7 +394,11 @@ export async function* streamLangChainCharacterResponse(input: {
     });
 
     for await (const chunk of stream) {
-      const token = stringifyChunkContent(chunk.content);
+      const token =
+        stringifyChunkContent(chunk.content) ||
+        stringifyChunkContent(
+          (chunk as { text?: unknown }).text,
+        );
       if (token) {
         response += token;
         yield token;

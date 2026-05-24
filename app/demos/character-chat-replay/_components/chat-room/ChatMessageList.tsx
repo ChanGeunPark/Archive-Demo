@@ -9,14 +9,14 @@ import Typography from "@/components/typography/Typography";
 
 type ChatMessageListProps = {
   character: DemoPublicCharacter;
-  loading: boolean;
+  awaitingFirstToken: boolean;
   messages: DemoChatMessage[];
   scrollRef: RefObject<HTMLDivElement | null>;
 };
 
 export function ChatMessageList({
   character,
-  loading,
+  awaitingFirstToken,
   messages,
   scrollRef,
 }: ChatMessageListProps) {
@@ -40,7 +40,7 @@ export function ChatMessageList({
         <ChatBubble key={message.id} character={character} message={message} />
       ))}
 
-      {loading && <ChatLoadingDots />}
+      {awaitingFirstToken && <ChatLoadingDots />}
     </div>
   );
 }

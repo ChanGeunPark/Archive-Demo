@@ -10,14 +10,24 @@ export function CharacterSelectHeader() {
             Archive Demo
           </Typography>
         </Link>
-        <Link
-          href="/demos/character-chat-replay/create"
-          className="rounded-full bg-[#FFE55C] px-3 py-1 text-xs font-semibold text-[#17191C]"
-        >
-          <Typography as="span" variant="body3" weight={600} color="#17191C">
-            캐릭터 만들기
-          </Typography>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/demos/character-chat-replay/technical-notes"
+            className="rounded-full bg-zinc-800 px-3 py-1 text-xs font-semibold text-white"
+          >
+            <Typography as="span" variant="body3" weight={600} color="white">
+              기술 노트
+            </Typography>
+          </Link>
+          <Link
+            href="/demos/character-chat-replay/create"
+            className="rounded-full bg-[#FFE55C] px-3 py-1 text-xs font-semibold text-[#17191C]"
+          >
+            <Typography as="span" variant="body3" weight={600} color="#17191C">
+              캐릭터 만들기
+            </Typography>
+          </Link>
+        </div>
       </div>
       <Typography variant="h2" color="#17191C" className="mt-4">
         AI 캐릭터 선택

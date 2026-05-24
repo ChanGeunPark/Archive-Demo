@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -18,6 +18,7 @@ import { ChatMessageList } from "./ChatMessageList";
 import { ChatRoomHeader } from "./ChatRoomHeader";
 import { SampleMessageScroller } from "./SampleMessageScroller";
 import { makeLocalMessage } from "./chat-room.utils";
+import { createSmoothStreamReveal } from "./smooth-stream-reveal";
 
 type ChatRoomClientProps = {
   character: DemoPublicCharacter;
@@ -52,9 +53,20 @@ export default function ChatRoomClient({
   const messages = localMessages ?? historyQuery.data ?? initialMessages;
   const [inputText, setInputText] = useState("");
   const [isWaitingForReply, setIsWaitingForReply] = useState(false);
+  const [awaitingFirstToken, setAwaitingFirstToken] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const hasInitialScrollRef = useRef(false);
   const loading = streamingChatMutation.isPending || isWaitingForReply;
   const deletingRoom = deleteRoomMutation.isPending;
+
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior,
+      });
+    });
+  }, []);
 
   // --- Event Handlers ---
   function setCachedMessages(
@@ -92,13 +104,32 @@ export default function ChatRoomClient({
     return [openingChatMessage, ...messages];
   }, [character.id, character.openingMessage, messages, roomId]);
 
-  // --- Effects ---
+  // 채팅방 진입 시 히스토리 로드 완료 후 하단으로 스크롤 (스트리밍 중에는 제외)
   useEffect(() => {
-    scrollRef.current?.scrollTo({
-      top: scrollRef.current.scrollHeight,
-      behavior: "smooth",
+    hasInitialScrollRef.current = false;
+  }, [initialRoomId]);
+
+  useEffect(() => {
+    if (hasInitialScrollRef.current) return;
+    if (isWaitingForReply || localMessages) return;
+    if (historyQuery.isFetching) return;
+
+    hasInitialScrollRef.current = true;
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        scrollToBottom("auto");
+      });
     });
-  }, [visibleMessages]);
+  }, [
+    initialRoomId,
+    historyQuery.isFetching,
+    historyQuery.data,
+    visibleMessages.length,
+    isWaitingForReply,
+    localMessages,
+    scrollToBottom,
+  ]);
 
   // --- Event Handlers ---
   async function sendMessage(message: string) {
@@ -117,7 +148,33 @@ export default function ChatRoomClient({
 
     setLocalMessages(optimisticMessages);
     setCachedMessages(requestRoomId, optimisticMessages);
+    scrollToBottom();
     setIsWaitingForReply(true);
+    setAwaitingFirstToken(true);
+
+    const streamingMessageId = `ai-stream-${Date.now()}`;
+    let completedText = "";
+    let responseRoomId = requestRoomId;
+    let streamError: string | null = null;
+
+    function buildStreamingMessages(text: string) {
+      return [
+        ...optimisticMessages,
+        makeLocalMessage({
+          id: streamingMessageId,
+          roomId: responseRoomId,
+          characterId: character.id,
+          role: "ai",
+          content: text,
+        }),
+      ];
+    }
+
+    const reveal = createSmoothStreamReveal({
+      onUpdate: (text) => {
+        setLocalMessages(buildStreamingMessages(text));
+      },
+    });
 
     try {
       let response: Response;
@@ -130,6 +187,7 @@ export default function ChatRoomClient({
           message: trimmedMessage,
         });
       } catch {
+        setAwaitingFirstToken(false);
         setLocalMessages((current) => [
           ...(current ?? optimisticMessages),
           makeLocalMessage({
@@ -140,6 +198,7 @@ export default function ChatRoomClient({
               "잠시 후 다시 시도해 주세요. 서버 응답을 불러오지 못했습니다.",
           }),
         ]);
+        scrollToBottom();
         return;
       }
 
@@ -147,9 +206,6 @@ export default function ChatRoomClient({
       const reader = response.body!.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
-      let completedText = "";
-      let responseRoomId = requestRoomId;
-      let streamError: string | null = null;
 
       streamLoop: while (true) {
         const { done, value } = await reader.read();
@@ -178,11 +234,14 @@ export default function ChatRoomClient({
           if (eventType === "error") {
             streamError =
               data.error ?? "응답 생성에 실패했습니다. 다시 시도해 주세요.";
+            setAwaitingFirstToken(false);
             break streamLoop;
           }
 
           if (eventType === "token" && data.token) {
             completedText += data.token;
+            setAwaitingFirstToken(false);
+            reveal.pushTarget(completedText);
           }
         }
       }
@@ -190,19 +249,21 @@ export default function ChatRoomClient({
       const finalAiContent = streamError ?? completedText;
       if (!finalAiContent) return;
 
-      const completedMessages = [
-        ...optimisticMessages,
-        makeLocalMessage({
-          roomId: responseRoomId,
-          characterId: character.id,
-          role: "ai",
-          content: finalAiContent,
-        }),
-      ];
+      reveal.pushTarget(finalAiContent);
 
+      if (streamError) {
+        reveal.snapToTarget();
+      } else {
+        await reveal.flush();
+      }
+
+      const completedMessages = buildStreamingMessages(finalAiContent);
       setLocalMessages(completedMessages);
       setCachedMessages(responseRoomId, completedMessages);
+      scrollToBottom();
     } finally {
+      reveal.stop();
+      setAwaitingFirstToken(false);
       setIsWaitingForReply(false);
     }
   }
@@ -248,7 +309,7 @@ export default function ChatRoomClient({
         />
         <ChatMessageList
           character={character}
-          loading={loading}
+          awaitingFirstToken={awaitingFirstToken}
           messages={visibleMessages}
           scrollRef={scrollRef}
         />

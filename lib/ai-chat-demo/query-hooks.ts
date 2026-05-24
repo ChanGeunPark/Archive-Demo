@@ -51,8 +51,9 @@ export function useDemoChatHistoryQuery(
     queryKey: aiChatDemoKeys.history(roomId),
     queryFn: () => fetchDemoChatHistory(roomId),
     enabled: Boolean(roomId),
-    initialData,
-    refetchOnMount: initialData ? false : true,
+    placeholderData: initialData,
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 }
 

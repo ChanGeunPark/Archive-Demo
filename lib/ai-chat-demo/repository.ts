@@ -215,6 +215,31 @@ export function buildDemoChatRoomId(input: {
   return [characterId, roomId].filter(Boolean).join("-");
 }
 
+/** URL/입력 roomId를 DB에 저장된 실제 roomId로 통일 */
+export function resolveDemoChatRoomId(input: {
+  characterId: string;
+  roomId?: string;
+}) {
+  const requestedRoomId = input.roomId?.trim();
+  if (!requestedRoomId) return null;
+
+  const characterSegment = normalizeRoomIdSegment(input.characterId, 80);
+  const normalizedRoomId = normalizeRoomIdSegment(requestedRoomId, 160);
+  const fullPrefix = `${characterSegment}-`;
+
+  if (
+    normalizedRoomId === characterSegment ||
+    normalizedRoomId.startsWith(fullPrefix)
+  ) {
+    return normalizedRoomId;
+  }
+
+  return buildDemoChatRoomId({
+    characterId: input.characterId,
+    roomId: requestedRoomId,
+  });
+}
+
 // Supabase 오류 시 경고 로그 출력 (로컬 데모 데이터로 폴백할 때 사용)
 function logSupabaseFallback(scope: string, error: unknown) {
   const details =
