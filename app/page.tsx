@@ -56,9 +56,21 @@ const accentStyles = {
 } as const;
 
 const highlights = [
-  { value: "2", label: "CHIZU COMICS · CHIZU 프로젝트" },
-  { value: "6+", label: "체험 가능한 사용자 플로우" },
-  { value: "Live", label: "스트리밍 AI · Supabase 히스토리" },
+  {
+    value: "2",
+    title: "Rebuilt demos",
+    subtitle: "CHIZU COMICS · CHIZU",
+  },
+  {
+    value: "6+",
+    title: "Core flows",
+    subtitle: "생성 · 채팅 · 저장 · 구매 · 동기화 · 라이선스",
+  },
+  {
+    value: "Live",
+    title: "Interactive replay",
+    subtitle: "SSE · Supabase · Mock API",
+  },
 ];
 
 export default function Home() {
@@ -144,14 +156,17 @@ export default function Home() {
         <section className="mt-10 grid gap-4 sm:grid-cols-3 lg:mt-12">
           {highlights.map((item) => (
             <div
-              key={item.label}
+              key={item.title}
               className="rounded-2xl border border-white/70 bg-white/65 p-5 shadow-[0_12px_40px_rgba(15,23,42,0.06)] backdrop-blur-md"
             >
               <Typography variant="h2" weight={700} color="#09090b">
                 {item.value}
               </Typography>
+              <Typography variant="body2" weight={600} color="#09090b" className="mt-1">
+                {item.title}
+              </Typography>
               <Typography variant="body3" color="#71717a" className="mt-1">
-                {item.label}
+                {item.subtitle}
               </Typography>
             </div>
           ))}

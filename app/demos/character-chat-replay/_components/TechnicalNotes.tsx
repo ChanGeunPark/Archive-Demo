@@ -1,94 +1,6 @@
 import Typography from "@/components/typography/Typography";
 import Image from "next/image";
 
-const messagePriority = [
-  "local(stream)",
-  "React Query",
-  "SSR initial",
-] as const;
-
-const layers = [
-  {
-    label: "Client",
-    accent: "border-violet-200 bg-violet-50 text-violet-700",
-    items: [
-      "ChatRoomClient · CharacterSelect · CreateCharacter",
-      "TanStack Query · Optimistic UI · SSE Reader",
-      "Smooth stream reveal (GPT/Gemini UX 정규화)",
-    ],
-  },
-  {
-    label: "BFF",
-    accent: "border-indigo-200 bg-indigo-50 text-indigo-700",
-    items: [
-      "Next.js Route Handlers (/api/ai-chat-demo/*)",
-      "프롬프트 · secretContext 서버 격리",
-      "SSE token stream → 클라이언트",
-    ],
-  },
-  {
-    label: "AI · Data",
-    accent: "border-zinc-200 bg-zinc-50 text-zinc-700",
-    items: [
-      "LangChain session pool (roomId · TTL 12h)",
-      "Supabase — characters · rooms · messages",
-      "roomId = {characterId}-{userInput}",
-    ],
-  },
-] as const;
-
-const flowSteps = [
-  {
-    title: "Browser",
-    lines: [
-      "ChatRoomClient",
-      "SSE parse + smooth reveal",
-      "TanStack Query cache",
-    ],
-  },
-  {
-    title: "BFF",
-    lines: ["POST /api/.../chat", "GET /api/.../history", "prompt isolation"],
-  },
-  {
-    title: "Backend",
-    lines: ["LangChain stream", "session pool[roomId]", "Supabase persist"],
-  },
-] as const;
-
-const cachePolicies = [
-  {
-    layer: "UI · localMessages",
-    target: "스트리밍 중 메시지",
-    policy: "채팅 중 최우선 · 완료 후 setQueryData",
-    purpose: "스트림 UX · 캐시 동기화",
-  },
-  {
-    layer: "React Query · history",
-    target: "채팅방 메시지",
-    policy: "staleTime 0 · refetchOnMount always · placeholderData",
-    purpose: "재진입 시 DB 동기화",
-  },
-  {
-    layer: "React Query · characters",
-    target: "캐릭터 목록",
-    policy: "전역 staleTime 5min · mutation cache patch",
-    purpose: "목록 속도 · CRUD 반영",
-  },
-  {
-    layer: "LangChain session",
-    target: "roomId 컨텍스트",
-    policy: "서버 RAM Map · TTL 12h · limit 16 · preview no-cache",
-    purpose: "연속 대화 시 DB history 재조회 생략",
-  },
-  {
-    layer: "Source of truth",
-    target: "Supabase messages",
-    policy: "persist · fetch no-store",
-    purpose: "영속 저장 · 재입장 기준",
-  },
-] as const;
-
 const tradeoffs = [
   {
     title: "BFF (Next.js API Route)",
@@ -110,15 +22,42 @@ const tradeoffs = [
     gain: "같은 roomId로 재입장해도 Supabase 기준 최신 history를 보여줍니다.",
     cost: "채팅방을 열 때마다 GET /history를 다시 호출합니다.",
   },
+] as const;
+
+const serviceComparison = [
   {
-    title: "REST + TanStack Query (데모)",
-    gain: "포트폴리오 데모를 단순한 API 계층으로 재현·설명하기 쉽습니다.",
-    cost: "실서비스 CHIZU COMICS의 GraphQL·캐시 정책과는 구현이 다릅니다.",
+    item: "API",
+    production: "GraphQL + Node.js Backend",
+    demo: "REST + Next.js API Route",
+  },
+  {
+    item: "저장 · 검증",
+    production: "Node.js Backend (캐릭터 저장 · 유저 검증 · 데이터 적합성)",
+    demo: "BFF → Supabase 직접 read/write",
+  },
+  {
+    item: "AI 처리",
+    production: "LangChain + 서버 세션 풀 (BFF)",
+    demo: "LangChain/mock · in-memory 세션 재현",
+  },
+  {
+    item: "DB",
+    production: "GCP PostgreSQL + Prisma",
+    demo: "Supabase",
+  },
+  {
+    item: "스트리밍",
+    production: "SSE",
+    demo: "SSE + smooth reveal UX 재현",
+  },
+  {
+    item: "클라이언트",
+    production: "GraphQL Apollo Client",
+    demo: "REST fetch + TanStack Query",
   },
 ] as const;
 
-const flowBadgeClass =
-  "border-[#E4E4E7] bg-[#FAFAFA] text-[#52525B]";
+const flowBadgeClass = "border-[#E4E4E7] bg-[#FAFAFA] text-[#52525B]";
 
 const allFlowBadges = [
   "[1] 정보 입력",
@@ -139,7 +78,10 @@ function FlowBadgeTrail() {
       {allFlowBadges.map((label, index) => (
         <div key={`${label}-${index}`} className="flex items-center gap-1.5">
           {index > 0 && (
-            <span aria-hidden className="text-[10px] font-medium text-[#C4C8CC]">
+            <span
+              aria-hidden
+              className="text-[10px] font-medium text-[#C4C8CC]"
+            >
               →
             </span>
           )}
@@ -188,7 +130,7 @@ export function TechnicalNotes() {
           color="#17191C"
           className="leading-tight"
         >
-          AI 채팅 핵심 플로우
+          AI 채팅 플로우 재구성
         </Typography>
         <Typography
           variant="body2"
@@ -210,95 +152,40 @@ export function TechnicalNotes() {
           />
         </div>
         <FlowBadgeTrail />
+
+        <section className="space-y-2 border-t border-[#EDEEEF] border-b pb-6">
+          <Typography
+            variant="body1"
+            weight={600}
+            color="#17191C"
+            className="pt-6"
+          >
+            실제 서비스 작업한 부분
+          </Typography>
+          <Typography
+            variant="body3"
+            weight={500}
+            color="#72777E"
+            className="mt-2 max-w-2xl break-keep leading-relaxed"
+          >
+            이 데모에서는 프론트엔드부터 BFF까지 전 구간을 재구현했습니다. 실제
+            서비스에서는 캐릭터 저장, 유저 검증, 데이터 접근 제어는 Node.js
+            백엔드에서 처리했고, Next.js BFF는 스트리밍, 프롬프트 격리, SSE
+            연결을 담당했습니다.
+          </Typography>
+        </section>
       </header>
 
       <div className="space-y-5">
         <SectionHeading
-          title="Layer overview"
-          description="클라이언트 · BFF · AI/Data 세 레이어로 역할을 분리했습니다."
-        />
-        <div className="grid gap-3 sm:grid-cols-3">
-          {layers.map((layer) => (
-            <article
-              key={layer.label}
-              className="flex flex-col rounded-2xl border border-[#EDEEEF] bg-white p-4 shadow-[0_8px_30px_rgba(15,23,42,0.04)]"
-            >
-              <Typography
-                as="span"
-                variant="body3"
-                weight={700}
-                className={`inline-flex w-fit rounded-full border px-2.5 py-1 ${layer.accent}`}
-              >
-                {layer.label}
-              </Typography>
-              <ul className="mt-4 flex-1 space-y-2">
-                {layer.items.map((item) => (
-                  <li key={item}>
-                    <Typography
-                      variant="body3"
-                      color="#52525b"
-                      className="break-keep"
-                    >
-                      {item}
-                    </Typography>
-                  </li>
-                ))}
-              </ul>
-            </article>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-5">
-        <SectionHeading
-          title="Request flow"
-          description="채팅 전송과 히스토리 조회의 end-to-end 흐름입니다."
-        />
-        <div className="grid gap-3 md:grid-cols-[1fr_auto_1fr_auto_1fr] md:items-stretch">
-          {flowSteps.map((step, index) => (
-            <div key={step.title} className="contents">
-              <article className="rounded-2xl border border-[#EDEEEF] bg-[#FAFAFB] p-4">
-                <Typography variant="body2" weight={700} color="#17191C">
-                  {step.title}
-                </Typography>
-                <ul className="mt-3 space-y-1.5">
-                  {step.lines.map((line) => (
-                    <li key={line}>
-                      <Typography
-                        as="span"
-                        variant="body3"
-                        color="#60656C"
-                        className="font-mono text-[11px]"
-                      >
-                        {line}
-                      </Typography>
-                    </li>
-                  ))}
-                </ul>
-              </article>
-              {index < flowSteps.length - 1 && (
-                <div
-                  aria-hidden
-                  className="hidden items-center justify-center text-[#C4C8CC] md:flex"
-                >
-                  →
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-5">
-        <SectionHeading
-          title="Cache policy"
-          description="레이어마다 캐시 목적과 갱신 시점이 다릅니다."
+          title="Demo vs Production"
+          description="같은 UX 플로우를 유지하되, 데모는 설명·재현을 위해 단순화했습니다."
         />
         <div className="overflow-x-auto rounded-2xl border border-[#EDEEEF] bg-white shadow-[0_8px_30px_rgba(15,23,42,0.04)]">
-          <table className="w-full min-w-[640px] border-collapse text-left">
+          <table className="w-full min-w-[560px] border-collapse text-left">
             <thead>
               <tr className="border-b border-[#EDEEEF] bg-[#FAFAFB]">
-                {["Layer", "대상", "정책", "목적"].map((head) => (
+                {["항목", "실제 서비스", "데모"].map((head) => (
                   <th key={head} className="px-4 py-3">
                     <Typography
                       as="span"
@@ -313,19 +200,14 @@ export function TechnicalNotes() {
               </tr>
             </thead>
             <tbody>
-              {cachePolicies.map((row, index) => (
+              {serviceComparison.map((row, index) => (
                 <tr
-                  key={row.layer}
+                  key={row.item}
                   className={index % 2 === 0 ? "bg-white" : "bg-[#FAFAFB]/80"}
                 >
                   <td className="px-4 py-3 align-top">
                     <Typography variant="body3" weight={600} color="#6d28d9">
-                      {row.layer}
-                    </Typography>
-                  </td>
-                  <td className="px-4 py-3 align-top">
-                    <Typography variant="body3" color="#52525b">
-                      {row.target}
+                      {row.item}
                     </Typography>
                   </td>
                   <td className="px-4 py-3 align-top">
@@ -334,7 +216,7 @@ export function TechnicalNotes() {
                       color="#52525b"
                       className="break-keep"
                     >
-                      {row.policy}
+                      {row.production}
                     </Typography>
                   </td>
                   <td className="px-4 py-3 align-top">
@@ -343,7 +225,7 @@ export function TechnicalNotes() {
                       color="#52525b"
                       className="break-keep"
                     >
-                      {row.purpose}
+                      {row.demo}
                     </Typography>
                   </td>
                 </tr>
@@ -356,7 +238,7 @@ export function TechnicalNotes() {
       <div className="space-y-5">
         <SectionHeading
           title="Trade-offs"
-          description="의도적으로 선택한 타협입니다."
+          description="실제 서비스 구조를 데모 환경에 맞게 재구성하며 선택한 설계입니다."
         />
         <div className="grid gap-3 sm:grid-cols-2">
           {tradeoffs.map((item, index) => (

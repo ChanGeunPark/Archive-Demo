@@ -1,12 +1,23 @@
 import Link from "next/link";
 import Typography from "@/components/typography/Typography";
+import KeyboardArrowLeftIcon from "@/components/icons/arrow/KeyboardArrowLeftIcon";
 
 export function CharacterSelectHeader() {
   return (
     <header className="sticky top-0 z-10 border-b border-[#EDEEEF] bg-white/95 px-4 py-4 backdrop-blur">
       <div className="flex items-center justify-between">
-        <Link href="/">
-          <Typography as="span" variant="body2" weight={600} color="#60656C">
+        <Link
+          href="/"
+          className="flex items-center gap-1.5 transition group hover:opacity-80"
+        >
+          <KeyboardArrowLeftIcon className="group-hover:opacity-80 fill-[#60656C]" />
+          <Typography
+            as="span"
+            variant="body2"
+            weight={600}
+            color="#60656C"
+            className="group-hover:opacity-80"
+          >
             Archive Demo
           </Typography>
         </Link>
