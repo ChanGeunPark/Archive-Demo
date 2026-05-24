@@ -18,6 +18,7 @@ import {
   initialForm,
   type FormState,
 } from "./_components/create-character.types";
+import KeyboardArrowLeftIcon from "@/components/icons/arrow/KeyboardArrowLeftIcon";
 
 export default function CreateCharacterClient() {
   const router = useRouter();
@@ -41,8 +42,9 @@ export default function CreateCharacterClient() {
   const [creatorId, setCreatorId] = useState("");
   const [creatorIdModalOpen, setCreatorIdModalOpen] = useState(false);
   const [selectedMockFormId, setSelectedMockFormId] = useState("");
-  const [pendingFormValues, setPendingFormValues] =
-    useState<FormState | null>(null);
+  const [pendingFormValues, setPendingFormValues] = useState<FormState | null>(
+    null,
+  );
   const form = useWatch({ control }) as FormState;
   const loading = createCharacterMutation.isPending;
 
@@ -349,7 +351,9 @@ function CreateCharacterHeader({
           href="/demos/character-chat-replay"
           className="flex h-full items-center gap-2 text-base font-bold"
         >
-          <span className="text-2xl leading-none text-[#17191C]">‹</span>
+          <span className="text-2xl leading-none text-[#17191C]">
+            <KeyboardArrowLeftIcon />
+          </span>
           <span>캐릭터 만들기</span>
         </Link>
         <div className="flex items-center gap-2">
