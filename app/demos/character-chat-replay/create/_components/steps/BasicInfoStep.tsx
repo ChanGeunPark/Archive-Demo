@@ -12,6 +12,7 @@ import {
   type FormState,
 } from "../create-character.types";
 import type { UpdateForm } from "./types";
+import Typography from "@/components/typography/Typography";
 
 export function BasicInfoStep({
   form,
@@ -31,9 +32,14 @@ export function BasicInfoStep({
           onChange={(value) => updateForm("category", value)}
         />
         {form.category && (
-          <p className="mt-2 text-xs font-medium text-[#93989F]">
+          <Typography
+            variant="body3"
+            weight={500}
+            color="#93989F"
+            className="mt-2"
+          >
             ex) {exampleCharacters[form.category]}
-          </p>
+          </Typography>
         )}
         <SectionTitle title="캐릭터 성별" required className="mt-8" />
         <Segmented

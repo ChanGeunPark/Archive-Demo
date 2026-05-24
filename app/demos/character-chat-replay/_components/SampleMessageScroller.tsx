@@ -1,3 +1,5 @@
+import Typography from "@/components/typography/Typography";
+
 type SampleMessageScrollerProps = {
   disabled: boolean;
   onSelect: (message: string) => void;
@@ -20,7 +22,9 @@ export function SampleMessageScroller({
             onClick={() => onSelect(sample)}
             className="whitespace-nowrap rounded-full bg-white px-3 py-2 text-xs font-semibold text-[#60656C] disabled:opacity-50"
           >
-            {sample}
+            <Typography as="span" variant="body3" weight={600} color="#60656C">
+              {sample}
+            </Typography>
           </button>
         ))}
       </div>

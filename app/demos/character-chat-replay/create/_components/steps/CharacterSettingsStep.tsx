@@ -16,6 +16,7 @@ import {
   type PersonalityTab,
 } from "../personality-keywords";
 import type { UpdateForm } from "./types";
+import Typography from "@/components/typography/Typography";
 
 export function CharacterSettingsStep({
   form,
@@ -50,14 +51,18 @@ export function CharacterSettingsStep({
               onClick={() => setDescriptionMode("basic")}
               className={`h-8 rounded-lg px-3 text-xs font-bold ${descriptionMode === "basic" ? "bg-[#FFE55C] text-[#17191C]" : "bg-[#F4F5F6] text-[#93989F]"}`}
             >
-              기본 양식
+              <Typography as="span" variant="body3" weight={700} color="inherit">
+                기본 양식
+              </Typography>
             </button>
             <button
               type="button"
               onClick={() => setDescriptionMode("free")}
               className={`h-8 rounded-lg px-3 text-xs font-bold ${descriptionMode === "free" ? "bg-[#FFE55C] text-[#17191C]" : "bg-[#F4F5F6] text-[#93989F]"}`}
             >
-              자유 양식
+              <Typography as="span" variant="body3" weight={700} color="inherit">
+                자유 양식
+              </Typography>
             </button>
           </div>
         </div>
@@ -123,9 +128,15 @@ export function CharacterSettingsStep({
               maxLength={300}
               className="mt-2 min-h-28 w-full resize-none rounded-lg bg-[#F8F9FA] p-3 text-sm leading-6 text-[#60656C] outline-none"
             />
-            <p className="mt-1 text-right text-xs font-medium text-[#93989F]">
+            <Typography
+              variant="body3"
+              weight={500}
+              color="#93989F"
+              align="right"
+              className="mt-1"
+            >
               {form.description.length}/300
-            </p>
+            </Typography>
           </>
         ) : (
           <TextArea
@@ -147,9 +158,15 @@ export function CharacterSettingsStep({
         }
         onChange={(value) => updateForm("personality", value.slice(0, 100))}
       />
-      <p className="mt-1 text-right text-xs font-medium text-[#93989F]">
+      <Typography
+        variant="body3"
+        weight={500}
+        color="#93989F"
+        align="right"
+        className="mt-1"
+      >
         {form.personality.length}/100
-      </p>
+      </Typography>
       <HelperBar
         actionLabel="키워드 사전"
         onAction={() => setShowDictionary(true)}
@@ -186,7 +203,9 @@ function BuilderInput({
     <label
       className={`block p-3 ${isLast ? "" : "border-b-2 border-[#F4F5F6]"}`}
     >
-      <span className="block text-sm font-bold text-[#17191C]">{label}</span>
+      <Typography as="span" variant="body2" weight={700} color="#17191C" className="block">
+        {label}
+      </Typography>
       <input
         value={value}
         maxLength={maxLength}
@@ -237,21 +256,30 @@ function PersonalityKeywordSheet({
     >
       <div className="mx-auto flex h-[calc(100vh-40px)] max-w-[500px] flex-col rounded-t-2xl bg-white">
         <div className="flex items-center justify-between border-b border-[#EDEEEF] p-4">
-          <h3 className="text-lg font-bold">성격 키워드 사전</h3>
+          <Typography variant="h4" color="#17191C">
+            성격 키워드 사전
+          </Typography>
           <button
             type="button"
             onClick={onClose}
             className="h-8 rounded-lg border border-[#D8DBDE] px-3 text-xs font-bold"
           >
-            닫기
+            <Typography as="span" variant="body3" weight={700} color="#17191C">
+              닫기
+            </Typography>
           </button>
         </div>
         <div className="p-3">
           <div className="flex min-h-14 gap-2 overflow-x-auto rounded-lg bg-[#F8F9FA] p-2">
             {selected.length === 0 ? (
-              <p className="self-center text-sm font-medium text-[#AEB2B8]">
+              <Typography
+                variant="body2"
+                weight={500}
+                color="#AEB2B8"
+                className="self-center"
+              >
                 키워드를 선택해주세요.
-              </p>
+              </Typography>
             ) : (
               selected.map((keyword) => (
                 <button
@@ -260,14 +288,22 @@ function PersonalityKeywordSheet({
                   onClick={() => toggleKeyword(keyword)}
                   className="h-9 shrink-0 rounded-full bg-[#FFE55C] px-3 text-xs font-bold text-[#17191C]"
                 >
-                  {keyword} ×
+                  <Typography as="span" variant="body3" weight={700} color="#17191C">
+                    {keyword} ×
+                  </Typography>
                 </button>
               ))
             )}
           </div>
-          <p className="mt-1 text-right text-xs font-medium text-[#93989F]">
+          <Typography
+            variant="body3"
+            weight={500}
+            color="#93989F"
+            align="right"
+            className="mt-1"
+          >
             {totalLength}/100
-          </p>
+          </Typography>
           <div className="mt-3 flex gap-1 overflow-x-auto pb-1">
             {personalityTabs.map((item) => (
               <button
@@ -276,7 +312,9 @@ function PersonalityKeywordSheet({
                 onClick={() => setTab(item)}
                 className={`h-9 w-9 shrink-0 rounded-lg text-sm font-bold ${tab === item ? "bg-[#17191C] text-white" : "bg-[#F4F5F6] text-[#60656C]"}`}
               >
-                {item}
+                <Typography as="span" variant="body2" weight={700} color="inherit">
+                  {item}
+                </Typography>
               </button>
             ))}
           </div>
@@ -289,7 +327,9 @@ function PersonalityKeywordSheet({
               onClick={() => toggleKeyword(keyword)}
               className={`min-h-10 rounded-lg px-2 text-sm font-bold ${selected.includes(keyword) ? "bg-[#FFE55C] text-[#17191C]" : "border border-[#D8DBDE] text-[#60656C]"}`}
             >
-              {keyword}
+              <Typography as="span" variant="body2" weight={700} color="inherit">
+                {keyword}
+              </Typography>
             </button>
           ))}
         </div>
@@ -303,7 +343,9 @@ function PersonalityKeywordSheet({
             }}
             className="h-12 w-full rounded-full bg-[#FFE55C] text-base font-bold text-[#17191C] disabled:bg-[#EDEEEF] disabled:text-[#AEB2B8]"
           >
-            추가하기
+            <Typography as="span" variant="body1" weight={700} color="inherit">
+              추가하기
+            </Typography>
           </button>
         </div>
       </div>

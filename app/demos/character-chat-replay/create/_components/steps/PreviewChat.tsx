@@ -4,6 +4,7 @@ import SendFillIcon from "@/components/icons/SendFillIcon";
 import { usePreviewChatMutation } from "@/lib/ai-chat-demo/api";
 import type { FormState } from "../create-character.types";
 import { parseSampleMessages } from "./message-utils";
+import Typography from "@/components/typography/Typography";
 
 export function PreviewChat({
   form,
@@ -105,22 +106,33 @@ export function PreviewChat({
           ) : (
             <span className="h-24 w-24 rounded-full border-4 border-white bg-[#FFE55C]" />
           )}
-          <h2 className="mt-2 text-xl font-bold text-white">
+          <Typography variant="h3" color="white" className="mt-2">
             {form.name || "캐릭터 이름"}
-          </h2>
-          <p className="text-xs font-medium text-white/60">
+          </Typography>
+          <Typography variant="body3" weight={500} color="rgba(255,255,255,0.6)">
             {form.statusMessage || "상태 메시지"}
-          </p>
+          </Typography>
         </div>
       </div>
       <div className="flex h-[calc(100vh-360px)] min-h-[360px] flex-col bg-[#F4F5F6]">
-        <div className="flex h-10 items-center justify-center bg-[#17191C] px-3 text-center text-xs font-bold text-white/80">
+        <Typography
+          as="div"
+          variant="body3"
+          weight={700}
+          color="rgba(255,255,255,0.8)"
+          align="center"
+          className="flex h-10 items-center justify-center bg-[#17191C] px-3"
+        >
           채팅 테스트는 최대 5회의 대화까지 가능합니다.
-        </div>
+        </Typography>
         <div className="flex-1 space-y-3 overflow-y-auto p-4">
-          <p className="rounded-lg bg-white p-4 text-sm leading-6 text-[#60656C]">
+          <Typography
+            variant="body2"
+            color="#60656C"
+            className="rounded-lg bg-white p-4"
+          >
             {form.description}
-          </p>
+          </Typography>
           {messages.map((message) => (
             <PreviewChatBubble
               key={message.id}
@@ -148,7 +160,9 @@ export function PreviewChat({
                   onClick={() => submitPreviewMessage(message)}
                   className="h-9 shrink-0 rounded-full border border-[#D8DBDE] px-3 text-xs font-bold text-[#17191C] disabled:text-[#AEB2B8]"
                 >
-                  {message}
+                  <Typography as="span" variant="body3" weight={700} color="inherit">
+                    {message}
+                  </Typography>
                 </button>
               ))}
             </div>
@@ -222,20 +236,23 @@ function PreviewChatBubble({
           ) : (
             <span className="h-8 w-8 rounded-full bg-[#FFE55C]" />
           )}
-          <span className="text-sm font-bold">
+          <Typography as="span" variant="body2" weight={700} color="#17191C">
             {characterName || "캐릭터 이름"}
-          </span>
+          </Typography>
         </div>
       )}
-      <p
-        className={`max-w-[80%] break-words rounded-2xl px-4 py-3 text-sm leading-6 ${
+      <Typography
+        variant="body2"
+        wordBreak="words"
+        className={`max-w-[80%] rounded-2xl px-4 py-3 ${
           isHuman
-            ? "rounded-br-none bg-[#FFE55C] text-[#17191C]"
-            : "ml-10 rounded-bl-none bg-white text-[#17191C]"
+            ? "rounded-br-none bg-[#FFE55C]"
+            : "ml-10 rounded-bl-none bg-white"
         }`}
+        color="#17191C"
       >
         {message.content}
-      </p>
+      </Typography>
     </div>
   );
 }

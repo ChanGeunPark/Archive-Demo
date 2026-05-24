@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { DemoPublicCharacter } from "@/lib/ai-chat-demo/types";
 import { CharacterAvatar } from "./CharacterAvatar";
+import Typography from "@/components/typography/Typography";
 
 type ChatRoomHeaderProps = {
   character: DemoPublicCharacter;
@@ -46,15 +47,18 @@ export function ChatRoomHeader({
 
   return (
     <header className="flex h-16 shrink-0 items-center justify-between border-b border-[#EDEEEF] bg-white px-4">
-      <Link
-        href="/demos/character-chat-replay"
-        className="text-sm font-semibold text-[#60656C]"
-      >
-        Back
+      <Link href="/demos/character-chat-replay">
+        <Typography as="span" variant="body2" weight={600} color="#60656C">
+          Back
+        </Typography>
       </Link>
       <div className="text-center">
-        <h1 className="text-base font-bold">{character.name}</h1>
-        <p className="text-xs text-[#93989F]">{character.role}</p>
+        <Typography variant="body1" weight={700} color="#17191C">
+          {character.name}
+        </Typography>
+        <Typography variant="body3" color="#93989F">
+          {character.role}
+        </Typography>
       </div>
       <div ref={menuRef} className="relative">
         <button
@@ -78,7 +82,14 @@ export function ChatRoomHeader({
               onClick={handleDeleteClick}
               className="w-full px-4 py-3 text-left text-sm font-bold text-[#EE4553] transition-colors hover:bg-[#FFF4F5] disabled:text-[#C6C9CE] disabled:hover:bg-white"
             >
-              {deletingRoom ? "삭제 중..." : "채팅방 삭제"}
+              <Typography
+                as="span"
+                variant="body2"
+                weight={700}
+                color="inherit"
+              >
+                {deletingRoom ? "삭제 중..." : "채팅방 삭제"}
+              </Typography>
             </button>
           </div>
         )}

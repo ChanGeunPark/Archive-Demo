@@ -6,6 +6,7 @@ import type {
 import { ChatBubble } from "./ChatBubble";
 import { ChatLoadingDots } from "./ChatLoadingDots";
 import { makeLocalMessage } from "./chat-room.utils";
+import Typography from "@/components/typography/Typography";
 
 type ChatMessageListProps = {
   character: DemoPublicCharacter;
@@ -28,9 +29,15 @@ export function ChatMessageList({
     <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3">
       {messages && messages.length <= 0 && (
         <div className="flex flex-col items-center justify-center">
-          <span className="text-sm font-bold text-[#60656C] bg-white px-4 rounded-full py-2 border border-zinc-100">
+          <Typography
+            as="span"
+            variant="body2"
+            weight={700}
+            color="#60656C"
+            className="rounded-full border border-zinc-100 bg-white px-4 py-2"
+          >
             채팅방에 입장했습니다
-          </span>
+          </Typography>
         </div>
       )}
 

@@ -9,6 +9,7 @@ import {
   useDeleteDemoCharacterMutation,
 } from "@/lib/ai-chat-demo/api";
 import type { DemoPublicCharacter } from "@/lib/ai-chat-demo/types";
+import Typography from "@/components/typography/Typography";
 
 type CharacterPreviewBottomSheetProps = {
   character: DemoPublicCharacter | null;
@@ -129,7 +130,9 @@ export function CharacterPreviewBottomSheet({
             <CharacterPreviewHero character={character} />
 
             <label className="mt-4 block">
-              <span className="text-sm font-bold text-[#17191C]">채팅 ID</span>
+              <Typography as="span" variant="body2" weight={700} color="#17191C">
+                채팅 ID
+              </Typography>
               <input
                 value={roomId}
                 onChange={(event) => setRoomId(event.target.value)}
@@ -137,16 +140,27 @@ export function CharacterPreviewBottomSheet({
                 className="mt-2 h-12 w-full rounded-lg border-2 border-[#F4F5F6] px-3 text-sm outline-none placeholder:text-[#AEB2B8] focus:border-[#FFE55C]"
               />
               {roomId && normalizedRoomId !== roomId && (
-                <span className="mt-1 block text-xs font-medium text-[#72777E]">
+                <Typography
+                  as="span"
+                  variant="body3"
+                  weight={500}
+                  color="#72777E"
+                  className="mt-1 block"
+                >
                   공백은 `-`로 바뀌어 `{normalizedRoomId}`로 생성됩니다.
-                </span>
+                </Typography>
               )}
             </label>
 
             {errorMessage && (
-              <p className="mt-3 text-sm font-semibold text-[#EE4553]">
+              <Typography
+                variant="body2"
+                weight={600}
+                color="#EE4553"
+                className="mt-3"
+              >
                 {errorMessage}
-              </p>
+              </Typography>
             )}
 
             <motion.button
@@ -161,42 +175,52 @@ export function CharacterPreviewBottomSheet({
               transition={{ duration: 0.16 }}
               className="mt-4 h-12 w-full rounded-full rounded-tr-none bg-[#FFE55C] text-base font-bold text-[#17191C] transition-colors disabled:bg-[#EDEEEF] disabled:text-[#AEB2B8]"
             >
-              {loading
-                ? "채팅방 생성 중..."
-                : `${character.name}와(과) 대화하기`}
+              <Typography as="span" variant="body1" weight={700} color="inherit">
+                {loading
+                  ? "채팅방 생성 중..."
+                  : `${character.name}와(과) 대화하기`}
+              </Typography>
             </motion.button>
 
-            <h3 className="mt-6 text-base font-bold">캐릭터 소개</h3>
+            <Typography variant="body1" weight={700} color="#17191C" className="mt-6">
+              캐릭터 소개
+            </Typography>
             <div className="mt-2 border-l-2 border-[#EDEEEF] py-1 pl-2">
-              <p className="break-words text-sm leading-6 text-[#60656C]">
+              <Typography variant="body2" color="#60656C" wordBreak="words">
                 {character.description}
-              </p>
+              </Typography>
             </div>
 
             {character.tags.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {character.tags.map((tag) => (
-                  <span
+                  <Typography
+                    as="span"
+                    variant="body3"
+                    weight={600}
+                    color="#72777E"
                     key={tag}
-                    className="rounded-full bg-[#F4F5F6] px-2.5 py-1 text-xs font-semibold text-[#72777E]"
+                    className="rounded-full bg-[#F4F5F6] px-2.5 py-1"
                   >
                     #{tag.replace(/^#/, "")}
-                  </span>
+                  </Typography>
                 ))}
               </div>
             )}
 
             <div className="mt-6 rounded-xl border border-[#F1D5D8] bg-[#FFF8F8] p-3">
-              <h3 className="text-sm font-bold text-[#9B1C27]">캐릭터 삭제</h3>
-              <p className="mt-1 text-xs leading-5 text-[#8A555A]">
+              <Typography variant="body2" weight={700} color="#9B1C27">
+                캐릭터 삭제
+              </Typography>
+              <Typography variant="body3" color="#8A555A" className="mt-1">
                 생성할 때 입력한 ID 또는 관리자 ID를 입력하면 캐릭터가
                 삭제됩니다. 실제 프러덕트에선 UserID를 확인하여 캐릭터 삭제
                 권한을 확인합니다.
-              </p>
+              </Typography>
               <label className="mt-3 block">
-                <span className="text-xs font-bold text-[#9B1C27]">
+                <Typography as="span" variant="body3" weight={700} color="#9B1C27">
                   삭제 ID
-                </span>
+                </Typography>
                 <input
                   value={deleteId}
                   onChange={(event) => setDeleteId(event.target.value)}
@@ -210,15 +234,26 @@ export function CharacterPreviewBottomSheet({
                   className="mt-2 h-11 w-full rounded-lg border-2 border-[#F1D5D8] bg-white px-3 text-sm outline-none placeholder:text-[#C39A9E] focus:border-[#EE4553]"
                 />
                 {deleteId && normalizedDeleteId !== deleteId && (
-                  <span className="mt-1 block text-xs font-medium text-[#8A555A]">
+                  <Typography
+                    as="span"
+                    variant="body3"
+                    weight={500}
+                    color="#8A555A"
+                    className="mt-1 block"
+                  >
                     공백은 `-`로 바뀌어 `{normalizedDeleteId}`로 확인됩니다.
-                  </span>
+                  </Typography>
                 )}
               </label>
               {deleteMessage && (
-                <p className="mt-2 text-xs font-semibold text-[#EE4553]">
+                <Typography
+                  variant="body3"
+                  weight={600}
+                  color="#EE4553"
+                  className="mt-2"
+                >
                   {deleteMessage}
-                </p>
+                </Typography>
               )}
               <button
                 type="button"
@@ -226,7 +261,9 @@ export function CharacterPreviewBottomSheet({
                 onClick={handleDeleteCharacter}
                 className="mt-3 h-10 w-full rounded-full bg-[#EE4553] text-sm font-bold text-white disabled:bg-[#EDEEEF] disabled:text-[#AEB2B8]"
               >
-                {deleteLoading ? "삭제 중..." : "캐릭터 삭제하기"}
+                <Typography as="span" variant="body2" weight={700} color="inherit">
+                  {deleteLoading ? "삭제 중..." : "캐릭터 삭제하기"}
+                </Typography>
               </button>
             </div>
           </motion.form>
@@ -258,9 +295,15 @@ function CharacterPreviewHero({
         />
       )}
       <div className="relative flex w-full justify-end">
-        <span className="rounded-full border border-white/35 bg-black/35 px-2.5 py-1 text-xs font-bold text-white backdrop-blur-sm">
+        <Typography
+          as="span"
+          variant="body3"
+          weight={700}
+          color="white"
+          className="rounded-full border border-white/35 bg-black/35 px-2.5 py-1 backdrop-blur-sm"
+        >
           채팅 {formatChatCount(character.totalChatCount)}
-        </span>
+        </Typography>
       </div>
       <div className="flex flex-1 items-end" />
       {character.imageUrl ? (
@@ -277,12 +320,17 @@ function CharacterPreviewHero({
           className={`relative h-20 w-20 rounded-full bg-gradient-to-br ${character.imageGradient}`}
         />
       )}
-      <h2 className="relative mt-2 text-xl font-bold text-white">
+      <Typography variant="h3" color="white" className="relative mt-2">
         {character.name}
-      </h2>
-      <p className="relative text-sm font-medium text-white/70">
+      </Typography>
+      <Typography
+        variant="body2"
+        weight={500}
+        color="rgba(255,255,255,0.7)"
+        className="relative"
+      >
         {character.statusMessage || character.role}
-      </p>
+      </Typography>
     </div>
   );
 }

@@ -1,4 +1,9 @@
-import { ComponentPropsWithoutRef, CSSProperties, ReactNode } from "react";
+import {
+  ComponentPropsWithoutRef,
+  CSSProperties,
+  ElementType,
+  ReactNode,
+} from "react";
 
 export type TextPropertyType =
   | 900
@@ -57,6 +62,7 @@ export interface TypographyProps
   extends Omit<ComponentPropsWithoutRef<"p">, "color"> {
   children: ReactNode;
   variant: TextStyleType;
+  as?: ElementType;
   align?: TypographyAlign;
   truncate?: boolean;
   className?: string;

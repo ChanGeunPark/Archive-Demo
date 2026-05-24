@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Card, SectionTitle, TextInput } from "../CreateCharacterPrimitives";
 import type { FormState } from "../create-character.types";
 import type { UpdateForm } from "./types";
+import Typography from "@/components/typography/Typography";
 
 export function ProfileStep({
   bannerPreview,
@@ -35,9 +36,15 @@ export function ProfileStep({
     <Card className="mt-4">
       <section className="relative w-full">
         <SectionTitle title="캐릭터 프로필" required />
-        <span className="ml-2.5 text-xs font-medium text-[#93989F]">
+        <Typography
+          as="span"
+          variant="body3"
+          weight={500}
+          color="#93989F"
+          className="ml-2.5"
+        >
           (배경 이미지: 선택항목)
-        </span>
+        </Typography>
         <div className="relative mt-4 aspect-square w-full max-w-[400px] overflow-hidden rounded-lg border border-dashed border-[#D8DBDE] bg-white p-2">
           <label className="absolute inset-2 z-0 cursor-pointer overflow-hidden rounded-lg bg-[#F4F5F6]">
             {bannerPreview ? (
@@ -50,9 +57,24 @@ export function ProfileStep({
                 unoptimized
               />
             ) : (
-              <div className="flex h-full flex-col items-center pt-3 text-sm font-semibold text-[#AEB2B8]">
-                <span>5MB 이하의 JPG, PNG</span>
-                <span className="mt-10 text-4xl font-light">+</span>
+              <div className="flex h-full flex-col items-center pt-3">
+                <Typography
+                  as="span"
+                  variant="body2"
+                  weight={600}
+                  color="#AEB2B8"
+                >
+                  5MB 이하의 JPG, PNG
+                </Typography>
+                <Typography
+                  as="span"
+                  variant="h1"
+                  weight={300}
+                  color="#AEB2B8"
+                  className="mt-10"
+                >
+                  +
+                </Typography>
               </div>
             )}
             <input
@@ -66,7 +88,13 @@ export function ProfileStep({
           </label>
           <div className="absolute inset-x-0 bottom-0 z-10 flex h-[60%] flex-col items-center justify-center">
             <label className="flex h-[116px] w-[116px] cursor-pointer items-center justify-center rounded-full border border-dashed border-[#D8DBDE] p-2">
-              <span className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-[#FFE55C] text-xs font-bold text-[#17191C]">
+              <Typography
+                as="span"
+                variant="body3"
+                weight={700}
+                color="#17191C"
+                className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-[#FFE55C]"
+              >
                 {profilePreview ? (
                   <Image
                     src={profilePreview}
@@ -79,7 +107,7 @@ export function ProfileStep({
                 ) : (
                   "프로필"
                 )}
-              </span>
+              </Typography>
               <input
                 type="file"
                 accept="image/png,image/jpeg,image/webp,image/gif"
@@ -89,17 +117,24 @@ export function ProfileStep({
                 }
               />
             </label>
-            <h2
-              className={`mt-2 w-full px-4 text-center text-xl font-bold ${bannerPreview ? "text-white" : "text-[#17191C]"}`}
+            <Typography
+              variant="h3"
+              color={bannerPreview ? "white" : "#17191C"}
+              align="center"
+              className="mt-2 w-full px-4"
             >
               {form.name || "캐릭터 이름"}
-            </h2>
+            </Typography>
             {form.statusMessage && (
-              <p
-                className={`mt-1 w-full px-4 text-center text-xs font-medium opacity-60 ${bannerPreview ? "text-white" : "text-[#17191C]"}`}
+              <Typography
+                variant="body3"
+                weight={500}
+                color={bannerPreview ? "white" : "#17191C"}
+                align="center"
+                className="mt-1 w-full px-4 opacity-60"
               >
                 {form.statusMessage}
-              </p>
+              </Typography>
             )}
           </div>
         </div>
@@ -114,7 +149,9 @@ export function ProfileStep({
         <section className="mt-8">
           <SectionTitle title="캐릭터 태그" />
           <div className="mt-3 flex items-center gap-2">
-            <span className="text-sm font-bold text-[#60656C]">#</span>
+            <Typography as="span" variant="body2" weight={700} color="#60656C">
+              #
+            </Typography>
             <input
               value={tagInput}
               maxLength={8}
@@ -136,14 +173,16 @@ export function ProfileStep({
               onClick={addTag}
               className="h-12 rounded-lg bg-[#FFE55C] px-4 text-sm font-bold text-[#17191C] disabled:bg-[#EDEEEF] disabled:text-[#AEB2B8]"
             >
-              추가
+              <Typography as="span" variant="body2" weight={700} color="inherit">
+                추가
+              </Typography>
             </button>
           </div>
           <div className="mt-3 flex min-h-12 flex-wrap gap-2 rounded-lg bg-[#F8F9FA] p-3">
             {tags.length === 0 ? (
-              <p className="text-sm font-medium text-[#AEB2B8]">
+              <Typography variant="body2" weight={500} color="#AEB2B8">
                 추가한 태그가 없습니다.
-              </p>
+              </Typography>
             ) : (
               tags.map((tag) => (
                 <button
@@ -152,14 +191,22 @@ export function ProfileStep({
                   onClick={() => removeTag(tag)}
                   className="rounded-full bg-[#17191C] px-3 py-1.5 text-xs font-bold text-white"
                 >
-                  #{tag} ×
+                  <Typography as="span" variant="body3" weight={700} color="white">
+                    #{tag} ×
+                  </Typography>
                 </button>
               ))
             )}
           </div>
-          <p className="mt-1 text-right text-xs font-medium text-[#93989F]">
+          <Typography
+            variant="body3"
+            weight={500}
+            color="#93989F"
+            align="right"
+            className="mt-1"
+          >
             {tags.length}/3
-          </p>
+          </Typography>
         </section>
       </section>
     </Card>

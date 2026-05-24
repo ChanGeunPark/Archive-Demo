@@ -4,6 +4,7 @@ import { Card, SectionTitle, TextArea } from "../CreateCharacterPrimitives";
 import type { FormState } from "../create-character.types";
 import { parseSampleMessages } from "./message-utils";
 import type { UpdateForm } from "./types";
+import Typography from "@/components/typography/Typography";
 
 export function ChatSettingsStep({
   form,
@@ -92,9 +93,15 @@ function SeedChatEditor({
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <SectionTitle title="AI 학습" />
-          <span className="ml-1 text-xs font-medium text-[#93989F]">
+          <Typography
+            as="span"
+            variant="body3"
+            weight={500}
+            color="#93989F"
+            className="ml-1"
+          >
             (수정불가)
-          </span>
+          </Typography>
         </div>
         <InfoTooltip>
           캐릭터가 실제로 말할 것 같은 짧은 대화 예시를 넣으면, 말투와 반응을 더
@@ -135,13 +142,19 @@ function SeedChatEditor({
                       unoptimized
                     />
                   ) : (
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FFE55C] text-xs font-bold text-[#17191C]">
+                    <Typography
+                      as="span"
+                      variant="body3"
+                      weight={700}
+                      color="#17191C"
+                      className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FFE55C]"
+                    >
                       AI
-                    </span>
+                    </Typography>
                   )}
-                  <span className="text-sm font-bold text-[#17191C]">
+                  <Typography as="span" variant="body2" weight={700} color="#17191C">
                     {characterName || "캐릭터 이름"}
-                  </span>
+                  </Typography>
                 </div>
                 <div className="flex items-center gap-2 pl-[50px]">
                   <label className="block w-[78%] max-w-[420px]">
@@ -181,12 +194,20 @@ function SeedChatEditor({
           className="ml-auto mt-4 flex h-10 w-10 items-center justify-center rounded-full bg-[#17191C] text-2xl leading-none text-white disabled:bg-[#D8DBDE]"
           aria-label="시드 채팅 추가"
         >
-          +
+          <Typography as="span" variant="h2" weight={400} color="white">
+            +
+          </Typography>
         </button>
       </div>
-      <p className="mt-2 text-right text-xs font-medium text-[#93989F]">
+      <Typography
+        variant="body3"
+        weight={500}
+        color="#93989F"
+        align="right"
+        className="mt-2"
+      >
         {pairs.length}/8
-      </p>
+      </Typography>
     </section>
   );
 }
@@ -244,14 +265,16 @@ function SampleMessageEditor({
           onClick={addMessage}
           className="h-12 rounded-lg bg-[#FFE55C] px-4 text-sm font-bold text-[#17191C] disabled:bg-[#EDEEEF] disabled:text-[#AEB2B8]"
         >
-          추가
+          <Typography as="span" variant="body2" weight={700} color="inherit">
+            추가
+          </Typography>
         </button>
       </div>
       <div className="mt-3 flex min-h-12 flex-wrap gap-2 rounded-lg bg-[#F8F9FA] p-3">
         {messages.length === 0 ? (
-          <p className="text-sm font-medium text-[#AEB2B8]">
+          <Typography variant="body2" weight={500} color="#AEB2B8">
             예시 대화를 추가해주세요.
-          </p>
+          </Typography>
         ) : (
           messages.map((message) => (
             <button
@@ -260,14 +283,22 @@ function SampleMessageEditor({
               onClick={() => removeMessage(message)}
               className="rounded-full bg-[#17191C] px-3 py-1.5 text-xs font-bold text-white"
             >
-              {message} ×
+              <Typography as="span" variant="body3" weight={700} color="white">
+                {message} ×
+              </Typography>
             </button>
           ))
         )}
       </div>
-      <p className="mt-1 text-right text-xs font-medium text-[#93989F]">
+      <Typography
+        variant="body3"
+        weight={500}
+        color="#93989F"
+        align="right"
+        className="mt-1"
+      >
         {messages.length}/5
-      </p>
+      </Typography>
     </section>
   );
 }
@@ -283,12 +314,20 @@ function InfoTooltip({ children }: { children: ReactNode }) {
         className="flex h-8 w-8 items-center justify-center rounded-full border border-[#D8DBDE] text-sm font-bold text-[#60656C]"
         aria-label="도움말"
       >
-        i
+        <Typography as="span" variant="body2" weight={700} color="#60656C">
+          i
+        </Typography>
       </button>
       {open && (
-        <div className="absolute right-0 top-10 z-20 w-[min(300px,calc(100vw-48px))] rounded-lg bg-[#17191C] p-3 text-xs font-medium leading-5 text-white shadow-lg">
+        <Typography
+          as="div"
+          variant="body3"
+          weight={500}
+          color="white"
+          className="absolute right-0 top-10 z-20 w-[min(300px,calc(100vw-48px))] rounded-lg bg-[#17191C] p-3 shadow-lg"
+        >
           {children}
-        </div>
+        </Typography>
       )}
     </div>
   );

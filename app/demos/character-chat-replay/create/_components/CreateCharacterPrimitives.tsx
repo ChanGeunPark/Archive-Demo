@@ -1,15 +1,27 @@
+import Typography from "@/components/typography/Typography";
+
 export function InfoBanner() {
   return (
     <button
       type="button"
       className="mt-4 flex w-full items-center gap-4 rounded-lg bg-[#FFF7B8] p-3 text-left"
     >
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#FFE55C] bg-[#17191C] text-sm font-bold text-[#FFE55C] lg:h-10 lg:w-10">
+      <Typography
+        as="span"
+        variant="body2"
+        weight={700}
+        color="#FFE55C"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#FFE55C] bg-[#17191C] lg:h-10 lg:w-10"
+      >
         i
-      </span>
+      </Typography>
       <span>
-        <strong className="block text-base font-bold text-[#17191C]">고퀄 캐릭터를 만들고 싶다면?</strong>
-        <span className="text-xs font-medium text-[#60656C]">캐릭터 만들기 꿀팁</span>
+        <Typography as="strong" variant="body1" weight={700} color="#17191C">
+          고퀄 캐릭터를 만들고 싶다면?
+        </Typography>
+        <Typography as="span" variant="body3" weight={500} color="#60656C">
+          캐릭터 만들기 꿀팁
+        </Typography>
       </span>
     </button>
   );
@@ -24,9 +36,16 @@ export function Stepper({ step }: { step: number }) {
         {steps.map((item, index) => (
           <div key={item}>
             <div className={`h-1.5 rounded-full ${index <= step ? "bg-[#FFE55C]" : "bg-[#EDEEEF]"}`} />
-            <span className={`mt-2 block text-center text-[11px] font-bold ${index === step ? "text-[#17191C]" : "text-[#93989F]"}`}>
+            <Typography
+              as="span"
+              variant="caption"
+              weight={700}
+              color={index === step ? "#17191C" : "#93989F"}
+              align="center"
+              className="mt-2 block"
+            >
               {item}
-            </span>
+            </Typography>
           </div>
         ))}
       </div>
@@ -72,10 +91,25 @@ export function Card({ children, className = "" }: { children: React.ReactNode; 
 
 export function SectionTitle({ title, required = false, className = "" }: { title: string; required?: boolean; className?: string }) {
   return (
-    <h2 className={`relative inline-block text-base font-bold ${className}`}>
+    <Typography
+      as="h2"
+      variant="body1"
+      weight={700}
+      color="#17191C"
+      className={`relative inline-block ${className}`}
+    >
       {title}
-      {required && <span className="absolute -right-2 -top-0.5 text-xs text-[#EE4553]">*</span>}
-    </h2>
+      {required && (
+        <Typography
+          as="span"
+          variant="body3"
+          color="#EE4553"
+          className="absolute -right-2 -top-0.5"
+        >
+          *
+        </Typography>
+      )}
+    </Typography>
   );
 }
 
@@ -99,7 +133,14 @@ export function Segmented({
             value === option.en ? "scale-110 bg-[#FFE55C] text-[#17191C]" : "bg-[#F4F5F6] text-[#93989F]"
           }`}
         >
-          {option.ko}
+          <Typography
+            as="span"
+            variant="body2"
+            weight={600}
+            color={value === option.en ? "#17191C" : "#93989F"}
+          >
+            {option.ko}
+          </Typography>
         </button>
       ))}
     </div>
@@ -148,13 +189,17 @@ export function HelperBar({
 }) {
   return (
     <div className="mt-2 flex items-center justify-between gap-3 rounded-lg bg-[#F8F9FA] px-3 py-2">
-      <p className="text-xs font-semibold text-[#60656C]">{children}</p>
+      <Typography variant="body3" weight={600} color="#60656C">
+        {children}
+      </Typography>
       <button
         type="button"
         onClick={onAction}
         className="h-8 shrink-0 rounded-lg bg-[#FFE55C] px-3 text-xs font-bold text-[#17191C]"
       >
-        {actionLabel}
+        <Typography as="span" variant="body3" weight={700} color="#17191C">
+          {actionLabel}
+        </Typography>
       </button>
     </div>
   );

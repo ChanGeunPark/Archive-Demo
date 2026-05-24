@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Typography from "@/components/typography/Typography";
 
 const demos = [
   {
@@ -26,23 +27,38 @@ export default function Home() {
     <main className="min-h-screen bg-[#f7f4ee] text-zinc-950">
       <section className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-6 py-10 sm:px-8 lg:px-10">
         <header className="flex items-center justify-between border-b border-zinc-950/10 pb-5">
-          <Link href="/" className="text-sm font-semibold uppercase tracking-[0.18em]">
-            Archive Demo
+          <Link href="/">
+            <Typography
+              as="span"
+              variant="body2"
+              weight={600}
+              color="#18181b"
+              className="uppercase tracking-[0.18em]"
+            >
+              Archive Demo
+            </Typography>
           </Link>
-          <span className="text-sm text-zinc-600">Portfolio demo index</span>
+          <Typography as="span" variant="body2" color="#52525b">
+            Portfolio demo index
+          </Typography>
         </header>
 
         <div className="grid flex-1 items-center gap-12 py-12 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="max-w-xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">
+            <Typography
+              variant="body2"
+              weight={600}
+              color="#71717a"
+              className="uppercase tracking-[0.2em]"
+            >
               Company Work Archive
-            </p>
-            <h1 className="mt-5 text-5xl font-semibold leading-[1.02] tracking-normal text-zinc-950 sm:text-6xl">
+            </Typography>
+            <Typography variant="h1" weight={600} color="#09090b" className="mt-5">
               작업 데모를 한곳에서 빠르게 보여주는 포트폴리오 허브
-            </h1>
-            <p className="mt-6 text-lg leading-8 text-zinc-600">
+            </Typography>
+            <Typography variant="h4" weight={400} color="#52525b" className="mt-6">
               회사에서 진행했던 작업들을 데모 단위로 정리하고, 각 페이지에서 실제 흐름과 인터랙션을 확장할 수 있도록 구조를 나눴습니다.
-            </p>
+            </Typography>
           </div>
 
           <div className="grid gap-5">
@@ -62,32 +78,50 @@ export default function Home() {
                       <span className="h-12 rounded bg-white/35" />
                       <span className="h-12 rounded bg-white/20" />
                     </div>
-                    <span className="relative z-10 text-sm font-semibold">
+                    <Typography
+                      as="span"
+                      variant="body2"
+                      weight={600}
+                      color="white"
+                      className="relative z-10"
+                    >
                       0{index + 1}
-                    </span>
+                    </Typography>
                   </div>
 
                   <div className="p-6">
                     <div className="flex flex-wrap items-center gap-3">
-                      <span className="rounded-full border border-zinc-200 px-3 py-1 text-xs font-medium text-zinc-600">
+                      <Typography
+                        as="span"
+                        variant="body3"
+                        weight={500}
+                        color="#52525b"
+                        className="rounded-full border border-zinc-200 px-3 py-1"
+                      >
                         {demo.label}
-                      </span>
-                      <span className="text-sm text-zinc-500">Open demo</span>
+                      </Typography>
+                      <Typography as="span" variant="body2" color="#71717a">
+                        Open demo
+                      </Typography>
                     </div>
-                    <h2 className="mt-5 text-2xl font-semibold tracking-normal text-zinc-950">
+                    <Typography variant="h2" weight={600} color="#09090b" className="mt-5">
                       {demo.title}
-                    </h2>
-                    <p className="mt-3 text-base leading-7 text-zinc-600">
+                    </Typography>
+                    <Typography variant="body1" color="#52525b" className="mt-3">
                       {demo.description}
-                    </p>
+                    </Typography>
                     <div className="mt-6 flex flex-wrap gap-2">
                       {demo.stats.map((stat) => (
-                        <span
+                        <Typography
+                          as="span"
+                          variant="body3"
+                          weight={500}
+                          color="#52525b"
                           key={stat}
-                          className="rounded bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-600"
+                          className="rounded bg-zinc-100 px-2.5 py-1"
                         >
                           {stat}
-                        </span>
+                        </Typography>
                       ))}
                     </div>
                   </div>

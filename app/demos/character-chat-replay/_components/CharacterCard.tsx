@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { DemoPublicCharacter } from "@/lib/ai-chat-demo/types";
+import Typography from "@/components/typography/Typography";
 
 type CharacterCardProps = {
   character: DemoPublicCharacter;
@@ -28,17 +29,35 @@ export function CharacterCard({ character, onSelect }: CharacterCardProps) {
             className={`h-[92px] w-[92px] bg-gradient-to-br ${character.imageGradient}`}
           />
         )}
-        <div className="absolute bottom-0 left-0 flex w-full items-center justify-center bg-black/60 py-0.5 text-[11px] font-semibold text-white">
+        <Typography
+          as="div"
+          variant="caption"
+          weight={600}
+          color="white"
+          align="center"
+          className="absolute bottom-0 left-0 flex w-full items-center justify-center bg-black/60 py-0.5"
+        >
           {character.totalChatCount.toLocaleString()}
-        </div>
+        </Typography>
       </div>
       <div className="mt-2 flex h-[46px] flex-col items-center justify-center text-center">
-        <h3 className="max-w-[92px] truncate text-sm font-bold">
+        <Typography
+          variant="body2"
+          weight={700}
+          color="#17191C"
+          truncate
+          className="max-w-[92px]"
+        >
           {character.name}
-        </h3>
-        <p className="mt-1 max-w-[96px] truncate text-[11px] text-[#72777E]">
+        </Typography>
+        <Typography
+          variant="caption"
+          color="#72777E"
+          truncate
+          className="mt-1 max-w-[96px]"
+        >
           {character.tags.map((tag) => `#${tag}`).join(" ")}
-        </p>
+        </Typography>
       </div>
     </button>
   );

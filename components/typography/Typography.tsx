@@ -6,6 +6,7 @@ import {
   ELLIPSIS_CLASS,
   resolveColorClass,
   resolveWeightClass,
+  VARIANT_CLASS,
   VARIANT_ELEMENT,
   WORD_BREAK_CLASS,
 } from "./typography.styles";
@@ -13,6 +14,7 @@ import {
 function Typography(props: TypographyProps) {
   const {
     variant,
+    as,
     children,
     className,
     align = "inherit",
@@ -35,7 +37,7 @@ function Typography(props: TypographyProps) {
 
   const styleClass = cls(
     colorClassName,
-    variant,
+    VARIANT_CLASS[variant],
     ALIGN_CLASS[align],
     resolveWeightClass(resolvedWeight),
     wordBreak ? WORD_BREAK_CLASS[wordBreak] : "",
@@ -45,7 +47,7 @@ function Typography(props: TypographyProps) {
   );
 
   return createElement(
-    VARIANT_ELEMENT[variant],
+    as ?? VARIANT_ELEMENT[variant],
     {
       ...rest,
       className: styleClass,

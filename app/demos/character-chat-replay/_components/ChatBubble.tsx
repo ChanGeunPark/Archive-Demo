@@ -3,6 +3,7 @@ import type {
   DemoPublicCharacter,
 } from "@/lib/ai-chat-demo/types";
 import { CharacterAvatar } from "./CharacterAvatar";
+import Typography from "@/components/typography/Typography";
 
 type ChatBubbleProps = {
   character: DemoPublicCharacter;
@@ -25,20 +26,26 @@ export function ChatBubble({
             character={character}
             className="h-8 w-8 rounded-full"
           />
-          <span className="text-sm font-bold">{character.name}</span>
+          <Typography as="span" variant="body2" weight={700} color="#17191C">
+            {character.name}
+          </Typography>
         </div>
       )}
       <div className={`flex w-full items-end ${isHuman ? "justify-end" : ""}`}>
-        <span
-          className={`relative max-w-[80%] break-words rounded-lg px-4 py-2 text-sm leading-6 ${
+        <Typography
+          as="span"
+          variant="body2"
+          color="#17191C"
+          wordBreak="words"
+          className={`relative max-w-[80%] rounded-lg px-4 py-2 ${
             isHuman
-              ? "rounded-tr-none bg-[#FFED8F] text-[#17191C]"
-              : "ml-10 rounded-tl-none bg-white text-[#17191C]"
+              ? "rounded-tr-none bg-[#FFED8F]"
+              : "ml-10 rounded-tl-none bg-white"
           }`}
         >
           {message.content}
           {streaming && <span className="ml-0.5 animate-pulse">|</span>}
-        </span>
+        </Typography>
       </div>
     </div>
   );

@@ -89,6 +89,19 @@ export const VARIANT_ELEMENT: Record<
   caption: "p",
 };
 
+export const VARIANT_CLASS: Record<TextStyleType, string> = {
+  h1: "text-[40px] leading-[48px] font-bold tracking-normal sm:text-[48px] sm:leading-[56px]",
+  h2: "text-2xl leading-8 font-bold tracking-normal",
+  h3: "text-xl leading-7 font-bold tracking-normal",
+  h4: "text-lg leading-7 font-bold tracking-normal",
+  h5: "text-base leading-6 font-bold tracking-normal",
+  h6: "text-sm leading-5 font-bold tracking-normal",
+  body1: "text-base leading-7 tracking-normal",
+  body2: "text-sm leading-6 tracking-normal",
+  body3: "text-xs leading-5 tracking-normal",
+  caption: "text-[11px] leading-4 tracking-normal",
+};
+
 const GRAY_COLOR_SCALE = new Set<number>(
   Object.keys(GRAY_COLOR_CLASS).map(Number),
 );
