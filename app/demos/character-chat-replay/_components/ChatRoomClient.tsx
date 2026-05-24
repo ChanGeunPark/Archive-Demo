@@ -55,7 +55,10 @@ export default function ChatRoomClient({
     nextRoomId: string,
     nextMessages: DemoChatMessage[],
   ) {
-    queryClient.setQueryData(aiChatDemoKeys.history(nextRoomId), nextMessages);
+    queryClient.setQueryData<DemoChatMessage[]>(
+      aiChatDemoKeys.history(nextRoomId),
+      nextMessages,
+    );
   }
 
   const visibleMessages = useMemo(() => {

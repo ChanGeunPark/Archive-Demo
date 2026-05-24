@@ -13,12 +13,29 @@ import {
 } from "@/lib/ai-chat-demo/api-client";
 import { aiChatDemoKeys } from "@/lib/ai-chat-demo/query-keys";
 import type {
-  DemoChatMessage,
   DemoPublicCharacter,
 } from "@/lib/ai-chat-demo/types";
+import type {
+  CreateDemoCharacterInput,
+  CreateDemoCharacterResult,
+  CreateDemoChatRoomInput,
+  CreateDemoChatRoomResult,
+  DeleteDemoCharacterInput,
+  DeleteDemoCharacterResult,
+  DeleteDemoChatRoomResult,
+  FetchDemoCharactersResult,
+  FetchDemoChatHistoryResult,
+  PreviewChatInput,
+  PreviewChatResult,
+  StreamingChatInput,
+  StreamingChatResult,
+} from "@/lib/ai-chat-demo/api-client";
+import type { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
 
 // 캐릭터 목록 조회
-export function useDemoCharactersQuery(initialData?: DemoPublicCharacter[]) {
+export function useDemoCharactersQuery(
+  initialData?: FetchDemoCharactersResult,
+): UseQueryResult<FetchDemoCharactersResult, Error> {
   return useQuery({
     queryKey: aiChatDemoKeys.characters(),
     queryFn: fetchDemoCharacters,
@@ -30,8 +47,8 @@ export function useDemoCharactersQuery(initialData?: DemoPublicCharacter[]) {
 // 채팅방 메시지 조회
 export function useDemoChatHistoryQuery(
   roomId: string,
-  initialData?: DemoChatMessage[],
-) {
+  initialData?: FetchDemoChatHistoryResult,
+): UseQueryResult<FetchDemoChatHistoryResult, Error> {
   return useQuery({
     queryKey: aiChatDemoKeys.history(roomId),
     queryFn: () => fetchDemoChatHistory(roomId),
@@ -42,18 +59,25 @@ export function useDemoChatHistoryQuery(
 }
 
 // 캐릭터 생성
-export function useCreateDemoCharacterMutation() {
+export function useCreateDemoCharacterMutation(): UseMutationResult<
+  CreateDemoCharacterResult,
+  Error,
+  CreateDemoCharacterInput
+> {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: createDemoCharacter,
     onSuccess: (data) => {
-      queryClient.setQueryData(
+      queryClient.setQueryData<DemoPublicCharacter>(
         aiChatDemoKeys.character(data.character.id),
         data.character,
       );
       if (data.roomId) {
-        queryClient.setQueryData(aiChatDemoKeys.history(data.roomId), []);
+        queryClient.setQueryData<FetchDemoChatHistoryResult>(
+          aiChatDemoKeys.history(data.roomId),
+          [],
+        );
       }
       queryClient.invalidateQueries({ queryKey: aiChatDemoKeys.characters() });
     },
@@ -61,17 +85,24 @@ export function useCreateDemoCharacterMutation() {
 }
 
 // 채팅방 생성
-export function useCreateDemoChatRoomMutation() {
+export function useCreateDemoChatRoomMutation(): UseMutationResult<
+  CreateDemoChatRoomResult,
+  Error,
+  CreateDemoChatRoomInput
+> {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: createDemoChatRoom,
-    onSuccess: (data: { roomId: string; characterId: string }) => {
+    onSuccess: (data) => {
       const { roomId, characterId } = data;
-      queryClient.setQueryData(aiChatDemoKeys.history(roomId), []);
-      queryClient.setQueryData(
+      queryClient.setQueryData<FetchDemoChatHistoryResult>(
+        aiChatDemoKeys.history(roomId),
+        [],
+      );
+      queryClient.setQueryData<FetchDemoCharactersResult>(
         aiChatDemoKeys.characters(),
-        (old: DemoPublicCharacter[]) =>
+        (old: DemoPublicCharacter[] | undefined) =>
           old?.map((character) =>
             character.id === characterId
               ? {
@@ -86,7 +117,11 @@ export function useCreateDemoChatRoomMutation() {
 }
 
 // 캐릭터 삭제
-export function useDeleteDemoCharacterMutation() {
+export function useDeleteDemoCharacterMutation(): UseMutationResult<
+  DeleteDemoCharacterResult,
+  Error,
+  DeleteDemoCharacterInput
+> {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -101,7 +136,11 @@ export function useDeleteDemoCharacterMutation() {
 }
 
 // 채팅방 삭제
-export function useDeleteDemoChatRoomMutation() {
+export function useDeleteDemoChatRoomMutation(): UseMutationResult<
+  DeleteDemoChatRoomResult,
+  Error,
+  string
+> {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -112,13 +151,21 @@ export function useDeleteDemoChatRoomMutation() {
   });
 }
 
-export function usePreviewChatMutation() {
+export function usePreviewChatMutation(): UseMutationResult<
+  PreviewChatResult,
+  Error,
+  PreviewChatInput
+> {
   return useMutation({
     mutationFn: requestPreviewChat,
   });
 }
 
-export function useStreamingChatMutation() {
+export function useStreamingChatMutation(): UseMutationResult<
+  StreamingChatResult,
+  Error,
+  StreamingChatInput
+> {
   return useMutation({
     mutationFn: requestStreamingChat,
   });

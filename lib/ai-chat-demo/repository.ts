@@ -2,6 +2,7 @@ import {
   createSupabaseAdminClient,
   hasSupabaseAdminEnv,
 } from "@/lib/supabase/admin";
+import type { Tables, TablesInsert } from "@/lib/supabase/database.types";
 import {
   addDemoCharacter,
   deleteDemoCharacter,
@@ -14,41 +15,12 @@ import type {
   DemoPublicCharacter,
 } from "./types";
 
-type CharacterRow = {
-  id: string;
-  name: string;
-  role: string;
-  category: string | null;
-  gender: string | null;
-  image_url: string | null;
-  image_id: string | null;
-  banner_image_url: string | null;
-  banner_image_id: string | null;
-  image_gradient: string;
-  tags: string[] | null;
-  description: string;
-  status_message: string | null;
-  world_view: string;
-  creator_id: string | null;
-  opening_message: string;
-  seed_chat: string[] | null;
-  sample_messages: string[] | null;
-  total_chat_count: number | null;
-};
-
-type PrivateConfigRow = {
-  character_id: string;
-  secret_context: string | null;
-};
-
-type MessageRow = {
-  id: string;
-  room_id: string;
-  character_id: string;
-  role: "human" | "ai";
-  content: string;
-  created_at: string;
-};
+type CharacterRow = Tables<"ai_demo_characters">;
+type PrivateConfigRow = Pick<
+  Tables<"ai_demo_character_private_configs">,
+  "character_id" | "secret_context"
+>;
+type MessageRow = Tables<"ai_demo_chat_messages">;
 
 function mapCharacter(row: CharacterRow): DemoCharacter {
   return {
@@ -73,6 +45,10 @@ function mapCharacter(row: CharacterRow): DemoCharacter {
     sampleMessages: row.sample_messages ?? [],
     totalChatCount: row.total_chat_count ?? 0,
   };
+}
+
+function mapMessageRole(role: MessageRow["role"]): DemoChatMessage["role"] {
+  return role === "human" ? "human" : "ai";
 }
 
 export function toPublicCharacter(
@@ -128,29 +104,30 @@ export async function createDemoCharacter(input: {
   }
 
   const supabase = createSupabaseAdminClient();
+  const characterInsert: TablesInsert<"ai_demo_characters"> = {
+    id: input.id,
+    name: input.name,
+    role: input.role,
+    category: input.category,
+    gender: input.gender,
+    image_url: input.imageUrl,
+    image_id: input.imageId,
+    banner_image_url: input.bannerImageUrl,
+    banner_image_id: input.bannerImageId,
+    image_gradient: input.imageGradient,
+    tags: input.tags,
+    description: input.description,
+    status_message: input.statusMessage,
+    world_view: input.worldView,
+    creator_id: input.creatorId,
+    opening_message: input.openingMessage,
+    seed_chat: input.seedChat,
+    sample_messages: input.sampleMessages,
+    total_chat_count: 0,
+  };
   const { data, error } = await supabase
     .from("ai_demo_characters")
-    .insert({
-      id: input.id,
-      name: input.name,
-      role: input.role,
-      category: input.category,
-      gender: input.gender,
-      image_url: input.imageUrl,
-      image_id: input.imageId,
-      banner_image_url: input.bannerImageUrl,
-      banner_image_id: input.bannerImageId,
-      image_gradient: input.imageGradient,
-      tags: input.tags,
-      description: input.description,
-      status_message: input.statusMessage,
-      world_view: input.worldView,
-      creator_id: input.creatorId,
-      opening_message: input.openingMessage,
-      seed_chat: input.seedChat,
-      sample_messages: input.sampleMessages,
-      total_chat_count: 0,
-    })
+    .insert(characterInsert)
     .select("*")
     .single();
 
@@ -158,18 +135,17 @@ export async function createDemoCharacter(input: {
     throw new Error(error?.message || "Failed to create character.");
   }
 
-  const character = mapCharacter(data as CharacterRow);
+  const character = mapCharacter(data);
 
   if (input.secretContext) {
+    const privateConfigUpsert: TablesInsert<"ai_demo_character_private_configs"> =
+      {
+        character_id: input.id,
+        secret_context: input.secretContext,
+      };
     const { error: privateConfigError } = await supabase
       .from("ai_demo_character_private_configs")
-      .upsert(
-        {
-          character_id: input.id,
-          secret_context: input.secretContext,
-        },
-        { onConflict: "character_id" },
-      );
+      .upsert(privateConfigUpsert, { onConflict: "character_id" });
 
     if (privateConfigError) {
       throw new Error(
@@ -214,7 +190,7 @@ function mapMessage(row: MessageRow): DemoChatMessage {
     id: row.id,
     roomId: row.room_id,
     characterId: row.character_id,
-    role: row.role,
+    role: mapMessageRole(row.role),
     content: row.content,
     createdAt: row.created_at,
   };
@@ -264,7 +240,7 @@ export async function getDemoCharacters() {
     return demoCharacters;
   }
 
-  return (data as CharacterRow[]).map(mapCharacter);
+  return data.map(mapCharacter);
 }
 
 export async function getDemoCharacter(characterId: string) {
@@ -284,7 +260,7 @@ export async function getDemoCharacter(characterId: string) {
     return findDemoCharacter(characterId) ?? null;
   }
 
-  const character = mapCharacter(data as CharacterRow);
+  const character = mapCharacter(data);
   const { data: privateConfig, error: privateConfigError } = await supabase
     .from("ai_demo_character_private_configs")
     .select("character_id, secret_context")
@@ -298,10 +274,11 @@ export async function getDemoCharacter(characterId: string) {
     );
   }
 
+  const privateConfigRow: PrivateConfigRow | null = privateConfig;
+
   return {
     ...character,
-    secretContext:
-      (privateConfig as PrivateConfigRow | null)?.secret_context ?? "",
+    secretContext: privateConfigRow?.secret_context ?? "",
   };
 }
 
@@ -322,7 +299,7 @@ export async function getDemoChatHistory(roomId: string) {
     return [];
   }
 
-  return (data as MessageRow[]).map(mapMessage);
+  return data.map(mapMessage);
 }
 
 export async function createDemoChatRoom(input: {
@@ -334,14 +311,14 @@ export async function createDemoChatRoom(input: {
   }
 
   const supabase = createSupabaseAdminClient();
-  const { error: roomError } = await supabase.from("ai_demo_chat_rooms").upsert(
-    {
-      id: input.roomId,
-      character_id: input.characterId,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "id" },
-  );
+  const roomUpsert: TablesInsert<"ai_demo_chat_rooms"> = {
+    id: input.roomId,
+    character_id: input.characterId,
+    updated_at: new Date().toISOString(),
+  };
+  const { error: roomError } = await supabase
+    .from("ai_demo_chat_rooms")
+    .upsert(roomUpsert, { onConflict: "id" });
 
   const { data: character, error: characterError } = await supabase
     .from("ai_demo_characters")
@@ -410,15 +387,16 @@ export async function saveDemoMessage(input: {
   });
 
   const supabase = createSupabaseAdminClient();
+  const messageInsert: TablesInsert<"ai_demo_chat_messages"> = {
+    room_id: input.roomId,
+    character_id: input.characterId,
+    role: input.role,
+    content: input.content,
+  };
 
   const { data, error } = await supabase
     .from("ai_demo_chat_messages")
-    .insert({
-      room_id: input.roomId,
-      character_id: input.characterId,
-      role: input.role,
-      content: input.content,
-    })
+    .insert(messageInsert)
     .select("*")
     .single();
 
@@ -427,5 +405,5 @@ export async function saveDemoMessage(input: {
     return null;
   }
 
-  return mapMessage(data as MessageRow);
+  return mapMessage(data);
 }
