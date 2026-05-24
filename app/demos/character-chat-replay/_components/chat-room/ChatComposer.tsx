@@ -16,11 +16,13 @@ export function ChatComposer({
   onChange,
   onSubmit,
 }: ChatComposerProps) {
+  // --- Event Handlers ---
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     onSubmit();
   }
 
+  // --- Render ---
   return (
     <form
       onSubmit={handleSubmit}

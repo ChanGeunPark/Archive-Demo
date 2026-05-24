@@ -12,9 +12,7 @@ import {
   requestStreamingChat,
 } from "@/lib/ai-chat-demo/api-client";
 import { aiChatDemoKeys } from "@/lib/ai-chat-demo/query-keys";
-import type {
-  DemoPublicCharacter,
-} from "@/lib/ai-chat-demo/types";
+import type { DemoPublicCharacter } from "@/lib/ai-chat-demo/types";
 import type {
   CreateDemoCharacterInput,
   CreateDemoCharacterResult,
@@ -54,7 +52,7 @@ export function useDemoChatHistoryQuery(
     queryFn: () => fetchDemoChatHistory(roomId),
     enabled: Boolean(roomId),
     initialData,
-    initialDataUpdatedAt: initialData ? 0 : undefined,
+    refetchOnMount: initialData ? false : true,
   });
 }
 

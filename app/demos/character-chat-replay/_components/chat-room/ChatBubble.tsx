@@ -8,14 +8,9 @@ import Typography from "@/components/typography/Typography";
 type ChatBubbleProps = {
   character: DemoPublicCharacter;
   message: DemoChatMessage;
-  streaming?: boolean;
 };
 
-export function ChatBubble({
-  character,
-  message,
-  streaming = false,
-}: ChatBubbleProps) {
+export function ChatBubble({ character, message }: ChatBubbleProps) {
   const isHuman = message.role === "human";
 
   return (
@@ -44,7 +39,6 @@ export function ChatBubble({
           }`}
         >
           {message.content}
-          {streaming && <span className="ml-0.5 animate-pulse">|</span>}
         </Typography>
       </div>
     </div>

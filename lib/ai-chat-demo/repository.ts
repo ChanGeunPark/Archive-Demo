@@ -1,20 +1,22 @@
+/**
+ * AI 채팅 데모의 Supabase 데이터 접근 계층.
+ *
+ * 캐릭터·채팅방·메시지 CRUD를 담당하며, DB 행(row) ↔ 앱 도메인 타입 변환을 수행합니다.
+ * Supabase 환경 변수가 없거나 쿼리가 실패하면 빈 배열/null을 반환하고 콘솔에 경고를 남깁니다.
+ */
 import {
   createSupabaseAdminClient,
   hasSupabaseAdminEnv,
 } from "@/lib/supabase/admin";
 import type { Tables, TablesInsert } from "@/lib/supabase/database.types";
-import {
-  addDemoCharacter,
-  deleteDemoCharacter,
-  demoCharacters,
-  findDemoCharacter,
-} from "./mock-data";
+
 import type {
   DemoCharacter,
   DemoChatMessage,
   DemoPublicCharacter,
 } from "./types";
 
+// Supabase 테이블 행 타입 별칭
 type CharacterRow = Tables<"ai_demo_characters">;
 type PrivateConfigRow = Pick<
   Tables<"ai_demo_character_private_configs">,
@@ -22,6 +24,7 @@ type PrivateConfigRow = Pick<
 >;
 type MessageRow = Tables<"ai_demo_chat_messages">;
 
+// DB 캐릭터 행을 앱 도메인 타입으로 변환 (secretContext는 별도 테이블에서 조회)
 function mapCharacter(row: CharacterRow): DemoCharacter {
   return {
     id: row.id,
@@ -47,10 +50,12 @@ function mapCharacter(row: CharacterRow): DemoCharacter {
   };
 }
 
+// DB 메시지 role("human" | "assistant" 등)을 앱 role("human" | "ai")로 정규화
 function mapMessageRole(role: MessageRow["role"]): DemoChatMessage["role"] {
   return role === "human" ? "human" : "ai";
 }
 
+// 클라이언트에 노출해도 되는 공개 필드만 추출 (secretContext·worldView·creatorId 제외)
 export function toPublicCharacter(
   character: DemoCharacter,
 ): DemoPublicCharacter {
@@ -75,6 +80,7 @@ export function toPublicCharacter(
   };
 }
 
+// 캐릭터 생성 — 공개 정보는 ai_demo_characters, 비밀 설정은 private_configs 테이블에 저장
 export async function createDemoCharacter(input: {
   id: string;
   name: string;
@@ -96,13 +102,6 @@ export async function createDemoCharacter(input: {
   seedChat: string[];
   sampleMessages: string[];
 }) {
-  if (!hasSupabaseAdminEnv()) {
-    return addDemoCharacter({
-      ...input,
-      totalChatCount: 0,
-    } satisfies DemoCharacter);
-  }
-
   const supabase = createSupabaseAdminClient();
   const characterInsert: TablesInsert<"ai_demo_characters"> = {
     id: input.id,
@@ -137,6 +136,7 @@ export async function createDemoCharacter(input: {
 
   const character = mapCharacter(data);
 
+  // AI 프롬프트용 비밀 컨텍스트는 별도 테이블에 upsert
   if (input.secretContext) {
     const privateConfigUpsert: TablesInsert<"ai_demo_character_private_configs"> =
       {
@@ -161,11 +161,8 @@ export async function createDemoCharacter(input: {
   };
 }
 
+// 캐릭터 삭제 — 존재하지 않으면 null, 성공 시 삭제 직전 데이터 반환
 export async function deleteDemoCharacterById(characterId: string) {
-  if (!hasSupabaseAdminEnv()) {
-    return deleteDemoCharacter(characterId);
-  }
-
   const character = await getDemoCharacter(characterId);
 
   if (!character) {
@@ -185,6 +182,7 @@ export async function deleteDemoCharacterById(characterId: string) {
   return character;
 }
 
+// DB 메시지 행을 앱 도메인 타입으로 변환
 function mapMessage(row: MessageRow): DemoChatMessage {
   return {
     id: row.id,
@@ -196,6 +194,7 @@ function mapMessage(row: MessageRow): DemoChatMessage {
   };
 }
 
+// roomId 구성 요소를 URL-safe 형태로 정규화 (공백·특수문자 → 하이픈, 길이 제한)
 function normalizeRoomIdSegment(value: string, maxLength: number) {
   return value
     .trim()
@@ -205,6 +204,7 @@ function normalizeRoomIdSegment(value: string, maxLength: number) {
     .slice(0, maxLength);
 }
 
+// `{characterId}-{roomId}` 형식의 고유 채팅방 ID 생성
 export function buildDemoChatRoomId(input: {
   characterId: string;
   roomId: string;
@@ -215,6 +215,7 @@ export function buildDemoChatRoomId(input: {
   return [characterId, roomId].filter(Boolean).join("-");
 }
 
+// Supabase 오류 시 경고 로그 출력 (로컬 데모 데이터로 폴백할 때 사용)
 function logSupabaseFallback(scope: string, error: unknown) {
   const details =
     error && typeof error === "object"
@@ -224,11 +225,8 @@ function logSupabaseFallback(scope: string, error: unknown) {
   console.warn(`[ai-demo] ${scope}. Falling back to local demo data.`, details);
 }
 
+// 캐릭터 목록 조회 (생성일 오름차순)
 export async function getDemoCharacters() {
-  if (!hasSupabaseAdminEnv()) {
-    return demoCharacters;
-  }
-
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("ai_demo_characters")
@@ -237,17 +235,14 @@ export async function getDemoCharacters() {
 
   if (error || !data) {
     logSupabaseFallback("Failed to load characters", error);
-    return demoCharacters;
+    return [];
   }
 
   return data.map(mapCharacter);
 }
 
+// 단일 캐릭터 조회 — private_configs에서 secretContext를 추가로 병합
 export async function getDemoCharacter(characterId: string) {
-  if (!hasSupabaseAdminEnv()) {
-    return findDemoCharacter(characterId) ?? null;
-  }
-
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("ai_demo_characters")
@@ -257,7 +252,7 @@ export async function getDemoCharacter(characterId: string) {
 
   if (error || !data) {
     logSupabaseFallback("Failed to load character", error);
-    return findDemoCharacter(characterId) ?? null;
+    return null;
   }
 
   const character = mapCharacter(data);
@@ -282,6 +277,7 @@ export async function getDemoCharacter(characterId: string) {
   };
 }
 
+// 채팅방 메시지 히스토리 조회 (시간순)
 export async function getDemoChatHistory(roomId: string) {
   if (!hasSupabaseAdminEnv()) {
     return [];
@@ -302,6 +298,7 @@ export async function getDemoChatHistory(roomId: string) {
   return data.map(mapMessage);
 }
 
+// 채팅방 생성/갱신 — upsert 후 캐릭터 total_chat_count +1
 export async function createDemoChatRoom(input: {
   roomId: string;
   characterId: string;
@@ -353,6 +350,7 @@ export async function createDemoChatRoom(input: {
   };
 }
 
+// 채팅방 삭제
 export async function deleteDemoChatRoomById(roomId: string) {
   if (!hasSupabaseAdminEnv()) {
     return { id: roomId };
@@ -371,6 +369,7 @@ export async function deleteDemoChatRoomById(roomId: string) {
   return { id: roomId };
 }
 
+// 메시지 저장 — 채팅방이 없으면 createDemoChatRoom으로 먼저 생성
 export async function saveDemoMessage(input: {
   roomId: string;
   characterId: string;

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { notFound } from "next/navigation";
-import ChatRoomClient from "../../_components/ChatRoomClient";
+import ChatRoomClient from "../../_components/chat-room/ChatRoomClient";
 import {
   getDemoCharacter,
   getDemoChatHistory,
@@ -31,6 +31,7 @@ export default async function CharacterChatRoomPage({
   const initialRoomId = roomId || randomUUID();
   const initialMessages = await getDemoChatHistory(initialRoomId);
 
+  // --- Render ---
   return (
     <ChatRoomClient
       character={toPublicCharacter(character)}

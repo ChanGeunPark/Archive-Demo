@@ -10,6 +10,7 @@ import {
 } from "@/lib/ai-chat-demo/api";
 import type { DemoPublicCharacter } from "@/lib/ai-chat-demo/types";
 import Typography from "@/components/typography/Typography";
+import { cls } from "@/lib/client/utils";
 
 type CharacterPreviewBottomSheetProps = {
   character: DemoPublicCharacter | null;
@@ -20,15 +21,20 @@ export function CharacterPreviewBottomSheet({
   character,
   onClose,
 }: CharacterPreviewBottomSheetProps) {
+  // --- Router / API ---
   const router = useRouter();
   const createRoomMutation = useCreateDemoChatRoomMutation();
   const deleteCharacterMutation = useDeleteDemoCharacterMutation();
+
+  // --- State Management ---
   const [roomId, setRoomId] = useState("");
   const [deleteId, setDeleteId] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [deleteMessage, setDeleteMessage] = useState("");
   const loading = createRoomMutation.isPending;
   const deleteLoading = deleteCharacterMutation.isPending;
+
+  // --- Normalization ---
   const normalizedRoomId = useMemo(
     () => roomId.trim().replace(/\s+/g, "-").slice(0, 80),
     [roomId],
@@ -38,6 +44,7 @@ export function CharacterPreviewBottomSheet({
     [deleteId],
   );
 
+  // --- Event Handlers ---
   async function handleStartChat(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!character || !normalizedRoomId || loading) return;
@@ -130,7 +137,12 @@ export function CharacterPreviewBottomSheet({
             <CharacterPreviewHero character={character} />
 
             <label className="mt-4 block">
-              <Typography as="span" variant="body2" weight={700} color="#17191C">
+              <Typography
+                as="span"
+                variant="body2"
+                weight={700}
+                color="#17191C"
+              >
                 채팅 ID
               </Typography>
               <input
@@ -175,14 +187,24 @@ export function CharacterPreviewBottomSheet({
               transition={{ duration: 0.16 }}
               className="mt-4 h-12 w-full rounded-full rounded-tr-none bg-[#FFE55C] text-base font-bold text-[#17191C] transition-colors disabled:bg-[#EDEEEF] disabled:text-[#AEB2B8]"
             >
-              <Typography as="span" variant="body1" weight={700} color="inherit">
+              <Typography
+                as="span"
+                variant="body1"
+                weight={700}
+                color="inherit"
+              >
                 {loading
                   ? "채팅방 생성 중..."
                   : `${character.name}와(과) 대화하기`}
               </Typography>
             </motion.button>
 
-            <Typography variant="body1" weight={700} color="#17191C" className="mt-6">
+            <Typography
+              variant="body1"
+              weight={700}
+              color="#17191C"
+              className="mt-6"
+            >
               캐릭터 소개
             </Typography>
             <div className="mt-2 border-l-2 border-[#EDEEEF] py-1 pl-2">
@@ -218,7 +240,12 @@ export function CharacterPreviewBottomSheet({
                 권한을 확인합니다.
               </Typography>
               <label className="mt-3 block">
-                <Typography as="span" variant="body3" weight={700} color="#9B1C27">
+                <Typography
+                  as="span"
+                  variant="body3"
+                  weight={700}
+                  color="#9B1C27"
+                >
                   삭제 ID
                 </Typography>
                 <input
@@ -261,7 +288,12 @@ export function CharacterPreviewBottomSheet({
                 onClick={handleDeleteCharacter}
                 className="mt-3 h-10 w-full rounded-full bg-[#EE4553] text-sm font-bold text-white disabled:bg-[#EDEEEF] disabled:text-[#AEB2B8]"
               >
-                <Typography as="span" variant="body2" weight={700} color="inherit">
+                <Typography
+                  as="span"
+                  variant="body2"
+                  weight={700}
+                  color="inherit"
+                >
                   {deleteLoading ? "삭제 중..." : "캐릭터 삭제하기"}
                 </Typography>
               </button>
@@ -278,6 +310,9 @@ function CharacterPreviewHero({
 }: {
   character: DemoPublicCharacter;
 }) {
+  const [isBannerImageLoaded, setIsBannerImageLoaded] = useState(false);
+  const [isProfileImageLoaded, setIsProfileImageLoaded] = useState(false);
+
   return (
     <div className="relative flex aspect-square w-full flex-col items-center justify-end overflow-hidden rounded-xl p-4">
       {character.bannerImageUrl ? (
@@ -286,8 +321,12 @@ function CharacterPreviewHero({
           alt=""
           fill
           sizes="(max-width: 500px) 100vw, 500px"
-          className="object-cover brightness-[40%]"
+          className={cls(
+            "object-cover brightness-[40%]",
+            !isBannerImageLoaded && "animate-pulse bg-gray-200",
+          )}
           unoptimized
+          onLoad={() => setIsBannerImageLoaded(true)}
         />
       ) : (
         <div
@@ -312,12 +351,13 @@ function CharacterPreviewHero({
           alt={`${character.name} profile`}
           width={80}
           height={80}
-          className="relative h-20 w-20 rounded-full object-cover"
+          className={cls("relative h-20 w-20 rounded-full object-cover")}
           unoptimized
+          onLoad={() => setIsProfileImageLoaded(true)}
         />
       ) : (
         <span
-          className={`relative h-20 w-20 rounded-full bg-gradient-to-br ${character.imageGradient}`}
+          className={`relative h-20 w-20 rounded-full animate-pulse bg-gradient-to-br ${character.imageGradient}`}
         />
       )}
       <Typography variant="h3" color="white" className="relative mt-2">

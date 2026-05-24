@@ -1,27 +1,24 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
+import Typography from "@/components/typography/Typography";
 import { useCreateDemoCharacterMutation } from "@/lib/ai-chat-demo/api";
 import { createCharacterMockForms } from "@/lib/ai-chat-demo/mock-data";
-import { StepButton, Stepper } from "./_components/CreateCharacterPrimitives";
 import {
-  BasicInfoStep,
-  CharacterSettingsStep,
-  ChatSettingsStep,
-  PreviewChat,
-  ProfileStep,
-} from "./_components/CreateCharacterSteps";
-import {
+  CreateCharacterHeader,
+  CreateCharacterStep,
+  CreatorIdModal,
+  StepActions,
+  Stepper,
   initialForm,
+  normalizeCreatorId,
   type FormState,
-} from "./_components/create-character.types";
-import KeyboardArrowLeftIcon from "@/components/icons/arrow/KeyboardArrowLeftIcon";
-import Typography from "@/components/typography/Typography";
+} from "./_components";
 
 export default function CreateCharacterClient() {
+  // --- Router / API ---
   const router = useRouter();
   const createCharacterMutation = useCreateDemoCharacterMutation();
   const {
@@ -33,6 +30,8 @@ export default function CreateCharacterClient() {
   } = useForm<FormState>({
     defaultValues: initialForm,
   });
+
+  // --- State Management ---
   const [step, setStep] = useState(0);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [bannerImage, setBannerImage] = useState<File | null>(null);
@@ -46,15 +45,19 @@ export default function CreateCharacterClient() {
   const [pendingFormValues, setPendingFormValues] = useState<FormState | null>(
     null,
   );
+
+  // --- React Hook Form ---
   const form = useWatch({ control }) as FormState;
   const loading = createCharacterMutation.isPending;
 
+  // --- Effects ---
   useEffect(() => {
     (Object.keys(initialForm) as (keyof FormState)[]).forEach((key) => {
       register(key);
     });
   }, [register]);
 
+  // --- Normalization ---
   const canSubmit = useMemo(
     () =>
       Boolean(
@@ -94,6 +97,7 @@ export default function CreateCharacterClient() {
     step,
   ]);
 
+  // --- Effects ---
   useEffect(() => {
     if (step !== 3) return;
 
@@ -104,6 +108,7 @@ export default function CreateCharacterClient() {
     return () => window.clearTimeout(timeoutId);
   }, [step]);
 
+  // --- Event Handlers ---
   function updateForm(key: keyof FormState, value: string) {
     setValue(key, value, {
       shouldDirty: true,
@@ -113,11 +118,13 @@ export default function CreateCharacterClient() {
     setCanCreateFromTestStep(false);
   }
 
+  // --- Event Handlers [스탭 변경] ---
   function handleStepChange(action: React.SetStateAction<number>) {
     setCanCreateFromTestStep(false);
     setStep(action);
   }
 
+  // --- Event Handlers [이미지 업로드] ---
   function handleImage(file: File | null, type: "profile" | "banner") {
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
@@ -138,6 +145,7 @@ export default function CreateCharacterClient() {
     setCanCreateFromTestStep(false);
   }
 
+  // --- Event Handlers [폼 초기화] ---
   function resetForm() {
     reset(initialForm);
     setProfileImage(null);
@@ -153,6 +161,7 @@ export default function CreateCharacterClient() {
     setStep(0);
   }
 
+  // --- Event Handlers [목업 데이터 적용] ---
   function applyMockData(mockFormId: string) {
     const mockForm = createCharacterMockForms.find(
       (item) => item.id === mockFormId,
@@ -166,6 +175,7 @@ export default function CreateCharacterClient() {
     setPendingFormValues(null);
   }
 
+  // --- Event Handlers [폼 제출] ---
   async function handleSubmit(values: FormState) {
     if (step < 3) {
       setStep(3);
@@ -181,14 +191,12 @@ export default function CreateCharacterClient() {
     setCreatorIdModalOpen(true);
   }
 
+  // --- Event Handlers [캐릭터 생성] ---
   async function createCharacterWithCreatorId(
     inputCreatorId: string,
     values: FormState,
   ) {
-    const normalizedCreatorId = inputCreatorId
-      .trim()
-      .replace(/\s+/g, "-")
-      .slice(0, 80);
+    const normalizedCreatorId = normalizeCreatorId(inputCreatorId);
 
     if (!profileImage) return;
     if (!normalizedCreatorId) {
@@ -271,250 +279,5 @@ export default function CreateCharacterClient() {
         />
       </article>
     </main>
-  );
-}
-
-function CreatorIdModal({
-  creatorId,
-  loading,
-  open,
-  onChange,
-  onClose,
-  onConfirm,
-}: {
-  creatorId: string;
-  loading: boolean;
-  open: boolean;
-  onChange: (value: string) => void;
-  onClose: () => void;
-  onConfirm: () => void;
-}) {
-  const normalizedCreatorId = creatorId
-    .trim()
-    .replace(/\s+/g, "-")
-    .slice(0, 80);
-
-  if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/45 px-4">
-      <section className="w-full max-w-[360px] rounded-2xl bg-white p-5 shadow-[0_20px_60px_rgba(0,0,0,0.22)]">
-        <Typography variant="h4" color="#17191C">
-          생성 ID 입력
-        </Typography>
-        <Typography variant="body2" color="#60656C" className="mt-2">
-          이 ID로 채팅방을 만들고, 나중에 캐릭터 삭제 권한을 확인합니다.
-        </Typography>
-        <label className="mt-4 block">
-          <Typography as="span" variant="body2" weight={700} color="#17191C">
-            User ID
-          </Typography>
-          <input
-            autoFocus
-            value={creatorId}
-            onChange={(event) => onChange(event.target.value)}
-            placeholder="예: my-user-id"
-            className="mt-2 h-12 w-full rounded-lg border-2 border-[#F4F5F6] px-3 text-sm outline-none placeholder:text-[#AEB2B8] focus:border-[#FFE55C]"
-          />
-          {creatorId && normalizedCreatorId !== creatorId && (
-            <Typography
-              as="span"
-              variant="body3"
-              weight={500}
-              color="#72777E"
-              className="mt-1 block"
-            >
-              공백은 `-`로 바뀌어 `{normalizedCreatorId}`로 저장됩니다.
-            </Typography>
-          )}
-        </label>
-        <div className="mt-5 flex gap-2">
-          <button
-            type="button"
-            disabled={loading}
-            onClick={onClose}
-            className="h-11 flex-1 rounded-full border border-[#D8DBDE] text-sm font-bold text-[#17191C] disabled:opacity-50"
-          >
-            <Typography as="span" variant="body2" weight={700} color="#17191C">
-              취소
-            </Typography>
-          </button>
-          <button
-            type="button"
-            disabled={!normalizedCreatorId || loading}
-            onClick={onConfirm}
-            className="h-11 flex-1 rounded-full rounded-tr-none bg-[#FFE55C] text-sm font-bold text-[#17191C] disabled:bg-[#EDEEEF] disabled:text-[#AEB2B8]"
-          >
-            <Typography as="span" variant="body2" weight={700} color="inherit">
-              {loading ? "생성 중..." : "생성하기"}
-            </Typography>
-          </button>
-        </div>
-      </section>
-    </div>
-  );
-}
-
-function CreateCharacterHeader({
-  onApplyMockData,
-  onReset,
-  selectedMockFormId,
-}: {
-  onApplyMockData: (mockFormId: string) => void;
-  onReset: () => void;
-  selectedMockFormId: string;
-}) {
-  return (
-    <header className="fixed left-0 top-0 z-50 h-16 w-screen bg-white/90 backdrop-blur-lg">
-      <div className="mx-auto flex h-full w-full max-w-[620px] items-center justify-between px-4">
-        <Link
-          href="/demos/character-chat-replay"
-          className="flex h-full items-center gap-2 text-base font-bold"
-        >
-          <span className="text-2xl leading-none text-[#17191C]">
-            <KeyboardArrowLeftIcon />
-          </span>
-          <Typography as="span" variant="body1" weight={700} color="#17191C">
-            캐릭터 만들기
-          </Typography>
-        </Link>
-        <div className="flex items-center gap-2">
-          <select
-            aria-label="mock 데이터 선택"
-            value={selectedMockFormId}
-            onChange={(event) => onApplyMockData(event.target.value)}
-            className="h-7 w-[90px] rounded-full bg-[#FFE55C] px-3 text-xs font-bold text-[#17191C] outline-none"
-            style={{
-              backgroundImage: "none",
-              appearance: "none",
-              WebkitAppearance: "none",
-              MozAppearance: "none",
-            }}
-          >
-            <option value="" className="">
-              mock 데이터
-            </option>
-            {createCharacterMockForms.map((mockForm) => (
-              <option
-                key={mockForm.id}
-                value={mockForm.id}
-                className="w-[158px]"
-              >
-                {mockForm.label}
-              </option>
-            ))}
-          </select>
-          <button
-            type="button"
-            onClick={onReset}
-            className="h-7 rounded-full border border-[#D8DBDE] px-3 text-xs font-bold text-[#17191C]"
-          >
-            <Typography as="span" variant="body3" weight={700} color="#17191C">
-              초기화
-            </Typography>
-          </button>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function CreateCharacterStep({
-  bannerPreview,
-  form,
-  handleImage,
-  profilePreview,
-  step,
-  updateForm,
-}: {
-  bannerPreview: string;
-  form: FormState;
-  handleImage: (file: File | null, type: "profile" | "banner") => void;
-  profilePreview: string;
-  step: number;
-  updateForm: (key: keyof FormState, value: string) => void;
-}) {
-  if (step === 0) {
-    return <BasicInfoStep form={form} updateForm={updateForm} />;
-  }
-
-  if (step === 1) {
-    return (
-      <>
-        <ProfileStep
-          bannerPreview={bannerPreview}
-          form={form}
-          handleImage={handleImage}
-          profilePreview={profilePreview}
-          updateForm={updateForm}
-        />
-        <CharacterSettingsStep form={form} updateForm={updateForm} />
-      </>
-    );
-  }
-
-  if (step === 2) {
-    return (
-      <ChatSettingsStep
-        form={form}
-        profilePreview={profilePreview}
-        updateForm={updateForm}
-      />
-    );
-  }
-
-  return (
-    <div className="mt-4">
-      <PreviewChat
-        form={form}
-        profilePreview={profilePreview}
-        bannerPreview={bannerPreview}
-      />
-    </div>
-  );
-}
-
-function StepActions({
-  canCreateFromTestStep,
-  canGoNext,
-  canSubmit,
-  loading,
-  onStepChange,
-  step,
-}: {
-  canCreateFromTestStep: boolean;
-  canGoNext: boolean;
-  canSubmit: boolean;
-  loading: boolean;
-  onStepChange: React.Dispatch<React.SetStateAction<number>>;
-  step: number;
-}) {
-  return (
-    <div className="fixed bottom-0 left-1/2 z-40 flex w-full max-w-[620px] -translate-x-1/2 gap-3 bg-white/20 p-4 backdrop-blur-xl">
-      <StepButton
-        disabled={step === 0 || loading}
-        onClick={() => onStepChange((current) => Math.max(0, current - 1))}
-        variant="black"
-      >
-        이전 단계로
-      </StepButton>
-      {step < 3 ? (
-        <StepButton
-          disabled={!canGoNext}
-          onClick={() => onStepChange((current) => Math.min(3, current + 1))}
-          variant="primary"
-        >
-          다음 단계로
-        </StepButton>
-      ) : (
-        <StepButton type="submit" disabled={!canSubmit} variant="primary">
-          {loading
-            ? "생성 중..."
-            : canCreateFromTestStep
-              ? "캐릭터 생성하기"
-              : "테스트 확인 중..."}
-        </StepButton>
-      )}
-    </div>
   );
 }

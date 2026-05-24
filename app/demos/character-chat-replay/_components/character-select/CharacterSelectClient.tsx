@@ -15,9 +15,11 @@ type CharacterSelectClientProps = {
 export default function CharacterSelectClient({
   characters,
 }: CharacterSelectClientProps) {
+  // --- API ---
   const { data: cachedCharacters = characters } =
     useDemoCharactersQuery(characters);
 
+  // --- State Management ---
   const [selectedCharacter, setSelectedCharacter] =
     useState<DemoPublicCharacter | null>(null);
 

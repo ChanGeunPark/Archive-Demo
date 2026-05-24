@@ -25,32 +25,38 @@ type ChatRoomClientProps = {
   initialRoomId: string;
 };
 
+/**
+ * 캐릭터 채팅방 클라이언트.
+ * 메시지 표시 우선순위: localMessages(스트림) → React Query → SSR initialMessages
+ */
 export default function ChatRoomClient({
   character,
   initialMessages,
   initialRoomId,
 }: ChatRoomClientProps) {
+  // --- Hooks ---
   const router = useRouter();
   const queryClient = useQueryClient();
   const streamingChatMutation = useStreamingChatMutation();
   const deleteRoomMutation = useDeleteDemoChatRoomMutation();
+
+  // --- State Management ---
   const [roomId, setRoomId] = useState(initialRoomId);
   const historyQuery = useDemoChatHistoryQuery(
     roomId,
     roomId === initialRoomId ? initialMessages : undefined,
   );
-  const [localMessages, setLocalMessages] = useState<
-    DemoChatMessage[] | null
-  >(
+  const [localMessages, setLocalMessages] = useState<DemoChatMessage[] | null>(
     null,
   );
   const messages = localMessages ?? historyQuery.data ?? initialMessages;
   const [inputText, setInputText] = useState("");
-  const [streamingText, setStreamingText] = useState("");
+  const [isWaitingForReply, setIsWaitingForReply] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const loading = streamingChatMutation.isPending;
+  const loading = streamingChatMutation.isPending || isWaitingForReply;
   const deletingRoom = deleteRoomMutation.isPending;
 
+  // --- Event Handlers ---
   function setCachedMessages(
     nextRoomId: string,
     nextMessages: DemoChatMessage[],
@@ -61,6 +67,7 @@ export default function ChatRoomClient({
     );
   }
 
+  // --- Normalization ---
   const visibleMessages = useMemo(() => {
     const openingMessage = character.openingMessage.trim();
     if (!openingMessage) return messages;
@@ -85,19 +92,20 @@ export default function ChatRoomClient({
     return [openingChatMessage, ...messages];
   }, [character.id, character.openingMessage, messages, roomId]);
 
+  // --- Effects ---
   useEffect(() => {
     scrollRef.current?.scrollTo({
       top: scrollRef.current.scrollHeight,
       behavior: "smooth",
     });
-  }, [visibleMessages, streamingText]);
+  }, [visibleMessages]);
 
+  // --- Event Handlers ---
   async function sendMessage(message: string) {
     const trimmedMessage = message.trim();
     if (!trimmedMessage || loading) return;
 
     setInputText("");
-    setStreamingText("");
     const requestRoomId = roomId;
     const humanMessage = makeLocalMessage({
       roomId: requestRoomId,
@@ -109,84 +117,101 @@ export default function ChatRoomClient({
 
     setLocalMessages(optimisticMessages);
     setCachedMessages(requestRoomId, optimisticMessages);
-
-    let response: Response;
+    setIsWaitingForReply(true);
 
     try {
-      response = await streamingChatMutation.mutateAsync({
-        roomId: requestRoomId,
-        characterId: character.id,
-        message: trimmedMessage,
-      });
-    } catch {
-      setLocalMessages((current) => [
-        ...(current ?? optimisticMessages),
-        makeLocalMessage({
+      let response: Response;
+
+      // --- API Requests ---
+      try {
+        response = await streamingChatMutation.mutateAsync({
           roomId: requestRoomId,
           characterId: character.id,
-          role: "ai",
-          content:
-            "잠시 후 다시 시도해 주세요. 서버 응답을 불러오지 못했습니다.",
-        }),
-      ]);
-      return;
-    }
+          message: trimmedMessage,
+        });
+      } catch {
+        setLocalMessages((current) => [
+          ...(current ?? optimisticMessages),
+          makeLocalMessage({
+            roomId: requestRoomId,
+            characterId: character.id,
+            role: "ai",
+            content:
+              "잠시 후 다시 시도해 주세요. 서버 응답을 불러오지 못했습니다.",
+          }),
+        ]);
+        return;
+      }
 
-    const reader = response.body!.getReader();
-    const decoder = new TextDecoder();
-    let buffer = "";
-    let completedText = "";
-    let responseRoomId = requestRoomId;
+      // --- SSE Event Parsing ---
+      const reader = response.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let completedText = "";
+      let responseRoomId = requestRoomId;
+      let streamError: string | null = null;
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+      streamLoop: while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-      buffer += decoder.decode(value, { stream: true });
-      const events = buffer.split("\n\n");
-      buffer = events.pop() ?? "";
+        buffer += decoder.decode(value, { stream: true });
+        const events = buffer.split("\n\n");
+        buffer = events.pop() ?? "";
 
-      for (const event of events) {
-        const eventType = event.match(/^event: (.+)$/m)?.[1];
-        const dataText = event.match(/^data: (.+)$/m)?.[1];
-        if (!dataText) continue;
+        for (const event of events) {
+          const eventType = event.match(/^event: (.+)$/m)?.[1];
+          const dataText = event.match(/^data: (.+)$/m)?.[1];
+          if (!dataText) continue;
 
-        const data = JSON.parse(dataText) as {
-          roomId?: string;
-          token?: string;
-        };
+          const data = JSON.parse(dataText) as {
+            roomId?: string;
+            token?: string;
+            error?: string;
+          };
 
-        if (eventType === "meta" && data.roomId) {
-          responseRoomId = data.roomId;
-          setRoomId(data.roomId);
-        }
+          if (eventType === "meta" && data.roomId) {
+            responseRoomId = data.roomId;
+            setRoomId(data.roomId);
+          }
 
-        if (eventType === "token" && data.token) {
-          completedText += data.token;
-          setStreamingText(completedText);
+          if (eventType === "error") {
+            streamError =
+              data.error ?? "응답 생성에 실패했습니다. 다시 시도해 주세요.";
+            break streamLoop;
+          }
+
+          if (eventType === "token" && data.token) {
+            completedText += data.token;
+          }
         }
       }
+
+      const finalAiContent = streamError ?? completedText;
+      if (!finalAiContent) return;
+
+      const completedMessages = [
+        ...optimisticMessages,
+        makeLocalMessage({
+          roomId: responseRoomId,
+          characterId: character.id,
+          role: "ai",
+          content: finalAiContent,
+        }),
+      ];
+
+      setLocalMessages(completedMessages);
+      setCachedMessages(responseRoomId, completedMessages);
+    } finally {
+      setIsWaitingForReply(false);
     }
-
-    const completedMessages = [
-      ...optimisticMessages,
-      makeLocalMessage({
-        roomId: responseRoomId,
-        characterId: character.id,
-        role: "ai",
-        content: completedText,
-      }),
-    ];
-
-    setLocalMessages(completedMessages);
-    setCachedMessages(responseRoomId, completedMessages);
-    setStreamingText("");
   }
 
   function handleSubmit() {
     sendMessage(inputText);
   }
 
+  // --- Event Handlers ---
   async function handleDeleteRoom() {
     if (deletingRoom || loading) return;
 
@@ -211,6 +236,7 @@ export default function ChatRoomClient({
     router.refresh();
   }
 
+  // --- Render ---
   return (
     <main className="min-h-screen bg-[#F4F5F6] text-[#17191C]">
       <section className="mx-auto flex h-screen w-full max-w-[620px] flex-col bg-[#F4F5F6]">
@@ -224,9 +250,7 @@ export default function ChatRoomClient({
           character={character}
           loading={loading}
           messages={visibleMessages}
-          roomId={roomId}
           scrollRef={scrollRef}
-          streamingText={streamingText}
         />
         <SampleMessageScroller
           disabled={loading}

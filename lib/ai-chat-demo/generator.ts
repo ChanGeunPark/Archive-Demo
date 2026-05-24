@@ -104,6 +104,10 @@ type ChatSessionInstance = {
 
 const sessionsByRoomId = new Map<string, ChatSessionInstance>();
 
+export function hasCachedSession(roomId: string) {
+  return sessionsByRoomId.has(roomId);
+}
+
 // OpenAI 키가 없을 때 데모용 규칙 기반 응답을 생성합니다.
 export function createDemoAiResponse(input: {
   character: DemoCharacter;
@@ -126,11 +130,6 @@ export function createDemoAiResponse(input: {
   if (seedReply) return seedReply;
 
   return `${input.character.name} 응답: "${input.message}"라고 말해줬네요. ${contextLine} 설정을 바탕으로 캐릭터 말투를 유지하며 답변하고 있어요.`;
-}
-
-// 긴 응답을 스트리밍처럼 보이도록 짧은 문자열 조각으로 나눕니다.
-export function splitForStream(content: string) {
-  return content.match(/.{1,8}/g) ?? [content];
 }
 
 // 선택한 캐릭터 설정과 예시 대화를 합쳐 시스템 프롬프트 본문을 만듭니다.
@@ -363,13 +362,7 @@ export async function* streamLangChainCharacterResponse(input: {
   cacheSession?: boolean;
 }) {
   if (!hasConfiguredAiProviderKey()) {
-    const fallback = createDemoAiResponse(input);
-
-    for (const chunk of splitForStream(fallback)) {
-      yield chunk;
-      await new Promise((resolve) => setTimeout(resolve, 45));
-    }
-
+    yield createDemoAiResponse(input);
     return;
   }
 

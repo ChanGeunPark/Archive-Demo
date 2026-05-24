@@ -1,4 +1,4 @@
-import CharacterSelectClient from "./_components/CharacterSelectClient";
+import CharacterSelectClient from "./_components/character-select/CharacterSelectClient";
 import {
   getDemoCharacters,
   toPublicCharacter,
@@ -7,5 +7,7 @@ import {
 export default async function CharacterChatReplayDemo() {
   const characters = await getDemoCharacters();
 
-  return <CharacterSelectClient characters={characters.map(toPublicCharacter)} />;
+  return (
+    <CharacterSelectClient characters={characters.map(toPublicCharacter)} />
+  );
 }

@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { DemoPublicCharacter } from "@/lib/ai-chat-demo/types";
 import { CharacterAvatar } from "./CharacterAvatar";
 import Typography from "@/components/typography/Typography";
+import KeyboardArrowLeftIcon from "@/components/icons/arrow/KeyboardArrowLeftIcon";
 
 type ChatRoomHeaderProps = {
   character: DemoPublicCharacter;
@@ -19,9 +20,11 @@ export function ChatRoomHeader({
   deletingRoom = false,
   onDeleteRoom,
 }: ChatRoomHeaderProps) {
+  // --- State Management ---
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
+  // --- Effects ---
   useEffect(() => {
     if (!menuOpen) return;
 
@@ -40,17 +43,17 @@ export function ChatRoomHeader({
     };
   }, [menuOpen]);
 
+  // --- Event Handlers ---
   function handleDeleteClick() {
     setMenuOpen(false);
     void onDeleteRoom();
   }
 
+  // --- Render ---
   return (
     <header className="flex h-16 shrink-0 items-center justify-between border-b border-[#EDEEEF] bg-white px-4">
       <Link href="/demos/character-chat-replay">
-        <Typography as="span" variant="body2" weight={600} color="#60656C">
-          Back
-        </Typography>
+        <KeyboardArrowLeftIcon />
       </Link>
       <div className="text-center">
         <Typography variant="body1" weight={700} color="#17191C">

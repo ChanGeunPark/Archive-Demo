@@ -1,5 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { streamLangChainCharacterResponse } from "@/lib/ai-chat-demo/generator";
+import {
+  hasCachedSession,
+  streamLangChainCharacterResponse,
+} from "@/lib/ai-chat-demo/generator";
 import {
   getDemoCharacter,
   getDemoChatHistory,
@@ -14,6 +17,10 @@ type ChatRequestBody = {
 
 const encoder = new TextEncoder();
 
+function encodeSseEvent(event: string, data: unknown) {
+  return encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+}
+
 export async function POST(request: Request) {
   const body = (await request.json()) as ChatRequestBody;
   const roomId = body.roomId || randomUUID();
@@ -27,44 +34,62 @@ export async function POST(request: Request) {
     );
   }
 
-  const character = await getDemoCharacter(characterId);
-
-  if (!character) {
-    return Response.json({ error: "Character not found." }, { status: 404 });
-  }
-
-  const history = await getDemoChatHistory(roomId);
-  await saveDemoMessage({
-    roomId,
-    characterId,
-    role: "human",
-    content: userMessage,
-  });
-
   const stream = new ReadableStream({
     async start(controller) {
-      controller.enqueue(encoder.encode(`event: meta\ndata: ${JSON.stringify({ roomId })}\n\n`));
-      let aiResponse = "";
+      controller.enqueue(encodeSseEvent("meta", { roomId }));
 
-      for await (const chunk of streamLangChainCharacterResponse({
-        roomId,
-        character,
-        message: userMessage,
-        history,
-      })) {
-        aiResponse += chunk;
-        controller.enqueue(encoder.encode(`event: token\ndata: ${JSON.stringify({ token: chunk })}\n\n`));
-      }
-
-      await saveDemoMessage({
+      void saveDemoMessage({
         roomId,
         characterId,
-        role: "ai",
-        content: aiResponse,
+        role: "human",
+        content: userMessage,
       });
 
-      controller.enqueue(encoder.encode("event: done\ndata: {}\n\n"));
-      controller.close();
+      try {
+        const useCachedHistory = hasCachedSession(roomId);
+        const [character, history] = await Promise.all([
+          getDemoCharacter(characterId),
+          useCachedHistory ? Promise.resolve([]) : getDemoChatHistory(roomId),
+        ]);
+
+        if (!character) {
+          controller.enqueue(
+            encodeSseEvent("error", { error: "Character not found." }),
+          );
+          controller.close();
+          return;
+        }
+
+        let aiResponse = "";
+
+        for await (const chunk of streamLangChainCharacterResponse({
+          roomId,
+          character,
+          message: userMessage,
+          history,
+        })) {
+          aiResponse += chunk;
+          controller.enqueue(encodeSseEvent("token", { token: chunk }));
+        }
+
+        await saveDemoMessage({
+          roomId,
+          characterId,
+          role: "ai",
+          content: aiResponse,
+        });
+
+        controller.enqueue(encodeSseEvent("done", {}));
+        controller.close();
+      } catch (error) {
+        console.error("[ai-chat-demo] chat stream failed.", error);
+        controller.enqueue(
+          encodeSseEvent("error", {
+            error: "Failed to generate response.",
+          }),
+        );
+        controller.close();
+      }
     },
   });
 
