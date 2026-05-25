@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       ai_demo_character_private_configs: {
@@ -208,6 +183,205 @@ export type Database = {
           },
         ]
       }
+      marketplace_demo_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          new_owner_id: string
+          payload: Json
+          previous_owner_id: string | null
+          transaction_id: string
+          work_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          new_owner_id: string
+          payload?: Json
+          previous_owner_id?: string | null
+          transaction_id: string
+          work_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          new_owner_id?: string
+          payload?: Json
+          previous_owner_id?: string | null
+          transaction_id?: string
+          work_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_demo_events_new_owner_id_fkey"
+            columns: ["new_owner_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_demo_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_demo_events_previous_owner_id_fkey"
+            columns: ["previous_owner_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_demo_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_demo_events_work_id_fkey"
+            columns: ["work_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_demo_works"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_demo_offers: {
+        Row: {
+          amount: number
+          bidder_id: string
+          created_at: string
+          id: string
+          status: string
+          updated_at: string
+          work_id: string
+        }
+        Insert: {
+          amount: number
+          bidder_id: string
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          work_id: string
+        }
+        Update: {
+          amount?: number
+          bidder_id?: string
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          work_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_demo_offers_bidder_id_fkey"
+            columns: ["bidder_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_demo_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_demo_offers_work_id_fkey"
+            columns: ["work_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_demo_works"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_demo_users: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string
+          handle: string
+          id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name: string
+          handle: string
+          id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string
+          handle?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      marketplace_demo_works: {
+        Row: {
+          asking_price: number | null
+          created_at: string
+          creator_id: string
+          description: string
+          height: number
+          id: string
+          image_url: string
+          last_sale_price: number | null
+          listing_status: string
+          offer_count: number
+          owner_id: string
+          ownership_status: string
+          tags: string[]
+          title: string
+          updated_at: string
+          usage_rights: Json
+          width: number
+        }
+        Insert: {
+          asking_price?: number | null
+          created_at?: string
+          creator_id: string
+          description?: string
+          height?: number
+          id: string
+          image_url: string
+          last_sale_price?: number | null
+          listing_status: string
+          offer_count?: number
+          owner_id: string
+          ownership_status: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+          usage_rights?: Json
+          width?: number
+        }
+        Update: {
+          asking_price?: number | null
+          created_at?: string
+          creator_id?: string
+          description?: string
+          height?: number
+          id?: string
+          image_url?: string
+          last_sale_price?: number | null
+          listing_status?: string
+          offer_count?: number
+          owner_id?: string
+          ownership_status?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          usage_rights?: Json
+          width?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_demo_works_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_demo_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_demo_works_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_demo_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -342,9 +516,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },
