@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { WorkItem } from "../chizuData";
+import { getArtworkTagLabel } from "@/lib/image-marketplace-flow/artworkTags";
 
 export default function WorkContentsDetail({ work }: { work: WorkItem }) {
   return (
@@ -65,7 +66,7 @@ export default function WorkContentsDetail({ work }: { work: WorkItem }) {
                   href="/demos/image-marketplace-flow"
                   className="inline-flex rounded-full bg-[#F3F4F8] px-3 py-1 text-xs font-semibold text-gray-800 transition hover:bg-[#FFE55C]"
                 >
-                  #{tag}
+                  #{getArtworkTagLabel(tag)}
                 </Link>
               ))}
             </div>
