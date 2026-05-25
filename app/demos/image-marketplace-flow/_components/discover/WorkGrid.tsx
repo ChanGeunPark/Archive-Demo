@@ -1,10 +1,7 @@
 import type { ReactNode } from "react";
-import { useMemo } from "react";
 import MasonryImageCard from "../card/MasonryImageCard";
 import OrderedMasonry from "../layout/OrderedMasonry";
-import type { WorkItem } from "../chizuData";
-import { creatorHandle } from "../work/workUtils";
-import { getAuctionEndTime } from "./discoverUtils";
+import { WorksQueryWork } from "@/lib/image-marketplace-flow/graphql/types";
 
 function MasonryWorkItem(props: { children: ReactNode; stdHeight: number }) {
   return (
@@ -14,9 +11,7 @@ function MasonryWorkItem(props: { children: ReactNode; stdHeight: number }) {
   );
 }
 
-export default function WorkGrid({ works }: { works: WorkItem[] }) {
-  const auctionEndTime = useMemo(() => getAuctionEndTime(), []);
-
+export default function WorkGrid({ works }: { works: WorksQueryWork[] }) {
   if (works.length === 0) {
     return (
       <div className="flex min-h-80 items-center justify-center rounded-lg border border-[#E6E1D8] bg-white text-sm font-bold text-[#777D84]">
@@ -40,7 +35,7 @@ export default function WorkGrid({ works }: { works: WorkItem[] }) {
       {works.map((work) => (
         <MasonryWorkItem key={work.id} stdHeight={work.height / work.width}>
           <MasonryImageCard
-            imgUrl={work.image}
+            imgUrl={work.imageUrl}
             width={work.width}
             height={work.height}
             title={work.title}
@@ -49,11 +44,10 @@ export default function WorkGrid({ works }: { works: WorkItem[] }) {
                 ? `/demos/image-marketplace-flow/work/${work.id}`
                 : undefined
             }
-            buyNowPrice={work.askingPrice || undefined}
-            auctionTime={work.status === "Auction" ? auctionEndTime : null}
+            buyNowPrice={work.askingPrice ?? undefined}
             userProfile={work.owner.avatar}
-            userScreenName={work.owner.handle || creatorHandle(work.artist)}
-            userAddress={work.id}
+            userScreenName={work.owner.name}
+            userAddress={work.owner.id}
             userName={work.owner.name}
           />
         </MasonryWorkItem>
