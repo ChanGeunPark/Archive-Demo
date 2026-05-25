@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
-import ChizuWorkMain from "../../_components/ChizuWorkMain";
+
 import { works } from "../../_components/chizuData";
+import WorkMain from "../../_components/WorkMain";
 
 type WorkPageProps = {
   params: Promise<{
@@ -29,5 +30,5 @@ export default async function WorkPage({ params }: WorkPageProps) {
     notFound();
   }
 
-  return <ChizuWorkMain work={work} />;
+  return <WorkMain work={work} />;
 }

@@ -11,7 +11,7 @@ import {
 } from "./work/WorkHeroImage";
 import WorkPriceBlock from "./work/WorkPriceBlock";
 
-export default function ChizuWorkMain({ work }: { work: WorkItem }) {
+export default function WorkMain({ work }: { work: WorkItem }) {
   return (
     <main className="min-h-screen bg-white text-[#141416]">
       <WorkHeader />
