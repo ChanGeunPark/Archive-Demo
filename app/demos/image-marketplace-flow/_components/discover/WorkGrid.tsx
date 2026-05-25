@@ -44,13 +44,17 @@ export default function WorkGrid({ works }: { works: WorkItem[] }) {
             width={work.width}
             height={work.height}
             title={work.title}
-            link={`/demos/image-marketplace-flow/work/${work.id}`}
-            buyNowPrice={work.status === "Buy now" ? work.price : undefined}
+            link={
+              work.id.startsWith("work-")
+                ? `/demos/image-marketplace-flow/work/${work.id}`
+                : undefined
+            }
+            buyNowPrice={work.askingPrice || undefined}
             auctionTime={work.status === "Auction" ? auctionEndTime : null}
-            userProfile="/images/chizu/profile_default_180x180_00.png"
-            userScreenName={creatorHandle(work.artist)}
+            userProfile={work.owner.avatar}
+            userScreenName={work.owner.handle || creatorHandle(work.artist)}
             userAddress={work.id}
-            userName={work.artist}
+            userName={work.owner.name}
           />
         </MasonryWorkItem>
       ))}

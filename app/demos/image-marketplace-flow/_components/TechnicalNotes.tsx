@@ -131,6 +131,46 @@ export function TechnicalNotes() {
 
       <div className="space-y-5">
         <SectionHeading
+          title="Why Image Rights Marketplace?"
+          description="공개 포트폴리오에서는 회사 도메인과 자산을 제외하고, 이미지 독점 라이선스 거래 모델로 재구성했습니다."
+        />
+        <div className="rounded-2xl border border-[#EDEEEF] bg-white p-4 shadow-[0_8px_30px_rgba(15,23,42,0.04)] sm:p-5">
+          <Typography
+            variant="body3"
+            weight={500}
+            color="#52525b"
+            className="break-keep leading-relaxed"
+          >
+            이 데모의 핵심은 NFT 자체가 아니라, 구매 이후 작품이
+            마켓플레이스에 계속 남아 있으면서 현재 소유자가 바뀌고 다음
+            사용자가 새 소유자에게 가격 제안을 보낼 수 있는 거래 상태입니다.
+          </Typography>
+        </div>
+      </div>
+
+      <div className="space-y-5">
+        <SectionHeading
+          title="Realtime Sync Strategy"
+          description="이벤트 payload는 UI 상태를 확정하는 데이터가 아니라 서버 재조회가 필요하다는 신호로만 취급합니다."
+        />
+        <div className="rounded-2xl border border-[#EDEEEF] bg-white p-4 shadow-[0_8px_30px_rgba(15,23,42,0.04)] sm:p-5">
+          <Typography
+            variant="body3"
+            weight={500}
+            color="#52525b"
+            className="break-keep leading-relaxed"
+          >
+            다른 사용자의 구매 이벤트가 도착해도 클라이언트는 이벤트
+            payload만으로 소유자를 변경하지 않습니다. 이벤트는 “갱신이
+            필요하다”는 신호로 사용하고, 작품 상세 API를 다시 조회해 서버
+            기준의 현재 소유자, 최근 거래가, 제안 수를 반영하는 전략을
+            보여줍니다.
+          </Typography>
+        </div>
+      </div>
+
+      <div className="space-y-5">
+        <SectionHeading
           title="원인"
           description="refWidth가 0인 첫 렌더에서 realWidth를 이미지 원본 픽셀 width로 대체했기 때문입니다."
         />

@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { works } from "./chizuData";
+import { works, type WorkItem } from "./chizuData";
 import { useCreateArtworkStore } from "@/lib/image-marketplace-flow/createArtworkStore";
 import { getArtworkTagLabel } from "@/lib/image-marketplace-flow/artworkTags";
+import { marketplaceUsers } from "@/lib/image-marketplace-flow/demoUsers";
 import ArtistGrid from "./discover/ArtistGrid";
 import CollectionGrid from "./discover/CollectionGrid";
 import DiscoverHeader from "./discover/DiscoverHeader";
@@ -21,7 +22,8 @@ export default function ChizuDiscoverMain() {
 
   const marketplaceWorks = useMemo(
     () => [
-      ...createdWorks.map((work) => ({
+      ...createdWorks.map(
+        (work): WorkItem => ({
         id: work.id,
         title: work.title,
         artist: work.artist,
@@ -31,7 +33,21 @@ export default function ChizuDiscoverMain() {
         height: 1000,
         tags: work.tags,
         status: "Buy now" as const,
-      })),
+        creator: marketplaceUsers.guest,
+        owner: marketplaceUsers.guest,
+        ownershipStatus: "OWNED_BY_CREATOR",
+        listingStatus: "LISTED",
+        askingPrice: work.price,
+        lastSalePrice: null,
+        offerCount: 0,
+        usageRights: [
+          { label: "상업적 이용 가능", enabled: true },
+          { label: "독점 사용권 이전", enabled: true },
+          { label: "2차 수정 가능", enabled: true },
+          { label: "재판매 가능", enabled: false },
+        ],
+      }),
+      ),
       ...works,
     ],
     [createdWorks],

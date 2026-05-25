@@ -1,5 +1,6 @@
 import Link from "next/link";
 import KeyboardArrowLeftIcon from "@/components/icons/arrow/KeyboardArrowLeftIcon";
+import MarketplaceLogin from "../auth/MarketplaceLogin";
 
 type DiscoverHeaderProps = {
   query: string;
@@ -36,12 +37,7 @@ export default function DiscoverHeader({
           >
             작품 등록
           </Link>
-          <button
-            type="button"
-            className="h-10 rounded-md bg-[#17191C] px-4 text-sm font-bold text-white"
-          >
-            Sign in
-          </button>
+          <MarketplaceLogin />
         </div>
       </div>
     </header>

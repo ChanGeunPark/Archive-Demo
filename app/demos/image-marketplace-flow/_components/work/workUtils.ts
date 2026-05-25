@@ -4,6 +4,10 @@ export function formatEth(price: number) {
   return `${(price / 1_000_000).toFixed(2).replace(/0+$/, "").replace(/\.$/, "")} ETH`;
 }
 
+export function formatKrw(price: number) {
+  return `${price.toLocaleString("ko-KR")}원`;
+}
+
 export function creatorHandle(artist: string) {
   return artist.toLowerCase().replaceAll(" ", "");
 }

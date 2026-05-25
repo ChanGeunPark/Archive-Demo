@@ -22,9 +22,19 @@ export default function WorkContentsDetail({ work }: { work: WorkItem }) {
         <div className="border-t border-gray-100 px-4 py-[21px]">
           <p className="text-sm font-medium leading-6 text-gray-700">
             {work.title}는 Chizu 아카이브 데모를 위해 구성된 이미지 작품입니다.
-            라이선스, 소유자, 태그, 히스토리 정보가 한 화면에서 이어지도록
-            WorkUI의 상세 페이지 흐름을 따릅니다.
+            구매 이후에도 작품은 마켓플레이스에 남고, 현재 소유자에게 가격
+            제안을 보낼 수 있는 독점 라이선스 거래 흐름을 보여줍니다.
           </p>
+
+          <div className="mt-6 w-full">
+            <h3 className="text-xs font-medium text-gray-500">거래 모델</h3>
+            <p className="mt-2 rounded-lg bg-[#F8FAFC] p-3 text-sm font-medium leading-6 text-gray-700">
+              이벤트 payload는 소유권 변경의 근거로 직접 사용하지 않고,
+              “상세 정보를 다시 조회해야 한다”는 신호로만 사용합니다. UI는
+              서버 기준의 현재 소유자, 최근 거래가, 제안 수를 다시 반영하는
+              것으로 구성했습니다.
+            </p>
+          </div>
 
           <div className="mt-6 w-full">
             <h3 className="text-xs font-medium text-gray-500">컬렉션</h3>

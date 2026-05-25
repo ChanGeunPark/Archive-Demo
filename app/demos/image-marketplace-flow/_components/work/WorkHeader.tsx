@@ -1,5 +1,6 @@
 import KeyboardArrowLeftIcon from "@/components/icons/arrow/KeyboardArrowLeftIcon";
 import Link from "next/link";
+import MarketplaceLogin from "../auth/MarketplaceLogin";
 
 export default function WorkHeader() {
   return (
@@ -12,12 +13,15 @@ export default function WorkHeader() {
           <KeyboardArrowLeftIcon />
           뒤로가기
         </Link>
-        <Link
-          href="/demos/image-marketplace-flow"
-          className="h-10 rounded-md border border-[#D8DBDE] bg-white px-3 py-2 text-sm font-bold text-[#3F444B] transition hover:border-[#17191C]"
-        >
-          Discover
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/demos/image-marketplace-flow"
+            className="h-10 rounded-md border border-[#D8DBDE] bg-white px-3 py-2 text-sm font-bold text-[#3F444B] transition hover:border-[#17191C]"
+          >
+            Discover
+          </Link>
+          <MarketplaceLogin />
+        </div>
       </div>
     </header>
   );

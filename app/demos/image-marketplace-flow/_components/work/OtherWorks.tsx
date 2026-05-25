@@ -48,15 +48,13 @@ export default function OtherWorks({ currentId }: { currentId: string }) {
                   height={work.height}
                   title={work.title}
                   link={`/demos/image-marketplace-flow/work/${work.id}`}
-                  buyNowPrice={
-                    work.status === "Buy now" ? work.price : undefined
-                  }
+                  buyNowPrice={work.askingPrice || undefined}
                   auctionTime={
                     work.status === "Auction" ? DEMO_AUCTION_END_TIME : null
                   }
-                  userProfile="/images/chizu/profile_default_180x180_00.png"
-                  userScreenName={creatorHandle(work.artist)}
-                  userName={work.artist}
+                  userProfile={work.owner.avatar}
+                  userScreenName={work.owner.handle || creatorHandle(work.artist)}
+                  userName={work.owner.name}
                 />
               </OtherWorkItem>
             ))}

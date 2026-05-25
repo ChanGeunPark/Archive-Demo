@@ -1,6 +1,6 @@
 import Image from "next/image";
 import type { WorkItem } from "../chizuData";
-import { formatEth } from "./workUtils";
+import { formatKrw } from "./workUtils";
 
 export default function HistoryWork({ work }: { work: WorkItem }) {
   return (
@@ -8,9 +8,13 @@ export default function HistoryWork({ work }: { work: WorkItem }) {
       <h2 className="text-xl font-black text-gray-900">히스토리</h2>
       <div className="mt-4 flex max-h-[350px] w-full flex-col overflow-y-auto rounded-xl border border-[#EBEBEB] bg-white">
         {[
-          ["민팅됨", work.artist, "방금 전"],
-          ["리스팅됨", formatEth(work.price), "오늘"],
-          ["컬렉션에 추가됨", "Signal Garden", "어제"],
+          ["작품 등록", work.creator.name, "처음"],
+          [
+            work.owner.id === work.creator.id ? "판매 등록" : "소유권 이전",
+            work.lastSalePrice ? formatKrw(work.lastSalePrice) : formatKrw(work.price),
+            "오늘",
+          ],
+          ["현재 소유자", work.owner.name, "최신"],
         ].map(([label, value, date]) => (
           <div
             key={`${label}-${value}`}

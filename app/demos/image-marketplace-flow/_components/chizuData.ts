@@ -1,3 +1,11 @@
+import { marketplaceUsers } from "@/lib/image-marketplace-flow/demoUsers";
+import type {
+  ListingStatus,
+  MarketplaceUser,
+  UsageRight,
+  WorkOwnershipStatus,
+} from "@/lib/image-marketplace-flow/marketplaceTypes";
+
 export type WorkItem = {
   id: string;
   title: string;
@@ -8,7 +16,22 @@ export type WorkItem = {
   height: number;
   tags: string[];
   status: "Buy now" | "Auction" | "Offer";
+  creator: MarketplaceUser;
+  owner: MarketplaceUser;
+  ownershipStatus: WorkOwnershipStatus;
+  listingStatus: ListingStatus;
+  askingPrice: number | null;
+  lastSalePrice: number | null;
+  offerCount: number;
+  usageRights: UsageRight[];
 };
+
+const defaultRights: UsageRight[] = [
+  { label: "상업적 이용 가능", enabled: true },
+  { label: "독점 사용권 이전", enabled: true },
+  { label: "2차 수정 가능", enabled: true },
+  { label: "재판매 가능", enabled: false },
+];
 
 export const works: WorkItem[] = [
   {
@@ -21,6 +44,14 @@ export const works: WorkItem[] = [
     height: 703,
     tags: ["illustration", "character"],
     status: "Buy now",
+    creator: marketplaceUsers.min,
+    owner: marketplaceUsers.min,
+    ownershipStatus: "OWNED_BY_CREATOR",
+    listingStatus: "LISTED",
+    askingPrice: 280_000,
+    lastSalePrice: null,
+    offerCount: 0,
+    usageRights: defaultRights,
   },
   {
     id: "work-02",
@@ -31,7 +62,15 @@ export const works: WorkItem[] = [
     width: 778,
     height: 1100,
     tags: ["anime", "blue"],
-    status: "Auction",
+    status: "Offer",
+    creator: marketplaceUsers.haru,
+    owner: marketplaceUsers.collectorA,
+    ownershipStatus: "OWNED_BY_COLLECTOR",
+    listingStatus: "OFFER_OPEN",
+    askingPrice: null,
+    lastSalePrice: 160_000,
+    offerCount: 3,
+    usageRights: defaultRights,
   },
   {
     id: "work-03",
@@ -43,6 +82,19 @@ export const works: WorkItem[] = [
     height: 811,
     tags: ["portrait", "license"],
     status: "Offer",
+    creator: marketplaceUsers.noah,
+    owner: marketplaceUsers.collectorA,
+    ownershipStatus: "OWNED_BY_COLLECTOR",
+    listingStatus: "OFFER_OPEN",
+    askingPrice: null,
+    lastSalePrice: 420_000,
+    offerCount: 5,
+    usageRights: [
+      { label: "상업적 이용 가능", enabled: true },
+      { label: "독점 사용권 이전", enabled: true },
+      { label: "2차 수정 가능", enabled: false },
+      { label: "재판매 가능", enabled: true },
+    ],
   },
   {
     id: "work-04",
@@ -54,6 +106,14 @@ export const works: WorkItem[] = [
     height: 707,
     tags: ["3d", "interior"],
     status: "Buy now",
+    creator: marketplaceUsers.yuna,
+    owner: marketplaceUsers.yuna,
+    ownershipStatus: "OWNED_BY_CREATOR",
+    listingStatus: "LISTED",
+    askingPrice: 310_000,
+    lastSalePrice: null,
+    offerCount: 1,
+    usageRights: defaultRights,
   },
   {
     id: "work-05",
@@ -64,7 +124,15 @@ export const works: WorkItem[] = [
     width: 782,
     height: 1100,
     tags: ["concept", "dream"],
-    status: "Auction",
+    status: "Offer",
+    creator: marketplaceUsers.min,
+    owner: marketplaceUsers.collectorB,
+    ownershipStatus: "OWNED_BY_COLLECTOR",
+    listingStatus: "OFFER_OPEN",
+    askingPrice: null,
+    lastSalePrice: 190_000,
+    offerCount: 2,
+    usageRights: defaultRights,
   },
   {
     id: "work-06",
@@ -76,6 +144,14 @@ export const works: WorkItem[] = [
     height: 707,
     tags: ["neon", "landscape"],
     status: "Buy now",
+    creator: marketplaceUsers.haru,
+    owner: marketplaceUsers.haru,
+    ownershipStatus: "OWNED_BY_CREATOR",
+    listingStatus: "LISTED",
+    askingPrice: 350_000,
+    lastSalePrice: null,
+    offerCount: 0,
+    usageRights: defaultRights,
   },
   {
     id: "work-07",
@@ -87,6 +163,14 @@ export const works: WorkItem[] = [
     height: 683,
     tags: ["archive", "quiet"],
     status: "Offer",
+    creator: marketplaceUsers.noah,
+    owner: marketplaceUsers.collectorA,
+    ownershipStatus: "OWNED_BY_COLLECTOR",
+    listingStatus: "OFFER_OPEN",
+    askingPrice: null,
+    lastSalePrice: 220_000,
+    offerCount: 4,
+    usageRights: defaultRights,
   },
   {
     id: "work-08",
@@ -98,6 +182,14 @@ export const works: WorkItem[] = [
     height: 1667,
     tags: ["pixel", "memory"],
     status: "Buy now",
+    creator: marketplaceUsers.yuna,
+    owner: marketplaceUsers.yuna,
+    ownershipStatus: "OWNED_BY_CREATOR",
+    listingStatus: "LISTED",
+    askingPrice: 130_000,
+    lastSalePrice: null,
+    offerCount: 0,
+    usageRights: defaultRights,
   },
   {
     id: "work-09",
@@ -108,6 +200,19 @@ export const works: WorkItem[] = [
     width: 2963,
     height: 1667,
     tags: ["canvas", "exclusive"],
-    status: "Auction",
+    status: "Offer",
+    creator: marketplaceUsers.min,
+    owner: marketplaceUsers.collectorB,
+    ownershipStatus: "OWNED_BY_COLLECTOR",
+    listingStatus: "OFFER_OPEN",
+    askingPrice: null,
+    lastSalePrice: 480_000,
+    offerCount: 7,
+    usageRights: [
+      { label: "상업적 이용 가능", enabled: true },
+      { label: "독점 사용권 이전", enabled: true },
+      { label: "2차 수정 가능", enabled: true },
+      { label: "재판매 가능", enabled: true },
+    ],
   },
 ];
