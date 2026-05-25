@@ -8,6 +8,7 @@ import {
   getDemoChatHistory,
   saveDemoMessage,
 } from "@/lib/ai-chat-demo/repository";
+import { hasSupabaseAdminEnv } from "@/lib/supabase/admin";
 
 type ChatRequestBody = {
   roomId?: string;
@@ -38,13 +39,6 @@ export async function POST(request: Request) {
     async start(controller) {
       controller.enqueue(encodeSseEvent("meta", { roomId }));
 
-      void saveDemoMessage({
-        roomId,
-        characterId,
-        role: "human",
-        content: userMessage,
-      });
-
       try {
         const useCachedHistory = hasCachedSession(roomId);
         const [character, history] = await Promise.all([
@@ -55,6 +49,21 @@ export async function POST(request: Request) {
         if (!character) {
           controller.enqueue(
             encodeSseEvent("error", { error: "Character not found." }),
+          );
+          controller.close();
+          return;
+        }
+
+        const savedUserMessage = await saveDemoMessage({
+          roomId,
+          characterId,
+          role: "human",
+          content: userMessage,
+        });
+
+        if (hasSupabaseAdminEnv() && !savedUserMessage) {
+          controller.enqueue(
+            encodeSseEvent("error", { error: "Failed to save message." }),
           );
           controller.close();
           return;
@@ -72,12 +81,18 @@ export async function POST(request: Request) {
           controller.enqueue(encodeSseEvent("token", { token: chunk }));
         }
 
-        await saveDemoMessage({
+        const savedAiMessage = await saveDemoMessage({
           roomId,
           characterId,
           role: "ai",
           content: aiResponse,
         });
+
+        if (hasSupabaseAdminEnv() && !savedAiMessage) {
+          console.error("[ai-chat-demo] Failed to persist AI response.", {
+            roomId,
+          });
+        }
 
         controller.enqueue(encodeSseEvent("done", {}));
         controller.close();

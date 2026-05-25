@@ -56,6 +56,7 @@ export default function ChatRoomClient({
   const [awaitingFirstToken, setAwaitingFirstToken] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const hasInitialScrollRef = useRef(false);
+  const isNearBottomRef = useRef(true);
   const loading = streamingChatMutation.isPending || isWaitingForReply;
   const deletingRoom = deleteRoomMutation.isPending;
 
@@ -66,6 +67,14 @@ export default function ChatRoomClient({
         behavior,
       });
     });
+  }, []);
+
+  const handleMessageListScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    isNearBottomRef.current =
+      el.scrollHeight - el.scrollTop - el.clientHeight < 80;
   }, []);
 
   // --- Event Handlers ---
@@ -131,6 +140,14 @@ export default function ChatRoomClient({
     scrollToBottom,
   ]);
 
+  // 스트리밍 중 하단 근처에 있을 때만 자동 스크롤 (위로 읽는 중이면 유지)
+  useEffect(() => {
+    if (!loading) return;
+    if (!isNearBottomRef.current) return;
+
+    scrollToBottom("auto");
+  }, [loading, visibleMessages, awaitingFirstToken, scrollToBottom]);
+
   // --- Event Handlers ---
   async function sendMessage(message: string) {
     const trimmedMessage = message.trim();
@@ -148,6 +165,7 @@ export default function ChatRoomClient({
 
     setLocalMessages(optimisticMessages);
     setCachedMessages(requestRoomId, optimisticMessages);
+    isNearBottomRef.current = true;
     scrollToBottom();
     setIsWaitingForReply(true);
     setAwaitingFirstToken(true);
@@ -260,7 +278,6 @@ export default function ChatRoomClient({
       const completedMessages = buildStreamingMessages(finalAiContent);
       setLocalMessages(completedMessages);
       setCachedMessages(responseRoomId, completedMessages);
-      scrollToBottom();
     } finally {
       reveal.stop();
       setAwaitingFirstToken(false);
@@ -311,6 +328,7 @@ export default function ChatRoomClient({
           character={character}
           awaitingFirstToken={awaitingFirstToken}
           messages={visibleMessages}
+          onScroll={handleMessageListScroll}
           scrollRef={scrollRef}
         />
         <SampleMessageScroller
