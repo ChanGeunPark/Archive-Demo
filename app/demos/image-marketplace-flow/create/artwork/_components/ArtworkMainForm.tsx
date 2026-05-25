@@ -11,12 +11,6 @@ type ArtworkMainFormProps = {
   onBack: () => void;
 };
 
-const collections = [
-  { id: "archive-originals", name: "Archive Originals", count: 24 },
-  { id: "character-works", name: "Character Works", count: 18 },
-  { id: "study-room", name: "Study Room", count: 9 },
-];
-
 export default function ArtworkMainForm({
   defaultValues,
   onSubmit,
@@ -29,9 +23,6 @@ export default function ArtworkMainForm({
     control,
   } = useForm<ArtworkFormData>({
     defaultValues: {
-      artistName: "Archive Artist",
-      collectionId: "archive-originals",
-      visibility: "public",
       allowOffers: true,
       ...defaultValues,
     },
@@ -44,8 +35,8 @@ export default function ArtworkMainForm({
       <form onSubmit={handleSubmit(onSubmit)}>
         <h1 className="text-3xl font-black tracking-normal">작품 정보 입력</h1>
         <p className="mt-4 max-w-2xl break-keep text-base leading-7 text-[#656B73]">
-          작품명, 설명, 가격, 컬렉션을 입력해 주세요. NFT 민팅 대신 작품
-          마켓플레이스 등록에 필요한 정보만 다룹니다.
+          작품명, 설명, 판매가를 입력해 주세요. 등록 시 마켓플레이스 work
+          스키마에 맞는 정보가 저장됩니다.
         </p>
 
         <div className="mt-8 space-y-7">
@@ -81,71 +72,21 @@ export default function ArtworkMainForm({
             </div>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <TextField
-              label="작가명"
-              required
-              placeholder="작가 또는 스튜디오명"
-              error={errors.artistName?.message}
-              {...register("artistName", {
-                required: "작가명을 입력해 주세요.",
-                maxLength: { value: 24, message: "24자 이하로 입력해 주세요." },
-              })}
-            />
-            <TextField
-              label="판매가"
-              type="number"
-              min={0}
-              step={1000}
-              placeholder="0"
-              suffix="KRW"
-              error={errors.price?.message}
-              {...register("price", {
-                valueAsNumber: true,
-                min: { value: 0, message: "0원 이상으로 입력해 주세요." },
-              })}
-            />
-          </div>
+          <TextField
+            label="판매가"
+            type="number"
+            min={0}
+            step={1000}
+            placeholder="0"
+            suffix="KRW"
+            error={errors.askingPrice?.message}
+            {...register("askingPrice", {
+              valueAsNumber: true,
+              min: { value: 0, message: "0원 이상으로 입력해 주세요." },
+            })}
+          />
 
           <div>
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-base font-black">컬렉션 선택</h2>
-              <button
-                type="button"
-                className="h-8 rounded-full border border-[#D8DBDE] px-3 text-xs font-black text-[#656B73]"
-              >
-                + 새 컬렉션
-              </button>
-            </div>
-            <div className="flex gap-4 overflow-x-auto pb-2">
-              {collections.map((collection) => (
-                <label key={collection.id} className="min-w-[120px]">
-                  <input
-                    type="radio"
-                    value={collection.id}
-                    className="peer hidden"
-                    {...register("collectionId", { required: true })}
-                  />
-                  <span className="block cursor-pointer overflow-hidden rounded-lg border border-[#E4E6E8] bg-white opacity-70 transition peer-checked:border-[#17191C] peer-checked:opacity-100 peer-checked:shadow-[0_10px_28px_rgba(23,25,28,0.13)]">
-                    <span className="block h-[88px] bg-[linear-gradient(135deg,#17191C,#B9C0C9)]" />
-                    <span className="block truncate px-3 pt-2 text-sm font-black">
-                      {collection.name}
-                    </span>
-                    <span className="block px-3 pb-3 text-xs text-[#777D84]">
-                      {collection.count} works
-                    </span>
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <ToggleRow
-              title="공개 등록"
-              description="마켓플레이스 탐색 화면에 작품을 노출합니다."
-              {...register("visibility")}
-            />
             <label className="flex items-center justify-between gap-4 rounded-xl border border-[#ECEEF0] p-4">
               <span>
                 <span className="block text-sm font-black">가격 제안 허용</span>
@@ -216,28 +157,3 @@ const TextField = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInp
     </label>
   );
 });
-
-function ToggleRow({
-  title,
-  description,
-  ...props
-}: React.SelectHTMLAttributes<HTMLSelectElement> & {
-  title: string;
-  description: string;
-}) {
-  return (
-    <label className="flex items-center justify-between gap-4 rounded-xl border border-[#ECEEF0] p-4">
-      <span>
-        <span className="block text-sm font-black">{title}</span>
-        <span className="mt-1 block text-sm text-[#777D84]">{description}</span>
-      </span>
-      <select
-        className="h-9 rounded-md border border-[#D8DBDE] bg-white px-2 text-sm font-bold"
-        {...props}
-      >
-        <option value="public">공개</option>
-        <option value="private">비공개</option>
-      </select>
-    </label>
-  );
-}

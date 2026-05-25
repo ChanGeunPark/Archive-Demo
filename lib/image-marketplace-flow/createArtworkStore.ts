@@ -1,16 +1,19 @@
 "use client";
 
 import { create } from "zustand";
+import {
+  licensePolicyToUsageRights,
+  resolveListingStatus,
+  type ArtworkLicensePolicy,
+} from "./artworkCreateUtils";
+import { marketplaceUsers } from "./demoUsers";
+import type {
+  ListingStatus,
+  UsageRight,
+  WorkOwnershipStatus,
+} from "./marketplaceTypes";
 
-export type ArtworkLicensePolicy =
-  | "exclusive"
-  | "commercial"
-  | "commercial-no-ai"
-  | "personal"
-  | "portfolio"
-  | "open";
-
-export type ArtworkVisibility = "public" | "private";
+export type { ArtworkLicensePolicy } from "./artworkCreateUtils";
 
 export type CreateArtworkStep =
   | "FORM_IMAGE"
@@ -22,26 +25,32 @@ export type CreateArtworkStep =
   | "UPLOAD_SUCCESS"
   | "UPLOAD_FAIL";
 
+/** marketplace_demo_works 입력 폼에 대응하는 필드 */
 export interface ArtworkFormData {
   title?: string;
   description?: string;
-  artistName?: string;
-  collectionId?: string;
-  price?: number;
-  category?: string;
-  visibility?: ArtworkVisibility;
+  askingPrice?: number;
   allowOffers?: boolean;
   licensePolicy?: ArtworkLicensePolicy;
 }
 
-export interface CreatedArtwork {
+/** marketplace_demo_works row와 동일한 구조 */
+export interface CreatedWork {
   id: string;
   title: string;
-  artist: string;
-  image: string;
-  price: number;
+  description: string;
+  imageUrl: string;
+  width: number;
+  height: number;
+  creatorId: string;
+  ownerId: string;
+  ownershipStatus: WorkOwnershipStatus;
+  listingStatus: ListingStatus;
+  askingPrice: number | null;
+  lastSalePrice: number | null;
+  offerCount: number;
   tags: string[];
-  licensePolicy: ArtworkLicensePolicy;
+  usageRights: UsageRight[];
   createdAt: string;
 }
 
@@ -50,21 +59,23 @@ type CreateArtworkState = {
   artworkId: string;
   previewImage: string;
   artworkFiles: File[];
+  imageWidth: number;
+  imageHeight: number;
   formData: ArtworkFormData;
   tags: string[];
-  createdWorks: CreatedArtwork[];
+  createdWorks: CreatedWork[];
   setCurrentStep: (nextStep: CreateArtworkStep) => void;
   setArtworkId: (id: string) => void;
   setPreviewImage: (nextPreviewImage: string) => void;
   setArtworkFiles: (nextArtworkFiles: File[]) => void;
+  setImageDimensions: (width: number, height: number) => void;
   setFormData: (nextFormData: ArtworkFormData) => void;
   cleanFormData: () => void;
-  setPrice: (nextPrice: number) => void;
   setLicensePolicy: (nextPolicy: ArtworkLicensePolicy) => void;
   addTag: (name: string) => void;
   deleteTag: (name: string) => void;
   cleanTags: () => void;
-  createArtwork: () => CreatedArtwork;
+  createArtwork: () => CreatedWork;
   cleanData: () => void;
 };
 
@@ -73,6 +84,8 @@ export const useCreateArtworkStore = create<CreateArtworkState>((set, get) => ({
   artworkId: "",
   previewImage: "",
   artworkFiles: [],
+  imageWidth: 1000,
+  imageHeight: 1000,
   formData: {},
   tags: [],
   createdWorks: [],
@@ -83,11 +96,11 @@ export const useCreateArtworkStore = create<CreateArtworkState>((set, get) => ({
     set({ previewImage: nextPreviewImage }),
   setArtworkFiles: (nextArtworkFiles) =>
     set({ artworkFiles: nextArtworkFiles }),
+  setImageDimensions: (width, height) =>
+    set({ imageWidth: width, imageHeight: height }),
   setFormData: (nextFormData) =>
     set((state) => ({ formData: { ...state.formData, ...nextFormData } })),
   cleanFormData: () => set({ formData: {} }),
-  setPrice: (nextPrice) =>
-    set((state) => ({ formData: { ...state.formData, price: nextPrice } })),
   setLicensePolicy: (nextPolicy) =>
     set((state) => ({
       formData: { ...state.formData, licensePolicy: nextPolicy },
@@ -107,24 +120,40 @@ export const useCreateArtworkStore = create<CreateArtworkState>((set, get) => ({
   cleanTags: () => set({ tags: [] }),
 
   createArtwork: () => {
-    const { formData, previewImage, tags } = get();
-    const createdArtwork: CreatedArtwork = {
-      id: `artwork-${Date.now()}`,
+    const { formData, previewImage, tags, imageWidth, imageHeight } = get();
+    const askingPrice =
+      formData.askingPrice && formData.askingPrice > 0
+        ? formData.askingPrice
+        : null;
+    const allowOffers = formData.allowOffers ?? true;
+    const licensePolicy = formData.licensePolicy || "personal";
+    const creatorId = marketplaceUsers.guest.id;
+
+    const createdWork: CreatedWork = {
+      id: `work-${Date.now()}`,
       title: formData.title || "Untitled Artwork",
-      artist: formData.artistName || "Archive Artist",
-      image: previewImage,
-      price: Number(formData.price || 0),
+      description: formData.description || "",
+      imageUrl: previewImage,
+      width: imageWidth,
+      height: imageHeight,
+      creatorId,
+      ownerId: creatorId,
+      ownershipStatus: "OWNED_BY_CREATOR",
+      listingStatus: resolveListingStatus(askingPrice, allowOffers),
+      askingPrice,
+      lastSalePrice: null,
+      offerCount: 0,
       tags,
-      licensePolicy: formData.licensePolicy || "personal",
+      usageRights: licensePolicyToUsageRights(licensePolicy),
       createdAt: new Date().toISOString(),
     };
 
     set((state) => ({
-      artworkId: createdArtwork.id,
-      createdWorks: [createdArtwork, ...state.createdWorks],
+      artworkId: createdWork.id,
+      createdWorks: [createdWork, ...state.createdWorks],
     }));
 
-    return createdArtwork;
+    return createdWork;
   },
 
   cleanData: () =>
@@ -133,6 +162,8 @@ export const useCreateArtworkStore = create<CreateArtworkState>((set, get) => ({
       artworkId: "",
       previewImage: "",
       artworkFiles: [],
+      imageWidth: 1000,
+      imageHeight: 1000,
       formData: {},
       tags: [],
     }),

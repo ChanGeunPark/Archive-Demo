@@ -5,9 +5,9 @@ import Link from "next/link";
 import { useCreateArtworkStore } from "@/lib/image-marketplace-flow/createArtworkStore";
 import type {
   ArtworkFormData,
-  ArtworkLicensePolicy,
   CreateArtworkStep,
 } from "@/lib/image-marketplace-flow/createArtworkStore";
+import type { ArtworkLicensePolicy } from "@/lib/image-marketplace-flow/artworkCreateUtils";
 import { cls } from "@/lib/client/utils";
 import ArtworkPreview from "./ArtworkPreview";
 import ArtworkUploadStep from "./ArtworkUploadStep";
@@ -68,14 +68,18 @@ export default function ArtworkCreateClient() {
     return () => window.clearTimeout(timer);
   }, [createArtwork, currentStep, setCurrentStep]);
 
-  const handleImageUpload = (files: File[]) => {
+  const handleImageUpload = async (files: File[]) => {
     const artwork = files[0];
     if (!artwork) {
       return;
     }
 
-    store.setPreviewImage(URL.createObjectURL(artwork));
+    const previewUrl = URL.createObjectURL(artwork);
+    const dimensions = await readImageDimensions(previewUrl);
+
+    store.setPreviewImage(previewUrl);
     store.setArtworkFiles(files);
+    store.setImageDimensions(dimensions.width, dimensions.height);
     store.setCurrentStep("FORM_MAIN");
   };
 
@@ -90,7 +94,6 @@ export default function ArtworkCreateClient() {
             onBack={() => store.cleanData()}
             onSubmit={(formData: ArtworkFormData) => {
               store.setFormData(formData);
-              store.setPrice(Number(formData.price || 0));
               store.setCurrentStep("FORM_LICENSE");
             }}
           />
@@ -182,6 +185,25 @@ export default function ArtworkCreateClient() {
   );
 }
 
+function readImageDimensions(
+  src: string,
+): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const image = new window.Image();
+
+    image.onload = () => {
+      resolve({
+        width: image.naturalWidth || 1000,
+        height: image.naturalHeight || 1000,
+      });
+    };
+    image.onerror = () => {
+      reject(new Error("Failed to read image dimensions."));
+    };
+    image.src = src;
+  });
+}
+
 function ProcessCard({
   title,
   description,
@@ -222,8 +244,8 @@ function SuccessCard() {
       </h1>
       <p className="mt-3 max-w-xl text-base leading-7 text-[#656B73]">
         {store.formData.title} 작품이 마켓플레이스 데모에 등록되었습니다.
-        지금은 로컬 데모 저장소에 보관되며, 새 작품 등록 플로우를 바로 다시
-        확인할 수 있습니다.
+        판매 상태, 이용 조건, 태그를 포함한 work row 형식으로 로컬 저장소에
+        보관됩니다.
       </p>
       <div className="mt-8 flex flex-wrap gap-2">
         <Link
