@@ -81,7 +81,10 @@ export default function WorkPriceBlock({ work }: { work: WorkItem }) {
   };
 
   const handleOtherPurchase = () => {
-    simulateOtherUserPurchase(work.id, askingPrice || lastSalePrice || work.price);
+    simulateOtherUserPurchase(
+      work.id,
+      askingPrice || lastSalePrice || work.price,
+    );
     setNotice(
       "다른 사용자 구매 이벤트 수신: 이벤트는 갱신 신호로만 사용하고, 상세 API 재조회 결과로 현재 소유자를 갱신했습니다.",
     );
@@ -107,7 +110,7 @@ export default function WorkPriceBlock({ work }: { work: WorkItem }) {
   };
 
   return (
-    <section className="order-2 flex w-full flex-col lg:sticky lg:top-20 lg:w-[365px] lg:self-start lg:px-6 max-lg:order-3">
+    <section className="order-2 flex w-full flex-col lg:sticky lg:top-20 lg:w-[365px] lg:self-start lg:px-6 max-lg:order-3 mt-2 lg:mt-0">
       <div className="mt-8 flex w-full flex-col max-lg:mt-0">
         <div className="max-lg:hidden">
           <div className="flex items-start justify-between gap-3">

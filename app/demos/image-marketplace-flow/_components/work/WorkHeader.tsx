@@ -14,12 +14,6 @@ export default function WorkHeader() {
           뒤로가기
         </Link>
         <div className="flex items-center gap-2">
-          <Link
-            href="/demos/image-marketplace-flow"
-            className="h-10 rounded-md border border-[#D8DBDE] bg-white px-3 py-2 text-sm font-bold text-[#3F444B] transition hover:border-[#17191C]"
-          >
-            Discover
-          </Link>
           <MarketplaceLogin />
         </div>
       </div>
