@@ -26,7 +26,7 @@ export function ChatComposer({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex h-[90px] flex-shrink-0 items-center gap-2 bg-white px-4"
+      className="flex h-[90px] shrink-0 items-center gap-2 bg-white px-4"
     >
       <input
         value={inputText}
@@ -36,8 +36,9 @@ export function ChatComposer({
       />
       <button
         type="submit"
+        aria-label="채팅 보내기"
         disabled={disabled}
-        className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[#17191C] text-sm font-bold text-white disabled:bg-[#D8DBDE]"
+        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#17191C] text-sm font-bold text-white disabled:bg-[#D8DBDE]"
       >
         <SendFillIcon width={24} height={24} fill="#FFFFFF" />
       </button>
