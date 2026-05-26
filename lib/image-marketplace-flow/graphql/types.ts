@@ -17,6 +17,8 @@ export type WorksQueryVariables = {
   after?: string;
   query?: string;
   buyNowOnly?: boolean;
+  minPrice?: number;
+  maxPrice?: number;
 };
 
 export type WorksQueryResponse = {

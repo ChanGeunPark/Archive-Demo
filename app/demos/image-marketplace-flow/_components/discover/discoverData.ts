@@ -1,10 +1,6 @@
 import type { DiscoverTabItem } from "./discoverTypes";
 
-export const DISCOVER_TABS: DiscoverTabItem[] = [
-  { id: "work", label: "작품" },
-  { id: "artist", label: "작가" },
-  { id: "tag", label: "태그" },
-];
+export const DISCOVER_TABS: DiscoverTabItem[] = [{ id: "work", label: "작품" }];
 
 export const collections = [
   {

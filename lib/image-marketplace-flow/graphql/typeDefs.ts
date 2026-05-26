@@ -76,6 +76,8 @@ export const typeDefs = gql`
       after: String
       query: String
       buyNowOnly: Boolean
+      minPrice: Int
+      maxPrice: Int
     ): WorkConnection!
     work(id: ID!): Work
     user(id: ID!): MarketplaceUser

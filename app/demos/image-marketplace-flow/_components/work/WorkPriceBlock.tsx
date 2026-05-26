@@ -248,7 +248,7 @@ function WorkPriceBlockContent({ work }: { work: Work }) {
     },
   });
 
-  const isMyWork = readStoredMarketplaceUserId() === work.owner?.id;
+  const myUserId = readStoredMarketplaceUserId();
 
   return (
     <>
@@ -353,72 +353,76 @@ function WorkPriceBlockContent({ work }: { work: Work }) {
               </p>
             </div>
 
-            {isOwner ? (
+            {myUserId ? (
               <>
-                <OwnerPricePanel
-                  isListed={isListed}
-                  currentAskingPrice={askingPrice}
-                  value={newAskingPrice}
-                  onChange={setNewAskingPrice}
-                  onSubmit={handleUpdateAskingPrice}
-                  loading={updatePriceLoading}
-                />
-                <OwnerOfferPanel
-                  offers={pendingOffers}
-                  onAccept={handleAcceptOffer}
-                  accepting={acceptOfferLoading}
-                />
-              </>
-            ) : isListed ? (
-              <button
-                type="button"
-                onClick={handleBuy}
-                disabled={buyLoading}
-                className="mt-4 h-12 w-full rounded-xl bg-[#141416] text-sm font-bold text-white transition hover:bg-[#FFE55C] hover:text-black active:scale-[0.98] disabled:opacity-60"
-              >
-                {buyLoading ? "구매 처리 중..." : "독점 라이선스 구매"}
-              </button>
-            ) : null}
-
-            {!isOwner && canOffer ? (
-              <div className="mt-4 rounded-xl border border-zinc-100 p-3">
-                <p className="text-xs font-bold text-gray-500">
-                  현재 소유자에게 가격 제안
-                </p>
-                <div className="mt-2 flex gap-2">
-                  <input
-                    value={offerAmount}
-                    onChange={(event) => setOfferAmount(event.target.value)}
-                    type="number"
-                    min={0}
-                    placeholder="금액"
-                    disabled={createOfferLoading}
-                    className="h-11 min-w-0 flex-1 rounded-lg border border-[#D8DBDE] px-3 text-sm outline-none focus:border-[#141416] disabled:opacity-60"
-                  />
+                {isOwner ? (
+                  <>
+                    <OwnerPricePanel
+                      isListed={isListed}
+                      currentAskingPrice={askingPrice}
+                      value={newAskingPrice}
+                      onChange={setNewAskingPrice}
+                      onSubmit={handleUpdateAskingPrice}
+                      loading={updatePriceLoading}
+                    />
+                    <OwnerOfferPanel
+                      offers={pendingOffers}
+                      onAccept={handleAcceptOffer}
+                      accepting={acceptOfferLoading}
+                    />
+                  </>
+                ) : isListed ? (
                   <button
                     type="button"
-                    onClick={handleOffer}
-                    disabled={createOfferLoading}
-                    className="h-11 rounded-lg bg-[#141416] px-4 text-sm font-bold text-white disabled:opacity-60"
+                    onClick={handleBuy}
+                    disabled={buyLoading}
+                    className="mt-4 h-12 w-full rounded-xl bg-[#141416] text-sm font-bold text-white transition hover:bg-[#FFE55C] hover:text-black active:scale-[0.98] disabled:opacity-60"
                   >
-                    {createOfferLoading ? "전송 중..." : "제안"}
+                    {buyLoading ? "구매 처리 중..." : "독점 라이선스 구매"}
                   </button>
-                </div>
-              </div>
-            ) : null}
+                ) : null}
 
-            {isMyWork && (
-              <button
-                type="button"
-                onClick={() => {
-                  setShowDeleteWorkModal(true);
-                }}
-                disabled={deleteWorkState.loading}
-                className="mt-3 h-11 w-full rounded-xl border border-red-500 text-sm font-bold text-red-500 transition hover:bg-red-600 hover:text-white"
-              >
-                {deleteWorkState.loading ? "작품 삭제 중..." : "작품 삭제"}
-              </button>
-            )}
+                {!isOwner && canOffer ? (
+                  <div className="mt-4 rounded-xl border border-zinc-100 p-3">
+                    <p className="text-xs font-bold text-gray-500">
+                      현재 소유자에게 가격 제안
+                    </p>
+                    <div className="mt-2 flex gap-2">
+                      <input
+                        value={offerAmount}
+                        onChange={(event) => setOfferAmount(event.target.value)}
+                        type="number"
+                        min={0}
+                        placeholder="금액"
+                        disabled={createOfferLoading}
+                        className="h-11 min-w-0 flex-1 rounded-lg border border-[#D8DBDE] px-3 text-sm outline-none focus:border-[#141416] disabled:opacity-60"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleOffer}
+                        disabled={createOfferLoading}
+                        className="h-11 rounded-lg bg-[#141416] px-4 text-sm font-bold text-white disabled:opacity-60"
+                      >
+                        {createOfferLoading ? "전송 중..." : "제안"}
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+
+                {isOwner && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowDeleteWorkModal(true);
+                    }}
+                    disabled={deleteWorkState.loading}
+                    className="mt-3 h-11 w-full rounded-xl border border-red-500 text-sm font-bold text-red-500 transition hover:bg-red-600 hover:text-white"
+                  >
+                    {deleteWorkState.loading ? "작품 삭제 중..." : "작품 삭제"}
+                  </button>
+                )}
+              </>
+            ) : null}
 
             {notice ? (
               <p className="mt-3 rounded-xl bg-[#FFF8D7] p-3 text-xs font-semibold leading-5 text-[#6F5600]">

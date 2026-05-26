@@ -6,9 +6,9 @@ export const marketplaceClient = new ApolloClient({
     typePolicies: {
       Query: {
         fields: {
-          // works(first, after, query, buyNowOnly) cursor 페이지네이션 캐시 정책
+          // works(first, after, query, buyNowOnly, minPrice, maxPrice) cursor 페이지네이션 캐시 정책
           works: {
-            keyArgs: ["query", "buyNowOnly"],
+            keyArgs: ["query", "buyNowOnly", "minPrice", "maxPrice"],
             merge(existing, incoming, { args }) {
               if (!args?.after) {
                 return incoming;

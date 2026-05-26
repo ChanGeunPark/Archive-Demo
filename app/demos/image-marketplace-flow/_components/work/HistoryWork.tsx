@@ -1,7 +1,52 @@
 import Image from "next/image";
 import { formatKrw } from "./workUtils";
 import { Work } from "@/lib/image-marketplace-flow/marketplaceTypes";
+import { resolveMarketplaceAvatar } from "@/lib/image-marketplace-flow/marketplaceAvatar";
 import { Skeleton } from "./Skeleton";
+
+type HistoryItem = {
+  key: string;
+  label: string;
+  value: string;
+  date: string;
+  avatar: string;
+};
+
+function buildHistoryItems(work: Work): HistoryItem[] {
+  const items: HistoryItem[] = [
+    {
+      key: "created",
+      label: "작품 등록",
+      value: work.creator.name,
+      date: "처음",
+      avatar: resolveMarketplaceAvatar(work.creator.avatar),
+    },
+  ];
+
+  const isOwnershipTransferred = work.owner.id !== work.creator.id;
+
+  items.push({
+    key: isOwnershipTransferred ? "transferred" : "listed",
+    label: isOwnershipTransferred ? "소유권 이전" : "판매 등록",
+    value: work.lastSalePrice
+      ? formatKrw(work.lastSalePrice)
+      : formatKrw(work.askingPrice ?? 0),
+    date: "오늘",
+    avatar: resolveMarketplaceAvatar(
+      isOwnershipTransferred ? work.owner.avatar : work.creator.avatar,
+    ),
+  });
+
+  items.push({
+    key: "current-owner",
+    label: "현재 소유자",
+    value: work.owner.name,
+    date: "최신",
+    avatar: resolveMarketplaceAvatar(work.owner.avatar),
+  });
+
+  return items;
+}
 
 function HistoryWorkSkeleton() {
   return (
@@ -43,37 +88,27 @@ export default function HistoryWork({
     <section className="mt-[62px] w-full">
       <h2 className="text-xl font-black text-gray-900">히스토리</h2>
       <div className="mt-4 flex max-h-[350px] w-full flex-col overflow-y-auto rounded-xl border border-[#EBEBEB] bg-white">
-        {[
-          ["작품 등록", work.creator.name, "처음"],
-          [
-            work.owner.id === work.creator.id ? "판매 등록" : "소유권 이전",
-            work.lastSalePrice
-              ? formatKrw(work.lastSalePrice)
-              : formatKrw(work.askingPrice ?? 0),
-            "오늘",
-          ],
-          ["현재 소유자", work.owner.name, "최신"],
-        ].map(([label, value, date]) => (
+        {buildHistoryItems(work).map((item) => (
           <div
-            key={`${label}-${value}`}
+            key={item.key}
             className="flex items-center justify-between border-b border-gray-100 px-4 py-3 last:border-b-0"
           >
             <div className="flex min-w-0 items-center">
               <Image
-                src="/images/marketplace/profile/profile_default_180x180_00.jpg"
+                src={item.avatar}
                 alt=""
                 width={32}
                 height={32}
-                className="h-8 w-8 rounded-full"
+                className="h-8 w-8 rounded-full object-cover"
               />
               <div className="ml-3 min-w-0">
                 <p className="truncate text-sm font-semibold text-gray-800">
-                  {label}
+                  {item.label}
                 </p>
-                <p className="truncate text-xs text-gray-500">{value}</p>
+                <p className="truncate text-xs text-gray-500">{item.value}</p>
               </div>
             </div>
-            <span className="shrink-0 text-xs text-gray-400">{date}</span>
+            <span className="shrink-0 text-xs text-gray-400">{item.date}</span>
           </div>
         ))}
       </div>

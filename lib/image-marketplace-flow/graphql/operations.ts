@@ -12,12 +12,16 @@ export const WORKS_QUERY = gql`
     $after: String
     $query: String
     $buyNowOnly: Boolean
+    $minPrice: Int
+    $maxPrice: Int
   ) {
     works(
       first: $first
       after: $after
       query: $query
       buyNowOnly: $buyNowOnly
+      minPrice: $minPrice
+      maxPrice: $maxPrice
     ) {
       edges {
         cursor

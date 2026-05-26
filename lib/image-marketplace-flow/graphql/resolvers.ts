@@ -21,6 +21,8 @@ export const resolvers = {
         after?: string;
         query?: string;
         buyNowOnly?: boolean;
+        minPrice?: number;
+        maxPrice?: number;
       },
     ) =>
       listWorks({
@@ -28,6 +30,8 @@ export const resolvers = {
         after: args.after,
         query: args.query,
         buyNowOnly: args.buyNowOnly,
+        minPrice: args.minPrice,
+        maxPrice: args.maxPrice,
       }),
     work: (_parent: unknown, args: { id: string }) => getWorkById(args.id),
     user: (_parent: unknown, args: { id: string }) => getUserById(args.id),

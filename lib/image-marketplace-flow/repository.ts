@@ -188,6 +188,8 @@ export type ListWorksOptions = {
   after?: string;
   query?: string;
   buyNowOnly?: boolean;
+  minPrice?: number;
+  maxPrice?: number;
 };
 
 export type WorkEdge = {
@@ -252,7 +254,7 @@ export async function listWorks(
     return emptyWorksConnection();
   }
 
-  const { first, after, query, buyNowOnly } = options;
+  const { first, after, query, buyNowOnly, minPrice, maxPrice } = options;
 
   try {
     const supabase = createSupabaseAdminClient();
@@ -275,6 +277,14 @@ export async function listWorks(
 
     if (buyNowOnly) {
       dbQuery = dbQuery.eq("listing_status", "LISTED").gt("asking_price", 0);
+    }
+
+    if (typeof minPrice === "number") {
+      dbQuery = dbQuery.gte("asking_price", minPrice);
+    }
+
+    if (typeof maxPrice === "number") {
+      dbQuery = dbQuery.lte("asking_price", maxPrice);
     }
 
     if (query?.trim()) {
