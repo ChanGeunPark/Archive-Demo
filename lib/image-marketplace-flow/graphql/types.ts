@@ -31,6 +31,25 @@ export type WorksQueryResponse = {
     totalCount: number | null;
   };
 };
+
+export type CreatorWorksQueryVariables = {
+  creatorId: string;
+  first?: number;
+  excludeWorkId?: string;
+};
+
+export type CreatorWorksQueryResponse = {
+  creatorWorks: WorksQueryWork[];
+};
+
+export type RandomWorksQueryVariables = {
+  first?: number;
+  excludeWorkId?: string;
+};
+
+export type RandomWorksQueryResponse = {
+  randomWorks: WorksQueryWork[];
+};
 export type WorkDetailQueryResponse = {
   work: Work | null;
 };

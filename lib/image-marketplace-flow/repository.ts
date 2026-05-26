@@ -192,6 +192,17 @@ export type ListWorksOptions = {
   maxPrice?: number;
 };
 
+export type ListCreatorWorksOptions = {
+  creatorId: string;
+  first?: number;
+  excludeWorkId?: string;
+};
+
+export type ListRandomWorksOptions = {
+  first?: number;
+  excludeWorkId?: string;
+};
+
 export type WorkEdge = {
   cursor: string;
   node: Work;
@@ -328,6 +339,73 @@ export async function listWorks(
     logSupabaseFallback("Failed to load works", error);
     return emptyWorksConnection();
   }
+}
+
+/** 제작자의 다른 작품 목록 조회 */
+export async function listCreatorWorks(
+  options: ListCreatorWorksOptions,
+): Promise<Work[]> {
+  if (!hasSupabaseAdminEnv()) {
+    return [];
+  }
+
+  const { creatorId, first = 10, excludeWorkId } = options;
+
+  try {
+    const supabase = createSupabaseAdminClient();
+    let dbQuery = supabase
+      .from("marketplace_demo_works")
+      .select(WORK_BASE_SELECT)
+      .eq("creator_id", creatorId)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(first);
+
+    if (excludeWorkId) {
+      dbQuery = dbQuery.neq("id", excludeWorkId);
+    }
+
+    const { data, error } = await dbQuery;
+
+    if (error || !data) {
+      logSupabaseFallback("Failed to load creator works", error);
+      return [];
+    }
+
+    return (data as WorkWithRelations[]).map((row) => mapWork(row));
+  } catch (error) {
+    logSupabaseFallback("Failed to load creator works", error);
+    return [];
+  }
+}
+
+const RANDOM_WORKS_POOL_SIZE = 80;
+
+function shuffleWorks<T>(items: T[]): T[] {
+  const shuffled = [...items];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[randomIndex]] = [
+      shuffled[randomIndex],
+      shuffled[index],
+    ];
+  }
+
+  return shuffled;
+}
+
+/** 랜덤 작품 목록 조회 */
+export async function listRandomWorks(
+  options: ListRandomWorksOptions = {},
+): Promise<Work[]> {
+  const { first = 10, excludeWorkId } = options;
+  const connection = await listWorks({ first: RANDOM_WORKS_POOL_SIZE });
+  const pool = connection.edges
+    .map((edge) => edge.node)
+    .filter((work) => work.id !== excludeWorkId);
+
+  return shuffleWorks(pool).slice(0, first);
 }
 
 /** 작품 생성 */

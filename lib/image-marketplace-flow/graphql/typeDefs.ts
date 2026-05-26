@@ -79,6 +79,12 @@ export const typeDefs = gql`
       minPrice: Int
       maxPrice: Int
     ): WorkConnection!
+    creatorWorks(
+      creatorId: ID!
+      first: Int
+      excludeWorkId: ID
+    ): [Work!]!
+    randomWorks(first: Int, excludeWorkId: ID): [Work!]!
     work(id: ID!): Work
     user(id: ID!): MarketplaceUser
   }
