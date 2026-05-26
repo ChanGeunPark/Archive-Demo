@@ -129,7 +129,7 @@ export default function MasonryImageCard({
                     ethClass ? ethClass : "",
                   )}
                 >
-                  {isAuction ? "경매" : `${formatKrw(buyNowPrice || 0)}원`}
+                  {isAuction ? "구매" : `${formatKrw(buyNowPrice || 0)}원`}
                 </Link>
               ) : (
                 <div className="w-px" />
