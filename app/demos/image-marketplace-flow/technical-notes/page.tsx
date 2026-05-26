@@ -6,9 +6,9 @@ import { TechnicalNotes } from "../_components/TechnicalNotes";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Marketplace 기술 노트",
+  title: "Image Marketplace 플로우 재구성",
   description:
-    "CHIZU 이미지 마켓플레이스 데모의 Realtime 트리거, GraphQL refetch, 구매·제안 플로우를 정리한 기술 노트입니다.",
+    "CHIZU 마켓플레이스에서 데모로 재구현하며 바꾼 Masonry, Apollo 캐싱, cursor 무한 스크롤, Socket.IO→Supabase Realtime 전략을 정리한 기술 노트입니다.",
   path: "/demos/image-marketplace-flow/technical-notes",
 });
 
