@@ -20,6 +20,17 @@ export const WORKS_QUERY = gql`
   }
 `;
 
+export const USER_QUERY = gql`
+  query MarketplaceUser($id: ID!) {
+    user(id: $id) {
+      id
+      name
+      handle
+      avatar
+    }
+  }
+`;
+
 export const CREATE_WORK_MUTATION = gql`
   mutation CreateWork(
     $id: ID!
@@ -150,6 +161,17 @@ export const ACCEPT_OFFER_MUTATION = gql`
       newOwnerId
       transactionId
       occurredAt
+    }
+  }
+`;
+
+export const UPDATE_USER_AVATAR_MUTATION = gql`
+  mutation UpdateUserAvatar($userId: ID!, $avatarUrl: String!) {
+    updateUserAvatar(userId: $userId, avatarUrl: $avatarUrl) {
+      id
+      name
+      handle
+      avatar
     }
   }
 `;

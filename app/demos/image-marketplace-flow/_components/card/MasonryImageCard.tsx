@@ -5,6 +5,7 @@ import { MasonryImgProps } from "../types";
 import { useState } from "react";
 import Image from "next/image";
 import { cls } from "@/lib/client/utils";
+import { resolveMarketplaceAvatar } from "@/lib/image-marketplace-flow/marketplaceAvatar";
 
 function formatKrw(price: number) {
   return price.toLocaleString("ko-KR");
@@ -33,6 +34,7 @@ export default function MasonryImageCard({
   const currentTime = new Date();
   const isAuction = assetAuctionTime > currentTime ? true : false;
   const hasActionPrice = isAuction || !!buyNowPrice;
+  const profileSrc = resolveMarketplaceAvatar(userProfile);
 
   return (
     <>
@@ -98,8 +100,8 @@ export default function MasonryImageCard({
               >
                 <div className="flex w-full items-center overflow-hidden">
                   <Image
-                    className="h-[28px] w-[28px] shrink-0 rounded-full bg-white object-cover"
-                    src={`${userProfile}`}
+                    className="h-[28px] w-[28px] shrink-0 rounded-full bg-white object-cover ring-1 ring-white/30"
+                    src={profileSrc}
                     width={28}
                     height={28}
                     alt="profile img"

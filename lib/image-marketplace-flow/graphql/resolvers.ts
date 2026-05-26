@@ -4,8 +4,10 @@ import {
   createOffer as createOfferInRepository,
   createWork,
   deleteWork as deleteWorkFromRepository,
+  getUserById,
   getWorkById,
   listWorks,
+  updateUserAvatar as updateUserAvatarInRepository,
 } from "../repository";
 import type { CreateWorkInput } from "../repository";
 
@@ -13,6 +15,7 @@ export const resolvers = {
   Query: {
     works: () => listWorks(),
     work: (_parent: unknown, args: { id: string }) => getWorkById(args.id),
+    user: (_parent: unknown, args: { id: string }) => getUserById(args.id),
   },
   Mutation: {
     buyWork: (
@@ -35,5 +38,9 @@ export const resolvers = {
       }
       return true;
     },
+    updateUserAvatar: (
+      _parent: unknown,
+      args: { userId: string; avatarUrl: string },
+    ) => updateUserAvatarInRepository(args.userId, args.avatarUrl),
   },
 };

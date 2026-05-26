@@ -69,6 +69,37 @@ export async function uploadMarketplaceArtworkImage(input: {
   };
 }
 
+export async function uploadMarketplaceAvatarImage(input: {
+  file: File;
+  userId: string;
+}): Promise<UploadMarketplaceArtworkImageResult> {
+  const body = new FormData();
+  body.append("file", input.file, input.file.name);
+  body.append("userId", input.userId);
+
+  const response = await fetch("/api/marketplace/users/avatar/upload", {
+    method: "POST",
+    body,
+  });
+
+  const data = (await response.json().catch(() => ({}))) as {
+    id?: string;
+    url?: string;
+    error?: string;
+  };
+
+  if (!response.ok || !data.id || !data.url) {
+    throw new Error(
+      await readError(response, "프로필 이미지 업로드에 실패했습니다."),
+    );
+  }
+
+  return {
+    id: data.id,
+    url: data.url,
+  };
+}
+
 export function buildCreateWorkVariables(input: {
   id: string;
   formData: ArtworkFormData;

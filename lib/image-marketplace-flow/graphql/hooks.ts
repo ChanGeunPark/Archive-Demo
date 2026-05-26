@@ -1,10 +1,14 @@
-import { useMutation } from "@apollo/client/react";
+import { useMutation, useQuery } from "@apollo/client/react";
+import { useEffect } from "react";
 import { useWorkDetailStore } from "../workDetailStore";
+import { useMarketplaceStore } from "../marketplaceStore";
 import {
   ACCEPT_OFFER_MUTATION,
   BUY_WORK_MUTATION,
   CREATE_OFFER_MUTATION,
   DELETE_WORK_MUTATION,
+  UPDATE_USER_AVATAR_MUTATION,
+  USER_QUERY,
   WORKS_QUERY,
 } from "./operations";
 import type {
@@ -12,6 +16,8 @@ import type {
   BuyWorkMutationResponse,
   CreateOfferMutationResponse,
   DeleteWorkMutationResponse,
+  UpdateUserAvatarMutationResponse,
+  UserQueryResponse,
   WorksQueryResponse,
 } from "./types";
 
@@ -133,4 +139,45 @@ export function useAcceptOffer(options?: MutationOptions) {
   };
 
   return { acceptOffer, ...state };
+}
+
+export function useSyncMarketplaceUser() {
+  const currentUser = useMarketplaceStore((state) => state.currentUser);
+  const setCurrentUser = useMarketplaceStore((state) => state.setCurrentUser);
+
+  const { data } = useQuery<UserQueryResponse, { id: string }>(USER_QUERY, {
+    variables: { id: currentUser?.id ?? "" },
+    skip: !currentUser?.id,
+    fetchPolicy: "network-only",
+  });
+
+  useEffect(() => {
+    if (data?.user) {
+      setCurrentUser(data.user);
+    }
+  }, [data?.user, setCurrentUser]);
+}
+
+type UpdateUserAvatarVariables = { userId: string; avatarUrl: string };
+
+export function useUpdateUserAvatar(options?: MutationOptions) {
+  const setCurrentUser = useMarketplaceStore((state) => state.setCurrentUser);
+  const [mutate, state] = useMutation<
+    UpdateUserAvatarMutationResponse,
+    UpdateUserAvatarVariables
+  >(UPDATE_USER_AVATAR_MUTATION);
+
+  const updateUserAvatar = async (variables: UpdateUserAvatarVariables) => {
+    await mutate({
+      variables,
+      refetchQueries: [{ query: WORKS_QUERY }],
+      onCompleted: (data) => {
+        setCurrentUser(data.updateUserAvatar);
+        options?.onCompleted?.();
+      },
+      onError: options?.onError,
+    });
+  };
+
+  return { updateUserAvatar, ...state };
 }

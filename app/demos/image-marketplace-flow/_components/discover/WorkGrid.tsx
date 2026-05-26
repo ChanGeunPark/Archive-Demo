@@ -41,7 +41,7 @@ export default function WorkGrid({ works }: { works: WorksQueryWork[] }) {
             title={work.title}
             link={`/demos/image-marketplace-flow/work/${work.id}`}
             buyNowPrice={work.askingPrice ?? undefined}
-            userProfile={work.owner.avatar ?? ""}
+            userProfile={work.owner.avatar}
             userScreenName={work.owner.handle || work.owner.id}
             userAddress={work.owner.handle || work.owner.id}
             userName={work.owner.name}

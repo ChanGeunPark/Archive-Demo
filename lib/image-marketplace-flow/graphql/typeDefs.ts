@@ -57,6 +57,7 @@ export const typeDefs = gql`
   type Query {
     works: [Work!]!
     work(id: ID!): Work
+    user(id: ID!): MarketplaceUser
   }
 
   type Mutation {
@@ -83,5 +84,6 @@ export const typeDefs = gql`
       usageRights: [UsageRightInput!]
     ): Work!
     deleteWork(id: ID!): Boolean!
+    updateUserAvatar(userId: ID!, avatarUrl: String!): MarketplaceUser!
   }
 `;

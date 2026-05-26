@@ -1,7 +1,8 @@
-import Link from "next/link";
-import KeyboardArrowLeftIcon from "@/components/icons/arrow/KeyboardArrowLeftIcon";
+"use client";
+
 import CreateArtworkLink from "../auth/CreateArtworkLink";
 import MarketplaceLogin from "../auth/MarketplaceLogin";
+import MarketplaceHeaderShell from "../layout/MarketplaceHeaderShell";
 
 type DiscoverHeaderProps = {
   query: string;
@@ -13,29 +14,28 @@ export default function DiscoverHeader({
   onQueryChange,
 }: DiscoverHeaderProps) {
   return (
-    <header className="sticky top-0 z-99 border-b border-zinc-100 bg-white/80 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 lg:px-10">
-        <Link
-          href="/"
-          className="flex items-center gap-2 text-sm font-semibold"
-        >
-          <KeyboardArrowLeftIcon />
-          뒤로가기
-        </Link>
-        <div className="hidden h-10 w-full max-w-md items-center rounded-md border border-[#D8DBDE] bg-white px-3 md:flex">
-          <span className="mr-2 text-[#777D84]">⌕</span>
+    <MarketplaceHeaderShell
+      backHref="/"
+      backLabel="Archive"
+      center={
+        <label className="hidden h-10 w-full max-w-lg items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50/80 px-4 shadow-sm transition focus-within:border-[#141416] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#141416]/10 md:flex">
+          <span className="text-lg text-[#777D84]" aria-hidden>
+            ⌕
+          </span>
           <input
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
-            placeholder="Search works, artists, tags"
-            className="h-full w-full bg-transparent text-sm outline-none placeholder:text-[#A7ABB0]"
+            placeholder="작품, 아티스트, 태그 검색"
+            className="h-full w-full bg-transparent text-sm text-[#17191C] outline-none placeholder:text-[#A7ABB0]"
           />
-        </div>
-        <div className="flex items-center gap-2">
+        </label>
+      }
+      trailing={
+        <>
           <CreateArtworkLink />
           <MarketplaceLogin />
-        </div>
-      </div>
-    </header>
+        </>
+      }
+    />
   );
 }

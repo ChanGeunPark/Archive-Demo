@@ -14,6 +14,7 @@ type MarketplaceState = {
   currentUser: MarketplaceUser | null;
   loginWithId: (id: string) => void;
   logout: () => void;
+  setCurrentUser: (user: MarketplaceUser) => void;
 };
 
 export const useMarketplaceStore = create<MarketplaceState>((set) => ({
@@ -28,6 +29,10 @@ export const useMarketplaceStore = create<MarketplaceState>((set) => ({
   logout: () => {
     clearStoredMarketplaceUserId();
     set({ currentUser: null });
+  },
+
+  setCurrentUser: (user) => {
+    set({ currentUser: user });
   },
 }));
 
