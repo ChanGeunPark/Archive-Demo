@@ -42,3 +42,6 @@ export type UserQueryResponse = {
 export type UpdateUserAvatarMutationResponse = {
   updateUserAvatar: MarketplaceUser;
 };
+export type UpdateAskingPriceMutationResponse = {
+  updateAskingPrice: Pick<Work, "id" | "listingStatus" | "askingPrice">;
+};

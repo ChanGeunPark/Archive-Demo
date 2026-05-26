@@ -8,6 +8,7 @@ import {
   getWorkById,
   listWorks,
   updateUserAvatar as updateUserAvatarInRepository,
+  updateAskingPrice as updateAskingPriceInRepository,
 } from "../repository";
 import type { CreateWorkInput } from "../repository";
 
@@ -42,5 +43,9 @@ export const resolvers = {
       _parent: unknown,
       args: { userId: string; avatarUrl: string },
     ) => updateUserAvatarInRepository(args.userId, args.avatarUrl),
+    updateAskingPrice: (
+      _parent: unknown,
+      args: { workId: string; ownerId: string; askingPrice: number },
+    ) => updateAskingPriceInRepository(args),
   },
 };

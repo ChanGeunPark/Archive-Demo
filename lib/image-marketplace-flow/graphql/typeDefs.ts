@@ -85,5 +85,10 @@ export const typeDefs = gql`
     ): Work!
     deleteWork(id: ID!): Boolean!
     updateUserAvatar(userId: ID!, avatarUrl: String!): MarketplaceUser!
+    updateAskingPrice(
+      workId: ID!
+      ownerId: ID!
+      askingPrice: Int!
+    ): Work!
   }
 `;

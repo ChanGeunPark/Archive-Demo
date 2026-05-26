@@ -317,6 +317,55 @@ export async function updateUserAvatar(
   return mapUser(data as UserRow);
 }
 
+/** 판매 희망가 변경 (현재 소유자만) */
+export async function updateAskingPrice(input: {
+  workId: string;
+  ownerId: string;
+  askingPrice: number;
+}): Promise<Work> {
+  if (!hasSupabaseAdminEnv()) {
+    throw new Error("Supabase admin environment is not configured.");
+  }
+
+  if (input.askingPrice <= 0) {
+    throw new Error("Asking price must be greater than zero.");
+  }
+
+  const work = await getWorkById(input.workId);
+  if (!work) {
+    throw new Error("Work not found.");
+  }
+
+  if (work.owner.id !== input.ownerId) {
+    throw new Error("Only the current owner can update the asking price.");
+  }
+
+  if (
+    work.askingPrice &&
+    work.askingPrice > 0 &&
+    input.askingPrice <= work.askingPrice
+  ) {
+    throw new Error("New asking price must be higher than the current asking price.");
+  }
+
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("marketplace_demo_works")
+    .update({
+      asking_price: input.askingPrice,
+      listing_status: resolveListingStatus(input.askingPrice, false),
+    })
+    .eq("id", input.workId)
+    .select(WORK_DETAIL_SELECT)
+    .single();
+
+  if (error || !data) {
+    throw new Error(error?.message ?? "Failed to update asking price.");
+  }
+
+  return mapWork(data as WorkWithRelations);
+}
+
 /** 작품 단건 조회 (오퍼 포함) */
 export async function getWorkById(id: string): Promise<Work | null> {
   if (!hasSupabaseAdminEnv()) {

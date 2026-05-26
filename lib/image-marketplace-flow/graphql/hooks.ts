@@ -7,6 +7,7 @@ import {
   BUY_WORK_MUTATION,
   CREATE_OFFER_MUTATION,
   DELETE_WORK_MUTATION,
+  UPDATE_ASKING_PRICE_MUTATION,
   UPDATE_USER_AVATAR_MUTATION,
   USER_QUERY,
   WORKS_QUERY,
@@ -16,6 +17,7 @@ import type {
   BuyWorkMutationResponse,
   CreateOfferMutationResponse,
   DeleteWorkMutationResponse,
+  UpdateAskingPriceMutationResponse,
   UpdateUserAvatarMutationResponse,
   UserQueryResponse,
   WorksQueryResponse,
@@ -180,4 +182,31 @@ export function useUpdateUserAvatar(options?: MutationOptions) {
   };
 
   return { updateUserAvatar, ...state };
+}
+
+type UpdateAskingPriceVariables = {
+  workId: string;
+  ownerId: string;
+  askingPrice: number;
+};
+
+export function useUpdateAskingPrice(options?: MutationOptions) {
+  const [mutate, state] = useMutation<
+    UpdateAskingPriceMutationResponse,
+    UpdateAskingPriceVariables
+  >(UPDATE_ASKING_PRICE_MUTATION);
+
+  const updateAskingPrice = async (variables: UpdateAskingPriceVariables) => {
+    await mutate({
+      variables,
+      refetchQueries: [{ query: WORKS_QUERY }],
+      onCompleted: () => {
+        requestWorkRefresh(variables.workId);
+        options?.onCompleted?.();
+      },
+      onError: options?.onError,
+    });
+  };
+
+  return { updateAskingPrice, ...state };
 }

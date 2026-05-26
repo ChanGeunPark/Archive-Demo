@@ -175,3 +175,17 @@ export const UPDATE_USER_AVATAR_MUTATION = gql`
     }
   }
 `;
+
+export const UPDATE_ASKING_PRICE_MUTATION = gql`
+  mutation UpdateAskingPrice($workId: ID!, $ownerId: ID!, $askingPrice: Int!) {
+    updateAskingPrice(
+      workId: $workId
+      ownerId: $ownerId
+      askingPrice: $askingPrice
+    ) {
+      id
+      listingStatus
+      askingPrice
+    }
+  }
+`;

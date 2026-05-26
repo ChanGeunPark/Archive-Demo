@@ -14,6 +14,7 @@ import {
   useBuyWork,
   useCreateOffer,
   useDeleteWork,
+  useUpdateAskingPrice,
 } from "@/lib/image-marketplace-flow/graphql/hooks";
 import { readStoredMarketplaceUserId } from "@/lib/image-marketplace-flow/marketplaceAuth";
 import { useRouter } from "next/navigation";
@@ -97,6 +98,7 @@ function WorkPriceBlockContent({ work }: { work: Work }) {
   const currentUser = useMarketplaceStore((state) => state.currentUser);
 
   const [offerAmount, setOfferAmount] = useState("");
+  const [newAskingPrice, setNewAskingPrice] = useState("");
   const [notice, setNotice] = useState("");
   const [showDeleteWorkModal, setShowDeleteWorkModal] = useState(false);
 
@@ -137,6 +139,16 @@ function WorkPriceBlockContent({ work }: { work: Work }) {
       setNotice(error.message);
     },
   });
+
+  const { updateAskingPrice, loading: updatePriceLoading } =
+    useUpdateAskingPrice({
+      onCompleted: () => {
+        setNotice("판매가가 반영되었습니다. 서버에서 최신 작품 상태를 다시 불러왔습니다.");
+      },
+      onError: (error) => {
+        setNotice(error.message);
+      },
+    });
 
   const { acceptOffer, loading: acceptOfferLoading } = useAcceptOffer({
     onCompleted: () => {
@@ -201,6 +213,30 @@ function WorkPriceBlockContent({ work }: { work: Work }) {
       workId: work.id,
       offerId: offer.id,
       ownerId: currentUser.id,
+    });
+  };
+
+  const handleUpdateAskingPrice = async () => {
+    if (!currentUser) {
+      setNotice("ID를 입력해 로그인한 뒤 판매가를 변경할 수 있습니다.");
+      return;
+    }
+
+    const amount = Number(newAskingPrice);
+    if (amount <= 0) {
+      setNotice("0원보다 큰 금액을 입력해 주세요.");
+      return;
+    }
+
+    if (isListed && askingPrice && amount <= askingPrice) {
+      setNotice("현재 판매가보다 높은 금액만 설정할 수 있습니다.");
+      return;
+    }
+
+    await updateAskingPrice({
+      workId: work.id,
+      ownerId: currentUser.id,
+      askingPrice: amount,
     });
   };
 
@@ -316,11 +352,21 @@ function WorkPriceBlockContent({ work }: { work: Work }) {
             </div>
 
             {isOwner ? (
-              <OwnerOfferPanel
-                offers={pendingOffers}
-                onAccept={handleAcceptOffer}
-                accepting={acceptOfferLoading}
-              />
+              <>
+                <OwnerPricePanel
+                  isListed={isListed}
+                  currentAskingPrice={askingPrice}
+                  value={newAskingPrice}
+                  onChange={setNewAskingPrice}
+                  onSubmit={handleUpdateAskingPrice}
+                  loading={updatePriceLoading}
+                />
+                <OwnerOfferPanel
+                  offers={pendingOffers}
+                  onAccept={handleAcceptOffer}
+                  accepting={acceptOfferLoading}
+                />
+              </>
             ) : isListed ? (
               <button
                 type="button"
@@ -395,6 +441,55 @@ function WorkPriceBlockContent({ work }: { work: Work }) {
         }}
       />
     </>
+  );
+}
+
+function OwnerPricePanel({
+  isListed,
+  currentAskingPrice,
+  value,
+  onChange,
+  onSubmit,
+  loading,
+}: {
+  isListed: boolean;
+  currentAskingPrice: number | null;
+  value: string;
+  onChange: (value: string) => void;
+  onSubmit: () => void;
+  loading: boolean;
+}) {
+  const title = isListed ? "판매가 올리기" : "판매가 설정";
+  const hint = isListed
+    ? currentAskingPrice
+      ? `현재 ${formatKrw(currentAskingPrice)} — 더 높은 금액만 입력할 수 있습니다.`
+      : "0원보다 큰 금액을 입력해 주세요."
+    : "0원보다 큰 금액을 입력하면 판매중으로 전환됩니다.";
+
+  return (
+    <div className="mt-4 rounded-xl border border-zinc-100 p-3">
+      <p className="text-xs font-bold text-gray-500">{title}</p>
+      <p className="mt-1 text-xs font-medium text-gray-400">{hint}</p>
+      <div className="mt-2 flex gap-2">
+        <input
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          type="number"
+          min={isListed && currentAskingPrice ? currentAskingPrice + 1 : 1}
+          placeholder="새 판매가 (원)"
+          disabled={loading}
+          className="h-11 min-w-0 flex-1 rounded-lg border border-[#D8DBDE] px-3 text-sm outline-none focus:border-[#141416] disabled:opacity-60"
+        />
+        <button
+          type="button"
+          onClick={onSubmit}
+          disabled={loading}
+          className="h-11 shrink-0 rounded-lg bg-[#141416] px-4 text-sm font-bold text-white disabled:opacity-60"
+        >
+          {loading ? "저장 중..." : "적용"}
+        </button>
+      </div>
+    </div>
   );
 }
 
