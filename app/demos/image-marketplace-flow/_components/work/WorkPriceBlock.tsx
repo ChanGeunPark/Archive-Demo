@@ -119,9 +119,7 @@ function WorkPriceBlockContent({ work }: { work: Work }) {
 
   const { buyWork, loading: buyLoading } = useBuyWork({
     onCompleted: () => {
-      setNotice(
-        "구매가 완료되었습니다. 서버에서 최신 작품 상태를 다시 불러왔습니다.",
-      );
+      setNotice("구매가 완료되었습니다. 최신 작품 상태를 다시 불러왔습니다.");
     },
     onError: (error) => {
       setNotice(error.message);
@@ -131,9 +129,7 @@ function WorkPriceBlockContent({ work }: { work: Work }) {
   const { createOffer, loading: createOfferLoading } = useCreateOffer({
     onCompleted: () => {
       setOfferAmount("");
-      setNotice(
-        "가격 제안을 보냈습니다. 서버에서 최신 제안 목록을 다시 불러왔습니다.",
-      );
+      setNotice("가격 제안을 보냈습니다. 최신 제안 목록을 다시 불러왔습니다.");
     },
     onError: (error) => {
       setNotice(error.message);
@@ -144,7 +140,7 @@ function WorkPriceBlockContent({ work }: { work: Work }) {
     useUpdateAskingPrice({
       onCompleted: () => {
         setNotice(
-          "판매가가 반영되었습니다. 서버에서 최신 작품 상태를 다시 불러왔습니다.",
+          "판매가가 반영되었습니다. 최신 작품 상태를 다시 불러왔습니다.",
         );
       },
       onError: (error) => {
@@ -154,9 +150,7 @@ function WorkPriceBlockContent({ work }: { work: Work }) {
 
   const { acceptOffer, loading: acceptOfferLoading } = useAcceptOffer({
     onCompleted: () => {
-      setNotice(
-        "제안을 수락했습니다. 서버에서 최신 소유자 정보를 다시 불러왔습니다.",
-      );
+      setNotice("제안을 수락했습니다. 최신 소유자 정보를 다시 불러왔습니다.");
     },
     onError: (error) => {
       setNotice(error.message);

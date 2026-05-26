@@ -35,7 +35,8 @@ export default function ArtworkMainForm({
     }
   }, [defaultValues.artistId, setValue]);
 
-  const descriptionLength = useWatch({ control, name: "description" })?.length || 0;
+  const descriptionLength =
+    useWatch({ control, name: "description" })?.length || 0;
 
   return (
     <section className="rounded-[1.25rem] bg-white p-6 shadow-[0_18px_50px_rgba(23,25,28,0.08)] lg:p-14">
@@ -70,7 +71,10 @@ export default function ArtworkMainForm({
                 errors.description && "border-[#D64532]",
               )}
               {...register("description", {
-                maxLength: { value: 280, message: "280자 이하로 입력해 주세요." },
+                maxLength: {
+                  value: 280,
+                  message: "280자 이하로 입력해 주세요.",
+                },
               })}
             />
             <div className="mt-2 flex justify-between text-xs">
@@ -87,7 +91,7 @@ export default function ArtworkMainForm({
             {...register("artistId", {
               required: "로그인 ID가 필요합니다.",
             })}
-            className="bg-[#FAFAFB] text-[#3F444B]"
+            className="bg-[#FAFAFB] text-[#3F444B] p-2 focus:outline-none"
           />
 
           <TextField
@@ -148,15 +152,15 @@ export default function ArtworkMainForm({
   );
 }
 
-const TextField = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement> & {
-  label: string;
-  required?: boolean;
-  error?: string;
-  suffix?: string;
-}>(function TextField(
-  { label, required, error, suffix, ...props },
-  ref,
-) {
+const TextField = forwardRef<
+  HTMLInputElement,
+  React.InputHTMLAttributes<HTMLInputElement> & {
+    label: string;
+    required?: boolean;
+    error?: string;
+    suffix?: string;
+  }
+>(function TextField({ label, required, error, suffix, ...props }, ref) {
   return (
     <label className="block">
       <span className="mb-3 block text-sm font-bold text-[#3F444B]">
@@ -166,7 +170,7 @@ const TextField = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInp
         <input
           ref={ref}
           className={cls(
-            "h-12 w-full rounded-xl border-2 border-[#ECEEF0] bg-white px-4 text-base outline-none transition placeholder:text-[#A7ABB0] focus:border-[#17191C]",
+            "h-12 w-full rounded-xl border-2 border-[#ECEEF0] bg-white px-4 text-base outline-none transition placeholder:text-[#A7ABB0] focus:border-[#17191C] p-2",
             suffix && "pr-16",
             error && "border-[#D64532]",
           )}
@@ -178,7 +182,9 @@ const TextField = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInp
           </span>
         ) : null}
       </span>
-      {error ? <span className="mt-2 block text-xs text-[#D64532]">{error}</span> : null}
+      {error ? (
+        <span className="mt-2 block text-xs text-[#D64532]">{error}</span>
+      ) : null}
     </label>
   );
 });

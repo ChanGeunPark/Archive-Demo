@@ -425,14 +425,6 @@ function ProcessCard({
 }) {
   return (
     <section className="rounded-[1.25rem] bg-white p-6 shadow-[0_18px_50px_rgba(23,25,28,0.08)] lg:p-14">
-      <div
-        className={cls(
-          "mb-6 flex h-14 w-14 items-center justify-center rounded-full text-2xl",
-          tone === "error" ? "bg-[#FFE8E4] text-[#D64532]" : "bg-[#FFF4C7]",
-        )}
-      >
-        {tone === "error" ? "!" : ""}
-      </div>
       <h1 className="text-3xl font-black tracking-normal">{title}</h1>
       <p className="mt-3 max-w-xl text-base leading-7 text-[#656B73]">
         {description}

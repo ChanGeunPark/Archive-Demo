@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { getArtworkTagLabel } from "@/lib/image-marketplace-flow/artworkTags";
 import { Work } from "@/lib/image-marketplace-flow/marketplaceTypes";

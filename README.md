@@ -66,10 +66,13 @@ npm run dev
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
 `SUPABASE_SECRET_KEY`도 service role key 대체 값으로 사용할 수 있습니다.
+
+`NEXT_PUBLIC_SUPABASE_ANON_KEY`는 브라우저 Realtime 구독용입니다. Dashboard → Settings → API → `anon` `public` 키를 사용하세요.
 
 ### AI Chat Model Provider
 
