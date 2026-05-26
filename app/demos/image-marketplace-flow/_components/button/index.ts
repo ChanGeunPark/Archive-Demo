@@ -1,4 +1,4 @@
-export { default as ChizuButton } from "./fundamental/ChizuButton";
+export { default as BaseButton } from "./fundamental/BaseButton";
 export { default as CautionButton } from "./fundamental/CautionButton";
 export { default as LinkButton } from "./fundamental/LinkButton";
 export { default as OutlineButton } from "./fundamental/OutlineButton";

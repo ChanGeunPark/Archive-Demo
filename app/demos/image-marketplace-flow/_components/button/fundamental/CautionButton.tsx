@@ -2,7 +2,6 @@ import Link from "next/link";
 import React from "react";
 import { cls } from "@/lib/client/utils";
 import { ButtonProps } from "../button.types";
-import ChizuBtnCollor from "@/styles/chizuButtonColor.module.css";
 
 function CautionButton({
   // React Button Default props
@@ -19,7 +18,7 @@ function CautionButton({
   link,
 }: ButtonProps) {
   // caution
-  const colorClassName = ChizuBtnCollor.caution;
+  const colorClassName = "text-red-500";
   const disabledColorClassName = "";
 
   const linkClassName = buttonSize == "FULL" ? "w-full" : undefined;

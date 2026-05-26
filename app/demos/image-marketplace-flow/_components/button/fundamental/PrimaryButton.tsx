@@ -2,12 +2,10 @@ import Link from "next/link";
 import React from "react";
 import { cls } from "@/lib/client/utils";
 import { ButtonProps } from "../button.types";
-import ChizuBtnCollor from "../../../../styles/chizuButtonColor.module.css";
 
 function PrimaryButton({
   // React Button Default props
   className,
-  style,
   onClick,
   onMouseEnter,
   onMouseOut,
@@ -16,12 +14,11 @@ function PrimaryButton({
   target,
   // Design system props
   buttonSize,
-  buttonStyle,
   disabled,
   link,
 }: ButtonProps) {
   // primary
-  const colorClassName = ChizuBtnCollor.primary;
+  const colorClassName = "bg-blue-500 text-white";
   const disabledColorClassName = "";
 
   const linkClassName = buttonSize == "FULL" ? "w-full" : undefined;

@@ -106,7 +106,7 @@ export default function MasonryImageCard({
                   />
                   <div className="ml-2 flex w-full flex-col overflow-hidden">
                     <h2 className="w-full truncate text-[14px] font-semibold text-white max-lg:text-[13px]">
-                      {userName}
+                      {title}
                     </h2>
                     <span className="w-full truncate text-[11px] text-gray-100 max-lg:hidden">
                       @{userAddress || userScreenName}

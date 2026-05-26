@@ -1,4 +1,4 @@
-import { Work } from "../marketplaceTypes";
+import { Work, Offer, OwnershipTransferEvent } from "../marketplaceTypes";
 
 export type WorksQueryWork = Pick<
   Work,
@@ -26,4 +26,13 @@ export type CreateWorkMutationResponse = {
 };
 export type DeleteWorkMutationResponse = {
   deleteWork: boolean;
+};
+export type BuyWorkMutationResponse = {
+  buyWork: OwnershipTransferEvent;
+};
+export type CreateOfferMutationResponse = {
+  createOffer: Offer;
+};
+export type AcceptOfferMutationResponse = {
+  acceptOffer: OwnershipTransferEvent;
 };

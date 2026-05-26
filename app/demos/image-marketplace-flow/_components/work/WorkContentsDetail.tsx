@@ -1,16 +1,78 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { WorkItem } from "../chizuData";
 import { getArtworkTagLabel } from "@/lib/image-marketplace-flow/artworkTags";
+import { Work } from "@/lib/image-marketplace-flow/marketplaceTypes";
+import { Skeleton } from "./Skeleton";
 
-export default function WorkContentsDetail({ work }: { work: WorkItem }) {
+function WorkContentsDetailSkeleton() {
+  return (
+    <section className="w-full">
+      <div className="hidden max-lg:block">
+        <Skeleton className="h-4 w-10" />
+        <Skeleton className="mt-3 h-9 w-3/4" />
+        <Skeleton className="mt-3 h-4 w-36" />
+      </div>
+
+      <article className="overflow-hidden rounded-xl border border-[#EBEBEB] bg-white max-lg:mt-6">
+        <div className="flex h-[52px] items-center px-4">
+          <Skeleton className="h-4 w-10" />
+        </div>
+
+        <div className="border-t border-gray-100 px-4 py-[21px]">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-4/5" />
+          </div>
+
+          {[0, 1, 2, 3].map((section) => (
+            <div key={section} className="mt-6 w-full">
+              <Skeleton className="h-3 w-16" />
+              {section === 3 ? (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Skeleton className="h-7 w-16 rounded-full" />
+                  <Skeleton className="h-7 w-20 rounded-full" />
+                  <Skeleton className="h-7 w-14 rounded-full" />
+                </div>
+              ) : section === 1 ? (
+                <Skeleton className="mt-2 h-[72px] w-full rounded-lg" />
+              ) : section === 2 ? (
+                <div className="mt-2 flex items-center gap-2">
+                  <Skeleton className="h-7 w-7 rounded-md" />
+                  <Skeleton className="h-4 w-28" />
+                </div>
+              ) : (
+                <div className="mt-2 flex items-center gap-2">
+                  <Skeleton className="h-5 w-5 rounded-full" />
+                  <Skeleton className="h-4 w-16" />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </article>
+    </section>
+  );
+}
+
+export default function WorkContentsDetail({
+  work,
+  loading,
+}: {
+  work?: Work | null;
+  loading?: boolean;
+}) {
+  if (loading || !work) {
+    return <WorkContentsDetailSkeleton />;
+  }
+
   return (
     <section className="w-full">
       <div className="hidden max-lg:block">
         <p className="text-sm font-semibold text-gray-400">작품</p>
         <h1 className="mt-2 text-3xl font-black text-gray-900">{work.title}</h1>
         <p className="mt-2 text-sm font-semibold text-gray-500">
-          by {work.artist}
+          by {work.creator.name}
         </p>
       </div>
 
@@ -29,10 +91,10 @@ export default function WorkContentsDetail({ work }: { work: WorkItem }) {
           <div className="mt-6 w-full">
             <h3 className="text-xs font-medium text-gray-500">거래 모델</h3>
             <p className="mt-2 rounded-lg bg-[#F8FAFC] p-3 text-sm font-medium leading-6 text-gray-700">
-              이벤트 payload는 소유권 변경의 근거로 직접 사용하지 않고,
-              “상세 정보를 다시 조회해야 한다”는 신호로만 사용합니다. UI는
-              서버 기준의 현재 소유자, 최근 거래가, 제안 수를 다시 반영하는
-              것으로 구성했습니다.
+              이벤트 payload는 소유권 변경의 근거로 직접 사용하지 않고, “상세
+              정보를 다시 조회해야 한다”는 신호로만 사용합니다. UI는 서버 기준의
+              현재 소유자, 최근 거래가, 제안 수를 다시 반영하는 것으로
+              구성했습니다.
             </p>
           </div>
 

@@ -5,6 +5,7 @@ import OrderedMasonry from "../layout/OrderedMasonry";
 import { works } from "../chizuData";
 import KeyboardArrowRightIcon from "@/components/icons/arrow/KeyboardArrowRightIcon";
 import { creatorHandle, DEMO_AUCTION_END_TIME } from "./workUtils";
+import { Skeleton } from "./Skeleton";
 
 function OtherWorkItem({
   children,
@@ -15,7 +16,55 @@ function OtherWorkItem({
   return <article>{children}</article>;
 }
 
-export default function OtherWorks({ currentId }: { currentId: string }) {
+const SKELETON_CARD_RATIOS = [
+  "4/5",
+  "3/4",
+  "5/6",
+  "4/5",
+  "3/5",
+  "4/5",
+] as const;
+
+function OtherWorksSkeleton() {
+  return (
+    <section className="mt-[62px] w-full max-w-full">
+      <div className="flex flex-row items-center justify-between">
+        <Skeleton className="h-7 w-24" />
+        <Skeleton className="h-10 w-20 rounded-full" />
+      </div>
+
+      <div className="mt-5 grid grid-cols-1 gap-5 pb-9 sm:grid-cols-2 xl:grid-cols-3">
+        {SKELETON_CARD_RATIOS.map((ratio, index) => (
+          <article key={index} className="overflow-hidden rounded-[12px]">
+            <Skeleton
+              className="w-full rounded-[12px]"
+              style={{ aspectRatio: ratio }}
+            />
+            <div className="mt-3 flex items-center gap-2">
+              <Skeleton className="h-8 w-8 shrink-0 rounded-full" />
+              <div className="min-w-0 flex-1">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="mt-1.5 h-3 w-1/2" />
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export default function OtherWorks({
+  currentId,
+  loading,
+}: {
+  currentId?: string;
+  loading?: boolean;
+}) {
+  if (loading) {
+    return <OtherWorksSkeleton />;
+  }
+
   return (
     <section className="mt-[62px] w-full max-w-full">
       <div className="flex flex-row items-center justify-between">
@@ -53,7 +102,9 @@ export default function OtherWorks({ currentId }: { currentId: string }) {
                     work.status === "Auction" ? DEMO_AUCTION_END_TIME : null
                   }
                   userProfile={work.owner.avatar}
-                  userScreenName={work.owner.handle || creatorHandle(work.artist)}
+                  userScreenName={
+                    work.owner.handle || creatorHandle(work.artist)
+                  }
                   userAddress={work.owner.handle || creatorHandle(work.artist)}
                   userName={work.owner.name}
                 />

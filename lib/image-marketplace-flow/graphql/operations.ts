@@ -112,3 +112,44 @@ export const DELETE_WORK_MUTATION = gql`
     deleteWork(id: $id)
   }
 `;
+
+export const BUY_WORK_MUTATION = gql`
+  mutation BuyWork($workId: ID!, $price: Int!, $buyerId: ID!) {
+    buyWork(workId: $workId, price: $price, buyerId: $buyerId) {
+      type
+      workId
+      newOwnerId
+      transactionId
+      occurredAt
+    }
+  }
+`;
+
+export const CREATE_OFFER_MUTATION = gql`
+  mutation CreateOffer($workId: ID!, $amount: Int!, $bidderId: ID!) {
+    createOffer(workId: $workId, amount: $amount, bidderId: $bidderId) {
+      id
+      amount
+      status
+      createdAt
+      bidder {
+        id
+        name
+        handle
+        avatar
+      }
+    }
+  }
+`;
+
+export const ACCEPT_OFFER_MUTATION = gql`
+  mutation AcceptOffer($workId: ID!, $offerId: ID!, $ownerId: ID!) {
+    acceptOffer(workId: $workId, offerId: $offerId, ownerId: $ownerId) {
+      type
+      workId
+      newOwnerId
+      transactionId
+      occurredAt
+    }
+  }
+`;

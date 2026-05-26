@@ -2,7 +2,6 @@ import Link from "next/link";
 import React from "react";
 import { cls } from "@/lib/client/utils";
 import { ButtonProps } from "../button.types";
-import ChizuBtnCollor from "../../../../styles/chizuButtonColor.module.css";
 
 function PaleButton({
   // React Button Default props
@@ -21,7 +20,7 @@ function PaleButton({
   link,
 }: ButtonProps) {
   // primary
-  const colorClassName = ChizuBtnCollor.pale;
+  const colorClassName = "bg-gray-100";
   const disabledColorClassName = "";
 
   const linkClassName = buttonSize == "FULL" ? "w-full" : undefined;

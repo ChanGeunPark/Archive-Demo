@@ -2,7 +2,6 @@ import Link from "next/link";
 import React from "react";
 import { cls } from "@/lib/client/utils";
 import { ButtonProps } from "../button.types";
-import ChizuBtnCollor from "../../../../styles/chizuButtonColor.module.css";
 
 function OutlineButton({
   // React Button Default props
@@ -20,7 +19,7 @@ function OutlineButton({
   link,
 }: ButtonProps) {
   // outline
-  const colorClassName = ChizuBtnCollor.outlined;
+  const colorClassName = "border border-gray-300";
   const disabledColorClassName = "";
 
   const linkClassName = buttonSize == "FULL" ? "w-full" : undefined;

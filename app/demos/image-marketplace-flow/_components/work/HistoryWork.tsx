@@ -1,8 +1,44 @@
 import Image from "next/image";
-import type { WorkItem } from "../chizuData";
 import { formatKrw } from "./workUtils";
+import { Work } from "@/lib/image-marketplace-flow/marketplaceTypes";
+import { Skeleton } from "./Skeleton";
 
-export default function HistoryWork({ work }: { work: WorkItem }) {
+function HistoryWorkSkeleton() {
+  return (
+    <section className="mt-[62px] w-full">
+      <Skeleton className="h-7 w-20" />
+      <div className="mt-4 flex max-h-[350px] w-full flex-col overflow-hidden rounded-xl border border-[#EBEBEB] bg-white">
+        {[0, 1, 2].map((item) => (
+          <div
+            key={item}
+            className="flex items-center justify-between border-b border-gray-100 px-4 py-3 last:border-b-0"
+          >
+            <div className="flex min-w-0 flex-1 items-center">
+              <Skeleton className="h-8 w-8 shrink-0 rounded-full" />
+              <div className="ml-3 min-w-0 flex-1">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="mt-1.5 h-3 w-32" />
+              </div>
+            </div>
+            <Skeleton className="ml-3 h-3 w-10 shrink-0" />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export default function HistoryWork({
+  work,
+  loading,
+}: {
+  work?: Work | null;
+  loading?: boolean;
+}) {
+  if (loading || !work) {
+    return <HistoryWorkSkeleton />;
+  }
+
   return (
     <section className="mt-[62px] w-full">
       <h2 className="text-xl font-black text-gray-900">히스토리</h2>
@@ -11,7 +47,9 @@ export default function HistoryWork({ work }: { work: WorkItem }) {
           ["작품 등록", work.creator.name, "처음"],
           [
             work.owner.id === work.creator.id ? "판매 등록" : "소유권 이전",
-            work.lastSalePrice ? formatKrw(work.lastSalePrice) : formatKrw(work.price),
+            work.lastSalePrice
+              ? formatKrw(work.lastSalePrice)
+              : formatKrw(work.askingPrice ?? 0),
             "오늘",
           ],
           ["현재 소유자", work.owner.name, "최신"],

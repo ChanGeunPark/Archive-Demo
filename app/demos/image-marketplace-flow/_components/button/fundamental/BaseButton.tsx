@@ -8,9 +8,7 @@ import PrimaryButton from "./PrimaryButton";
 import SecondaryButton from "./SecondaryButton";
 import TextButton from "./TextButton";
 
-function ChizuButton(props: ButtonProps) {
-  //primary
-
+function BaseButton(props: ButtonProps) {
   switch (props.buttonStyle) {
     case "PRIMARY":
       return <PrimaryButton {...props} />;
@@ -31,4 +29,4 @@ function ChizuButton(props: ButtonProps) {
   }
 }
 
-export default ChizuButton;
+export default BaseButton;

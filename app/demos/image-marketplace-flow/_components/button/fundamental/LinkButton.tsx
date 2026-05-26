@@ -2,7 +2,6 @@ import Link from "next/link";
 import React from "react";
 import { cls } from "@/lib/client/utils";
 import { ButtonProps } from "../button.types";
-import ChizuBtnCollor from "../../../../styles/chizuButtonColor.module.css";
 
 function LinkButton({
   // React Button Default props
@@ -21,7 +20,7 @@ function LinkButton({
   link,
 }: ButtonProps) {
   // text
-  const colorClassName = ChizuBtnCollor.link;
+  const colorClassName = "text-blue-500";
   const disabledColorClassName = "";
 
   const linkClassName = buttonSize == "FULL" ? "w-full" : undefined;

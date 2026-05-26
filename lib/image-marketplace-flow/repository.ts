@@ -9,7 +9,7 @@ import {
   createSupabaseAdminClient,
   hasSupabaseAdminEnv,
 } from "@/lib/supabase/admin";
-import type { Tables } from "@/lib/supabase/database.types";
+import type { Tables, Json } from "@/lib/supabase/database.types";
 import { createDemoUserFromId } from "./demoUsers";
 import { resolveListingStatus } from "./artworkCreateUtils";
 import type {
@@ -17,6 +17,7 @@ import type {
   MarketplaceOfferStatus,
   MarketplaceUser,
   Offer,
+  OwnershipTransferEvent,
   UsageRight,
   Work,
   WorkOwnershipStatus,
@@ -41,6 +42,7 @@ export type CreateWorkInput = {
 type UserRow = Tables<"marketplace_demo_users">;
 type WorkRow = Tables<"marketplace_demo_works">;
 type OfferRow = Tables<"marketplace_demo_offers">;
+type EventRow = Tables<"marketplace_demo_events">;
 
 type WorkWithRelations = WorkRow & {
   creator: UserRow | null;
@@ -323,4 +325,289 @@ export async function deleteWork(
       error: error instanceof Error ? error.message : "Failed to delete work.",
     };
   }
+}
+
+function createTransferEvent(
+  type: OwnershipTransferEvent["type"],
+  workId: string,
+  newOwnerId: string,
+): OwnershipTransferEvent {
+  return {
+    type,
+    workId,
+    newOwnerId,
+    transactionId: `tx-${Date.now()}`,
+    occurredAt: new Date().toISOString(),
+  };
+}
+
+function resolveOwnershipStatus(
+  creatorId: string,
+  ownerId: string,
+): WorkOwnershipStatus {
+  return creatorId === ownerId ? "OWNED_BY_CREATOR" : "OWNED_BY_COLLECTOR";
+}
+
+async function countPendingOffers(workId: string): Promise<number> {
+  const supabase = createSupabaseAdminClient();
+  const { count, error } = await supabase
+    .from("marketplace_demo_offers")
+    .select("id", { count: "exact", head: true })
+    .eq("work_id", workId)
+    .eq("status", "PENDING");
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return count ?? 0;
+}
+
+async function syncOfferCount(workId: string) {
+  const supabase = createSupabaseAdminClient();
+  const offerCount = await countPendingOffers(workId);
+  const { error } = await supabase
+    .from("marketplace_demo_works")
+    .update({ offer_count: offerCount })
+    .eq("id", workId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+async function recordOwnershipEvent(input: {
+  eventType: EventRow["event_type"];
+  workId: string;
+  previousOwnerId: string | null;
+  newOwnerId: string;
+  transactionId: string;
+  payload?: Json;
+}) {
+  const supabase = createSupabaseAdminClient();
+  const { error } = await supabase.from("marketplace_demo_events").insert({
+    event_type: input.eventType,
+    work_id: input.workId,
+    previous_owner_id: input.previousOwnerId,
+    new_owner_id: input.newOwnerId,
+    transaction_id: input.transactionId,
+    payload: input.payload ?? {},
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+async function declinePendingOffers(workId: string) {
+  const supabase = createSupabaseAdminClient();
+  const { error } = await supabase
+    .from("marketplace_demo_offers")
+    .update({ status: "DECLINED" })
+    .eq("work_id", workId)
+    .eq("status", "PENDING");
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+/** 독점 라이선스 구매 */
+export async function buyWork(input: {
+  workId: string;
+  price: number;
+  buyerId: string;
+}): Promise<OwnershipTransferEvent> {
+  if (!hasSupabaseAdminEnv()) {
+    throw new Error("Supabase admin environment is not configured.");
+  }
+
+  const work = await getWorkById(input.workId);
+  if (!work) {
+    throw new Error("Work not found.");
+  }
+
+  if (!work.askingPrice || work.askingPrice <= 0) {
+    throw new Error("Work is not listed for sale.");
+  }
+
+  if (work.askingPrice !== input.price) {
+    throw new Error("Price mismatch.");
+  }
+
+  if (work.owner.id === input.buyerId) {
+    throw new Error("Owner cannot buy their own work.");
+  }
+
+  await ensureMarketplaceUser(input.buyerId);
+
+  const event = createTransferEvent(
+    "WORK_OWNERSHIP_TRANSFERRED",
+    input.workId,
+    input.buyerId,
+  );
+
+  const supabase = createSupabaseAdminClient();
+  const { error: updateError } = await supabase
+    .from("marketplace_demo_works")
+    .update({
+      owner_id: input.buyerId,
+      ownership_status: resolveOwnershipStatus(work.creator.id, input.buyerId),
+      listing_status: "NOT_LISTED",
+      asking_price: null,
+      last_sale_price: input.price,
+      offer_count: 0,
+    })
+    .eq("id", input.workId);
+
+  if (updateError) {
+    throw new Error(updateError.message);
+  }
+
+  await declinePendingOffers(input.workId);
+
+  await recordOwnershipEvent({
+    eventType: "WORK_OWNERSHIP_TRANSFERRED",
+    workId: input.workId,
+    previousOwnerId: work.owner.id,
+    newOwnerId: input.buyerId,
+    transactionId: event.transactionId,
+    payload: { price: input.price },
+  });
+
+  return event;
+}
+
+/** 가격 제안 생성 */
+export async function createOffer(input: {
+  workId: string;
+  amount: number;
+  bidderId: string;
+}): Promise<Offer> {
+  if (!hasSupabaseAdminEnv()) {
+    throw new Error("Supabase admin environment is not configured.");
+  }
+
+  if (input.amount <= 0) {
+    throw new Error("Offer amount must be greater than zero.");
+  }
+
+  const work = await getWorkById(input.workId);
+  if (!work) {
+    throw new Error("Work not found.");
+  }
+
+  if (work.owner.id === input.bidderId) {
+    throw new Error("Owner cannot create an offer on their own work.");
+  }
+
+  const canOffer =
+    !work.askingPrice || work.askingPrice <= 0 || work.listingStatus === "OFFER_OPEN";
+  if (!canOffer) {
+    throw new Error("This work is not accepting offers.");
+  }
+
+  await ensureMarketplaceUser(input.bidderId);
+
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("marketplace_demo_offers")
+    .insert({
+      work_id: input.workId,
+      bidder_id: input.bidderId,
+      amount: input.amount,
+      status: "PENDING",
+    })
+    .select("*, bidder:marketplace_demo_users!bidder_id(*)")
+    .single();
+
+  if (error || !data) {
+    throw new Error(error?.message ?? "Failed to create offer.");
+  }
+
+  await syncOfferCount(input.workId);
+
+  return mapOffer(data as OfferRow & { bidder: UserRow | null });
+}
+
+/** 가격 제안 수락 */
+export async function acceptOffer(input: {
+  workId: string;
+  offerId: string;
+  ownerId: string;
+}): Promise<OwnershipTransferEvent> {
+  if (!hasSupabaseAdminEnv()) {
+    throw new Error("Supabase admin environment is not configured.");
+  }
+
+  const work = await getWorkById(input.workId);
+  if (!work) {
+    throw new Error("Work not found.");
+  }
+
+  if (work.owner.id !== input.ownerId) {
+    throw new Error("Only the current owner can accept an offer.");
+  }
+
+  const offer = work.offers.find(
+    (item) => item.id === input.offerId && item.status === "PENDING",
+  );
+  if (!offer) {
+    throw new Error("Pending offer not found.");
+  }
+
+  const event = createTransferEvent(
+    "OFFER_ACCEPTED",
+    input.workId,
+    offer.bidder.id,
+  );
+
+  const supabase = createSupabaseAdminClient();
+
+  const { error: acceptError } = await supabase
+    .from("marketplace_demo_offers")
+    .update({ status: "ACCEPTED" })
+    .eq("id", input.offerId);
+
+  if (acceptError) {
+    throw new Error(acceptError.message);
+  }
+
+  const { error: declineError } = await supabase
+    .from("marketplace_demo_offers")
+    .update({ status: "DECLINED" })
+    .eq("work_id", input.workId)
+    .eq("status", "PENDING")
+    .neq("id", input.offerId);
+
+  if (declineError) {
+    throw new Error(declineError.message);
+  }
+
+  const { error: updateWorkError } = await supabase
+    .from("marketplace_demo_works")
+    .update({
+      owner_id: offer.bidder.id,
+      ownership_status: resolveOwnershipStatus(work.creator.id, offer.bidder.id),
+      listing_status: "NOT_LISTED",
+      asking_price: null,
+      last_sale_price: offer.amount,
+      offer_count: 0,
+    })
+    .eq("id", input.workId);
+
+  if (updateWorkError) {
+    throw new Error(updateWorkError.message);
+  }
+
+  await recordOwnershipEvent({
+    eventType: "OFFER_ACCEPTED",
+    workId: input.workId,
+    previousOwnerId: work.owner.id,
+    newOwnerId: offer.bidder.id,
+    transactionId: event.transactionId,
+    payload: { offerId: input.offerId, amount: offer.amount },
+  });
+
+  return event;
 }
