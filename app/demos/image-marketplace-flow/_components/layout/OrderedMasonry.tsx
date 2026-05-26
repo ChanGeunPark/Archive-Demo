@@ -2,7 +2,7 @@
 
 import React, {
   useState,
-  useEffect,
+  useLayoutEffect,
   useCallback,
   useMemo,
   useRef,
@@ -11,21 +11,7 @@ import {
   OrderedMasonryImageProps,
   OrderedMasonryBreakpoint,
   OrderedMasonryProps,
-  OrderedMasonryDefaultProps,
 } from "./OrderedMasonry.type";
-
-const getBreakpointColsKey = (
-  breakpointCols: OrderedMasonryProps["breakpointCols"],
-) => {
-  if (!breakpointCols || typeof breakpointCols === "number") {
-    return String(breakpointCols ?? "default");
-  }
-
-  return Object.keys(breakpointCols)
-    .sort()
-    .map((key) => `${key}:${breakpointCols[Number(key)]}`)
-    .join("|");
-};
 
 /**
  * @notice it used to implement masonry design, like pinterest
@@ -37,15 +23,22 @@ const getBreakpointColsKey = (
  * - prevent column size differnce problem
  * - changed class name
  */
+function readStdHeight(item: React.ReactNode) {
+  if (!React.isValidElement(item)) {
+    return 1;
+  }
+
+  const props = item.props as OrderedMasonryImageProps;
+  const value = Number(props.stdHeight);
+  return Number.isFinite(value) && value > 0 ? value : 1;
+}
+
 const OrderedMasonry = ({
   children,
   className,
   columnClassName,
   breakpointCols,
 }: OrderedMasonryProps) => {
-  const [columnCount, setColumnCount] = useState<number>(0);
-  const columnCountRef = useRef<number>(0);
-  const breakpointColsKey = getBreakpointColsKey(breakpointCols);
   const normalizedBreakpointCols = useMemo(() => {
     const DEFAULT_COLUMNS = 1;
 
@@ -62,8 +55,12 @@ const OrderedMasonry = ({
     }
 
     return breakpointCols as OrderedMasonryBreakpoint;
-  }, [breakpointColsKey]);
+  }, [breakpointCols]);
 
+  const [columnCount, setColumnCount] = useState<number>(
+    () => normalizedBreakpointCols.default,
+  );
+  const columnCountRef = useRef<number>(normalizedBreakpointCols.default);
   /**
    * ==============================
    * Grid change on resize functions
@@ -133,16 +130,16 @@ const OrderedMasonry = ({
 
       // add image to minimum height column
       columns[hungryColumnIndex].push(items[i]);
-      heightSums[hungryColumnIndex] += Number(
-        ((items[i] as React.ReactElement).props as OrderedMasonryImageProps)
-          .stdHeight,
-      );
+      heightSums[hungryColumnIndex] += readStdHeight(items[i]);
     }
     return columns;
   };
 
   const renderColumns = () => {
     const childrenInColumns = getSortedSourceColumns();
+    if (childrenInColumns.length === 0) {
+      return null;
+    }
     const columnWidth = `${100 / childrenInColumns.length}%`;
     let columnClassNameOutput = columnClassName;
 
@@ -168,7 +165,7 @@ const OrderedMasonry = ({
    * Column functions
    * ==============================
    */
-  useEffect(() => {
+  useLayoutEffect(() => {
     calculateColumnCount();
     window.addEventListener("resize", calculateColumnCount);
     return () => {
@@ -181,11 +178,7 @@ const OrderedMasonry = ({
   if (typeof className === "undefined") {
     classNameOutput = "ordered-masonry-grid_column";
   }
-  return (
-    <div className={classNameOutput}>
-      {columnCount > 0 ? renderColumns() : undefined}
-    </div>
-  );
+  return <div className={classNameOutput}>{renderColumns()}</div>;
 };
 
 export default OrderedMasonry;

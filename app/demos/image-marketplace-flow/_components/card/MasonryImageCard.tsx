@@ -27,7 +27,9 @@ export default function MasonryImageCard({
   buyNowPrice,
 }: MasonryImgProps) {
   const [loaded, setLoaded] = useState<boolean>(false);
-  const isLandscape = !!(width && height && width > height);
+  const safeWidth = width && width > 0 ? width : 4;
+  const safeHeight = height && height > 0 ? height : 5;
+  const isLandscape = safeWidth > safeHeight;
 
   // Auction Setting
   const assetAuctionTime = new Date(auctionTime ? auctionTime : "");
@@ -41,7 +43,7 @@ export default function MasonryImageCard({
       {imgUrl && (
         <div
           style={{
-            aspectRatio: width && height ? `${width} / ${height}` : undefined,
+            aspectRatio: `${safeWidth} / ${safeHeight}`,
           }}
           className={cls(
             "group/card relative w-full cursor-pointer overflow-hidden rounded-[12px] transition-shadow duration-200 hover:shadow-[0_16px_32px_rgba(20,20,22,0.16)]",

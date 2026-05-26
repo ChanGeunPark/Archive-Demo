@@ -29,7 +29,9 @@ function toWorksQueryWork(work: Work): WorksQueryWork {
   };
 }
 
-export default async function UserProfilePage({ params }: UserProfilePageProps) {
+export default async function UserProfilePage({
+  params,
+}: UserProfilePageProps) {
   const { handle } = await params;
   const normalizedHandle = handle.trim().toLowerCase();
   const works = (await listWorks()).edges.map((edge) => edge.node);
@@ -43,10 +45,12 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
     Object.values(marketplaceUsers).find(
       (candidate) => candidate.handle.toLowerCase() === normalizedHandle,
     ) ??
-    userWorks.find((work) => work.owner.handle.toLowerCase() === normalizedHandle)
-      ?.owner ??
-    userWorks.find((work) => work.creator.handle.toLowerCase() === normalizedHandle)
-      ?.creator;
+    userWorks.find(
+      (work) => work.owner.handle.toLowerCase() === normalizedHandle,
+    )?.owner ??
+    userWorks.find(
+      (work) => work.creator.handle.toLowerCase() === normalizedHandle,
+    )?.creator;
 
   if (!user) {
     notFound();
@@ -69,11 +73,13 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
               alt={`${user.name} profile`}
               width={72}
               height={72}
-              className="rounded-full"
+              className="rounded-full w-16 h-16 object-cover"
             />
             <div>
               <h1 className="text-2xl font-black">{user.name}</h1>
-              <p className="mt-1 text-sm font-semibold text-[#777D84]">@{user.handle}</p>
+              <p className="mt-1 text-sm font-semibold text-[#777D84]">
+                @{user.handle}
+              </p>
             </div>
           </div>
         </section>

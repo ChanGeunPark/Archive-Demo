@@ -1,12 +1,27 @@
+"use client";
+
 import type { ReactNode } from "react";
 import MasonryImageCard from "../card/MasonryImageCard";
 import OrderedMasonry from "../layout/OrderedMasonry";
 import { WorksQueryWork } from "@/lib/image-marketplace-flow/graphql/types";
 
-function MasonryWorkItem(props: { children: ReactNode; stdHeight: number }) {
+function getStdHeight(width: number, height: number) {
+  if (width > 0 && height > 0) {
+    return height / width;
+  }
+  return 1;
+}
+
+function MasonryWorkItem({
+  children,
+  stdHeight,
+}: {
+  children: ReactNode;
+  stdHeight: number;
+}) {
   return (
-    <article className="min-w-0 rounded-[12px] bg-white">
-      {props.children}
+    <article className="min-w-0 rounded-[12px] bg-white" data-std-height={stdHeight}>
+      {children}
     </article>
   );
 }
@@ -33,7 +48,10 @@ export default function WorkGrid({ works }: { works: WorksQueryWork[] }) {
       }}
     >
       {works.map((work) => (
-        <MasonryWorkItem key={work.id} stdHeight={work.height / work.width}>
+        <MasonryWorkItem
+          key={work.id}
+          stdHeight={getStdHeight(work.width, work.height)}
+        >
           <MasonryImageCard
             imgUrl={work.imageUrl}
             width={work.width}
