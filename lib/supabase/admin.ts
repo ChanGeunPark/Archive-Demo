@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/supabase/database.types";
 
 export function hasSupabaseAdminEnv() {
   return Boolean(
@@ -16,7 +17,7 @@ export function createSupabaseAdminClient() {
     throw new Error("Missing Supabase server environment variables.");
   }
 
-  return createClient(supabaseUrl, supabaseKey, {
+  return createClient<Database>(supabaseUrl, supabaseKey, {
     auth: {
       persistSession: false,
       autoRefreshToken: false,

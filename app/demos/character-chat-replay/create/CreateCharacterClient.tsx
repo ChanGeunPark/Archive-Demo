@@ -1,55 +1,130 @@
 "use client";
 
-import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { DemoPublicCharacter } from "@/lib/ai-chat-demo/types";
-import { StepButton, Stepper } from "./_components/CreateCharacterPrimitives";
+import { useForm, useWatch } from "react-hook-form";
+import Typography from "@/components/typography/Typography";
+import { useCreateDemoCharacterMutation } from "@/lib/ai-chat-demo/api";
+import { createCharacterMockForms } from "@/lib/ai-chat-demo/mock-data";
 import {
-  BasicInfoStep,
-  CharacterSettingsStep,
-  ChatSettingsStep,
-  PreviewChat,
-  ProfileStep,
-} from "./_components/CreateCharacterSteps";
-import { initialForm, type FormState } from "./_components/create-character.types";
+  CreateCharacterHeader,
+  CreateCharacterStep,
+  CreatorIdModal,
+  StepActions,
+  Stepper,
+  initialForm,
+  normalizeCreatorId,
+  type FormState,
+} from "./_components";
 
 export default function CreateCharacterClient() {
+  // --- Router / API ---
   const router = useRouter();
+  const createCharacterMutation = useCreateDemoCharacterMutation();
+  const {
+    control,
+    handleSubmit: handleFormSubmit,
+    register,
+    reset,
+    setValue,
+  } = useForm<FormState>({
+    defaultValues: initialForm,
+  });
+
+  // --- State Management ---
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState<FormState>(initialForm);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [bannerImage, setBannerImage] = useState<File | null>(null);
   const [profilePreview, setProfilePreview] = useState("");
   const [bannerPreview, setBannerPreview] = useState("");
-  const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [canCreateFromTestStep, setCanCreateFromTestStep] = useState(false);
+  const [creatorId, setCreatorId] = useState("");
+  const [creatorIdModalOpen, setCreatorIdModalOpen] = useState(false);
+  const [selectedMockFormId, setSelectedMockFormId] = useState("");
+  const [pendingFormValues, setPendingFormValues] = useState<FormState | null>(
+    null,
+  );
 
+  // --- React Hook Form ---
+  const form = useWatch({ control }) as FormState;
+  const loading = createCharacterMutation.isPending;
+
+  // --- Effects ---
+  useEffect(() => {
+    (Object.keys(initialForm) as (keyof FormState)[]).forEach((key) => {
+      register(key);
+    });
+  }, [register]);
+
+  // --- Normalization ---
   const canSubmit = useMemo(
     () =>
       Boolean(
         form.category &&
-          form.gender &&
-          form.name &&
-          profileImage &&
-          form.description &&
-          form.personality &&
-          !loading,
+        form.gender &&
+        form.name &&
+        profileImage &&
+        form.description &&
+        form.personality &&
+        !loading,
       ),
-    [form.category, form.description, form.gender, form.name, form.personality, loading, profileImage],
+    [
+      form.category,
+      form.description,
+      form.gender,
+      form.name,
+      form.personality,
+      loading,
+      profileImage,
+    ],
   );
 
   const canGoNext = useMemo(() => {
     if (step === 0) return Boolean(form.category && form.gender && form.name);
-    if (step === 1) return Boolean(profileImage && form.description && form.personality);
+    if (step === 1)
+      return Boolean(profileImage && form.description && form.personality);
     if (step === 2) return canSubmit;
     return canSubmit;
-  }, [canSubmit, form.category, form.description, form.gender, form.name, form.personality, profileImage, step]);
+  }, [
+    canSubmit,
+    form.category,
+    form.description,
+    form.gender,
+    form.name,
+    form.personality,
+    profileImage,
+    step,
+  ]);
 
+  // --- Effects ---
+  useEffect(() => {
+    if (step !== 3) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setCanCreateFromTestStep(true);
+    }, 1000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [step]);
+
+  // --- Event Handlers ---
   function updateForm(key: keyof FormState, value: string) {
-    setForm((current) => ({ ...current, [key]: value }));
+    setValue(key, value, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+    setCanCreateFromTestStep(false);
   }
 
+  // --- Event Handlers [스탭 변경] ---
+  function handleStepChange(action: React.SetStateAction<number>) {
+    setCanCreateFromTestStep(false);
+    setStep(action);
+  }
+
+  // --- Event Handlers [이미지 업로드] ---
   function handleImage(file: File | null, type: "profile" | "banner") {
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
@@ -61,68 +136,109 @@ export default function CreateCharacterClient() {
     if (type === "profile") {
       setProfileImage(file);
       setProfilePreview(previewUrl);
+      setCanCreateFromTestStep(false);
       return;
     }
 
     setBannerImage(file);
     setBannerPreview(previewUrl);
+    setCanCreateFromTestStep(false);
   }
 
+  // --- Event Handlers [폼 초기화] ---
   function resetForm() {
-    setForm(initialForm);
+    reset(initialForm);
     setProfileImage(null);
     setBannerImage(null);
     setProfilePreview("");
     setBannerPreview("");
     setErrorMessage("");
+    setCanCreateFromTestStep(false);
+    setCreatorId("");
+    setCreatorIdModalOpen(false);
+    setPendingFormValues(null);
+    setSelectedMockFormId("");
     setStep(0);
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!profileImage) return;
+  // --- Event Handlers [목업 데이터 적용] ---
+  function applyMockData(mockFormId: string) {
+    const mockForm = createCharacterMockForms.find(
+      (item) => item.id === mockFormId,
+    );
+    if (!mockForm) return;
 
-    setLoading(true);
+    setSelectedMockFormId(mockFormId);
+    reset(mockForm.form);
     setErrorMessage("");
+    setCanCreateFromTestStep(false);
+    setPendingFormValues(null);
+  }
 
-    const body = new FormData();
-    Object.entries(form).forEach(([key, value]) => {
-      body.append(key, value);
-    });
-    body.append("profileImage", profileImage);
-
-    if (bannerImage) {
-      body.append("bannerImage", bannerImage);
+  // --- Event Handlers [폼 제출] ---
+  async function handleSubmit(values: FormState) {
+    if (step < 3) {
+      setStep(3);
+      return;
     }
-
-    const response = await fetch("/api/ai-chat-demo/characters/create", {
-      method: "POST",
-      body,
-    });
-
-    const data = (await response.json()) as {
-      character?: DemoPublicCharacter;
-      error?: string;
-    };
-
-    setLoading(false);
-
-    if (!response.ok || !data.character) {
-      setErrorMessage(data.error || "캐릭터 생성에 실패했습니다.");
+    if (!profileImage) return;
+    if (!canCreateFromTestStep) {
+      setErrorMessage("테스트 화면을 확인한 뒤 캐릭터를 생성해주세요.");
       return;
     }
 
-    router.push(`/demos/character-chat-replay/chat/${data.character.id}`);
+    setPendingFormValues(values);
+    setCreatorIdModalOpen(true);
+  }
+
+  // --- Event Handlers [캐릭터 생성] ---
+  async function createCharacterWithCreatorId(
+    inputCreatorId: string,
+    values: FormState,
+  ) {
+    const normalizedCreatorId = normalizeCreatorId(inputCreatorId);
+
+    if (!profileImage) return;
+    if (!normalizedCreatorId) {
+      setErrorMessage("캐릭터 생성 ID를 입력해주세요.");
+      return;
+    }
+
+    setErrorMessage("");
+    setCreatorIdModalOpen(false);
+
+    try {
+      const data = await createCharacterMutation.mutateAsync({
+        values,
+        profileImage,
+        bannerImage,
+        creatorId: normalizedCreatorId,
+      });
+
+      router.push(
+        `/demos/character-chat-replay/chat/${data.character.id}?roomId=${encodeURIComponent(data.roomId || normalizedCreatorId)}`,
+      );
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "캐릭터 생성에 실패했습니다.",
+      );
+      return;
+    }
   }
 
   return (
     <main className="min-h-screen bg-[#F8F9FA] text-[#17191C]">
       <article className="mx-auto min-h-screen w-full max-w-[620px] bg-[#F8F9FA]">
         <CreateCharacterHeader
+          onApplyMockData={applyMockData}
           onReset={resetForm}
+          selectedMockFormId={selectedMockFormId}
         />
 
-        <form onSubmit={handleSubmit} className="min-h-screen px-4 pb-[156px] pt-16 max-sm:px-2">
+        <form
+          onSubmit={handleFormSubmit(handleSubmit)}
+          className="min-h-screen px-4 pb-[156px] pt-16 max-sm:px-2"
+        >
           <Stepper step={step} />
           <CreateCharacterStep
             bannerPreview={bannerPreview}
@@ -132,132 +248,36 @@ export default function CreateCharacterClient() {
             step={step}
             updateForm={updateForm}
           />
-          {errorMessage && <p className="mt-4 text-sm font-semibold text-[#EE4553]">{errorMessage}</p>}
+          {errorMessage && (
+            <Typography
+              variant="body2"
+              weight={600}
+              color="#EE4553"
+              className="mt-4"
+            >
+              {errorMessage}
+            </Typography>
+          )}
           <StepActions
             canGoNext={canGoNext}
-            canSubmit={canSubmit}
+            canCreateFromTestStep={canCreateFromTestStep}
+            canSubmit={canSubmit && canCreateFromTestStep}
             loading={loading}
-            onStepChange={setStep}
+            onStepChange={handleStepChange}
             step={step}
           />
         </form>
+        <CreatorIdModal
+          creatorId={creatorId}
+          loading={loading}
+          open={creatorIdModalOpen}
+          onChange={setCreatorId}
+          onClose={() => setCreatorIdModalOpen(false)}
+          onConfirm={() =>
+            createCharacterWithCreatorId(creatorId, pendingFormValues ?? form)
+          }
+        />
       </article>
     </main>
-  );
-}
-
-function CreateCharacterHeader({
-  onReset,
-}: {
-  onReset: () => void;
-}) {
-  return (
-    <header className="fixed left-0 top-0 z-50 h-16 w-screen bg-white/90 backdrop-blur-lg">
-      <div className="mx-auto flex h-full w-full max-w-[620px] items-center justify-between px-4">
-        <Link href="/demos/character-chat-replay" className="flex h-full items-center gap-2 text-base font-bold">
-          <span className="text-2xl leading-none text-[#17191C]">‹</span>
-          <span>캐릭터 만들기</span>
-        </Link>
-        <button
-          type="button"
-          onClick={onReset}
-          className="h-7 rounded-full border border-[#D8DBDE] px-3 text-xs font-bold text-[#17191C]"
-        >
-          초기화
-        </button>
-      </div>
-    </header>
-  );
-}
-
-function CreateCharacterStep({
-  bannerPreview,
-  form,
-  handleImage,
-  profilePreview,
-  step,
-  updateForm,
-}: {
-  bannerPreview: string;
-  form: FormState;
-  handleImage: (file: File | null, type: "profile" | "banner") => void;
-  profilePreview: string;
-  step: number;
-  updateForm: (key: keyof FormState, value: string) => void;
-}) {
-  if (step === 0) {
-    return <BasicInfoStep form={form} updateForm={updateForm} />;
-  }
-
-  if (step === 1) {
-    return (
-      <>
-        <ProfileStep
-          bannerPreview={bannerPreview}
-          form={form}
-          handleImage={handleImage}
-          profilePreview={profilePreview}
-          updateForm={updateForm}
-        />
-        <CharacterSettingsStep form={form} updateForm={updateForm} />
-      </>
-    );
-  }
-
-  if (step === 2) {
-    return <ChatSettingsStep form={form} updateForm={updateForm} />;
-  }
-
-  return (
-    <div className="mt-4">
-      <PreviewChat
-        form={form}
-        profilePreview={profilePreview}
-        bannerPreview={bannerPreview}
-      />
-    </div>
-  );
-}
-
-function StepActions({
-  canGoNext,
-  canSubmit,
-  loading,
-  onStepChange,
-  step,
-}: {
-  canGoNext: boolean;
-  canSubmit: boolean;
-  loading: boolean;
-  onStepChange: React.Dispatch<React.SetStateAction<number>>;
-  step: number;
-}) {
-  return (
-    <div className="fixed bottom-0 left-1/2 z-40 flex w-full max-w-[620px] -translate-x-1/2 gap-3 bg-white/20 p-4 backdrop-blur-xl">
-      <StepButton
-        disabled={step === 0 || loading}
-        onClick={() => onStepChange((current) => Math.max(0, current - 1))}
-        variant="black"
-      >
-        이전 단계로
-      </StepButton>
-      {step < 3 ? (
-        <StepButton
-          disabled={!canGoNext}
-          onClick={() => onStepChange((current) => Math.min(3, current + 1))}
-          variant="primary"
-        >
-          다음 단계로
-        </StepButton>
-      ) : (
-        <StepButton
-          type="submit"
-          disabled={!canSubmit}
-          variant="primary"
-        >
-          {loading ? "생성 중..." : "캐릭터 생성하기"}
-        </StepButton>
-      )}
-    </div>
   );
 }
