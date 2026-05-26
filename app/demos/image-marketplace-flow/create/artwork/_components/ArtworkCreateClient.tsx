@@ -286,7 +286,7 @@ export default function ArtworkCreateClient() {
         return (
           <ProcessCard
             title="작품 등록 중"
-            description="Cloudflare에 이미지를 업로드하고 Supabase에 작품 정보를 저장하고 있어요."
+            description="작품 등록 중입니다. 잠시만 기다려 주세요."
           />
         );
       case "UPLOAD_FAIL":

@@ -31,6 +31,25 @@ export type WorksQueryResponse = {
     totalCount: number | null;
   };
 };
+
+export type CreatorWorksQueryVariables = {
+  creatorId: string;
+  first?: number;
+  excludeWorkId?: string;
+};
+
+export type CreatorWorksQueryResponse = {
+  creatorWorks: WorksQueryWork[];
+};
+
+export type RandomWorksQueryVariables = {
+  first?: number;
+  excludeWorkId?: string;
+};
+
+export type RandomWorksQueryResponse = {
+  randomWorks: WorksQueryWork[];
+};
 export type WorkDetailQueryResponse = {
   work: Work | null;
 };
@@ -60,4 +79,19 @@ export type UpdateUserAvatarMutationResponse = {
 };
 export type UpdateAskingPriceMutationResponse = {
   updateAskingPrice: Pick<Work, "id" | "listingStatus" | "askingPrice">;
+};
+
+export type SearchByKeywordWork = Pick<Work, "id" | "title" | "imageUrl"> & {
+  creator: Pick<Work["creator"], "id" | "name" | "handle" | "avatar">;
+};
+
+export type SearchByKeywordVariables = {
+  keyword: string;
+  count?: number;
+};
+
+export type SearchByKeywordResponse = {
+  searchByKeyword: {
+    works: SearchByKeywordWork[];
+  };
 };

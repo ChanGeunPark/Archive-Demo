@@ -7,6 +7,9 @@ import {
   getUserById,
   getWorkById,
   listWorks,
+  listCreatorWorks,
+  listRandomWorks,
+  searchByKeyword as searchByKeywordInRepository,
   updateUserAvatar as updateUserAvatarInRepository,
   updateAskingPrice as updateAskingPriceInRepository,
 } from "../repository";
@@ -33,8 +36,37 @@ export const resolvers = {
         minPrice: args.minPrice,
         maxPrice: args.maxPrice,
       }),
+    creatorWorks: (
+      _parent: unknown,
+      args: {
+        creatorId: string;
+        first?: number;
+        excludeWorkId?: string;
+      },
+    ) =>
+      listCreatorWorks({
+        creatorId: args.creatorId,
+        first: args.first,
+        excludeWorkId: args.excludeWorkId,
+      }),
+    randomWorks: (
+      _parent: unknown,
+      args: {
+        first?: number;
+        excludeWorkId?: string;
+      },
+    ) =>
+      listRandomWorks({
+        first: args.first,
+        excludeWorkId: args.excludeWorkId,
+      }),
     work: (_parent: unknown, args: { id: string }) => getWorkById(args.id),
     user: (_parent: unknown, args: { id: string }) => getUserById(args.id),
+    searchByKeyword: (
+      _parent: unknown,
+      args: { keyword: string; count?: number },
+    ) =>
+      searchByKeywordInRepository(args.keyword, args.count ?? 4),
   },
 
   Mutation: {

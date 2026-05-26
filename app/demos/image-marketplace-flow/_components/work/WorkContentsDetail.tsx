@@ -85,7 +85,7 @@ export default function WorkContentsDetail({
           <p className="text-sm font-medium leading-6 text-gray-700">
             {work.description}
           </p>
-
+          {/* 
           <div className="mt-6 w-full">
             <h3 className="text-xs font-medium text-gray-500">연령 등급</h3>
             <div className="mt-2 inline-flex items-center">
@@ -96,7 +96,7 @@ export default function WorkContentsDetail({
                 All age
               </p>
             </div>
-          </div>
+          </div> */}
 
           <div className="mt-6 w-full">
             <h3 className="text-xs font-medium text-gray-500">태그</h3>

@@ -70,6 +70,10 @@ export const typeDefs = gql`
     totalCount: Int
   }
 
+  type SearchByKeywordResult {
+    works: [Work!]!
+  }
+
   type Query {
     works(
       first: Int
@@ -79,8 +83,15 @@ export const typeDefs = gql`
       minPrice: Int
       maxPrice: Int
     ): WorkConnection!
+    creatorWorks(
+      creatorId: ID!
+      first: Int
+      excludeWorkId: ID
+    ): [Work!]!
+    randomWorks(first: Int, excludeWorkId: ID): [Work!]!
     work(id: ID!): Work
     user(id: ID!): MarketplaceUser
+    searchByKeyword(keyword: String!, count: Int): SearchByKeywordResult!
   }
 
   type Mutation {

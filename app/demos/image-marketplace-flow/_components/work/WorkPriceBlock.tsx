@@ -246,7 +246,7 @@ function WorkPriceBlockContent({ work }: { work: Work }) {
 
   return (
     <>
-      <section className="order-2 flex w-full flex-col lg:sticky lg:top-[64px] lg:w-[365px] lg:self-start lg:px-6 max-lg:order-3 mt-2 lg:mt-0 max-h-[calc(100vh-64px)] overflow-y-auto pb-10">
+      <section className="order-2 flex w-full flex-col lg:sticky lg:top-[64px] lg:w-[365px] lg:self-start lg:px-6 max-lg:order-3 mt-2 lg:mt-0 max-h-[calc(100vh-64px)] overflow-y-auto pb-10 scrollbar-hide">
         <div className="mt-8 flex w-full flex-col max-lg:mt-0">
           <div className="max-lg:hidden">
             <div className="flex items-start justify-between gap-3">

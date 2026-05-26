@@ -50,6 +50,72 @@ export const WORKS_QUERY = gql`
   }
 `;
 
+export const SEARCH_BY_KEYWORD_QUERY = gql`
+  query SearchByKeyword($keyword: String!, $count: Int) {
+    searchByKeyword(keyword: $keyword, count: $count) {
+      works {
+        id
+        title
+        imageUrl
+        creator {
+          id
+          name
+          handle
+          avatar
+        }
+      }
+    }
+  }
+`;
+
+export const CREATOR_WORKS_QUERY = gql`
+  query CreatorWorks(
+    $creatorId: ID!
+    $first: Int
+    $excludeWorkId: ID
+  ) {
+    creatorWorks(
+      creatorId: $creatorId
+      first: $first
+      excludeWorkId: $excludeWorkId
+    ) {
+      id
+      title
+      imageUrl
+      width
+      height
+      listingStatus
+      askingPrice
+      owner {
+        id
+        name
+        handle
+        avatar
+      }
+    }
+  }
+`;
+
+export const RANDOM_WORKS_QUERY = gql`
+  query RandomWorks($first: Int, $excludeWorkId: ID) {
+    randomWorks(first: $first, excludeWorkId: $excludeWorkId) {
+      id
+      title
+      imageUrl
+      width
+      height
+      listingStatus
+      askingPrice
+      owner {
+        id
+        name
+        handle
+        avatar
+      }
+    }
+  }
+`;
+
 export const USER_QUERY = gql`
   query MarketplaceUser($id: ID!) {
     user(id: $id) {

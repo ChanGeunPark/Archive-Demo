@@ -8,7 +8,7 @@ type CharacterGridProps = {
 
 export function CharacterGrid({ characters, onSelect }: CharacterGridProps) {
   return (
-    <section className="grid grid-cols-3 gap-3 bg-[#F4F5F6] px-3 py-4">
+    <section className="grid grid-cols-3 gap-3 bg-[#F4F5F6] px-3 py-4 max-sm:grid-cols-2">
       {characters.map((character) => (
         <CharacterCard
           key={character.id}

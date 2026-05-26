@@ -100,7 +100,7 @@ export default function MarketplaceLogin({
 
   return (
     <form
-      className="flex items-center gap-2"
+      className="flex items-center"
       onSubmit={(event) => {
         event.preventDefault();
         loginWithId(loginId);
@@ -111,11 +111,11 @@ export default function MarketplaceLogin({
         value={loginId}
         onChange={(event) => setLoginId(event.target.value)}
         placeholder="ID 입력"
-        className="hidden h-10 w-28 rounded-full border border-[#D8DBDE] bg-white px-3 text-sm outline-none transition placeholder:text-[#A7ABB0] focus:border-[#17191C] sm:block lg:w-36"
+        className="h-10 w-18 rounded-l-full border border-[#D8DBDE] bg-white px-3 text-sm outline-none transition placeholder:text-[#A7ABB0] focus:border-[#17191C]"
       />
       <button
         type="submit"
-        className="inline-flex h-10 items-center rounded-full bg-[#17191C] px-4 text-xs font-bold text-white transition hover:bg-[#2a2a2e]"
+        className="inline-flex h-10 items-center rounded-r-full bg-[#17191C] px-4 text-xs font-bold text-white transition hover:bg-[#2a2a2e]"
       >
         로그인
       </button>

@@ -12,7 +12,7 @@ export function CharacterCard({ character, onSelect }: CharacterCardProps) {
     <button
       type="button"
       onClick={onSelect}
-      className="flex h-[170px] flex-col items-center justify-center rounded-lg bg-white p-2 shadow-[0_2px_5px_rgba(0,0,0,0.03),0_8px_40px_rgba(0,0,0,0.03)] transition hover:-translate-y-0.5"
+      className="flex h-[170px] w-full min-w-0 flex-col items-center justify-center rounded-lg bg-white p-2 shadow-[0_2px_5px_rgba(0,0,0,0.03),0_8px_40px_rgba(0,0,0,0.03)] transition hover:-translate-y-0.5"
     >
       <div className="relative overflow-hidden rounded-xl border border-[#F4F5F6]">
         {character.imageUrl ? (
@@ -40,13 +40,13 @@ export function CharacterCard({ character, onSelect }: CharacterCardProps) {
           {character.totalChatCount.toLocaleString()}
         </Typography>
       </div>
-      <div className="mt-2 flex h-[46px] flex-col items-center justify-center text-center">
+      <div className="mt-2 flex h-[46px] w-full min-w-0 flex-col items-center justify-center overflow-hidden text-center">
         <Typography
           variant="body2"
           weight={700}
           color="#17191C"
           truncate
-          className="max-w-[92px]"
+          className="min-w-0"
         >
           {character.name}
         </Typography>
@@ -54,7 +54,7 @@ export function CharacterCard({ character, onSelect }: CharacterCardProps) {
           variant="caption"
           color="#72777E"
           truncate
-          className="mt-1 max-w-[96px]"
+          className="mt-1 min-w-0"
         >
           {character.tags.map((tag) => `#${tag}`).join(" ")}
         </Typography>

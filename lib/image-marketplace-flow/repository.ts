@@ -192,6 +192,17 @@ export type ListWorksOptions = {
   maxPrice?: number;
 };
 
+export type ListCreatorWorksOptions = {
+  creatorId: string;
+  first?: number;
+  excludeWorkId?: string;
+};
+
+export type ListRandomWorksOptions = {
+  first?: number;
+  excludeWorkId?: string;
+};
+
 export type WorkEdge = {
   cursor: string;
   node: Work;
@@ -246,6 +257,90 @@ function emptyWorksConnection(): WorksConnection {
   };
 }
 
+function escapeIlikeTerm(value: string) {
+  return value.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
+}
+
+async function getCreatorIdsMatchingKeyword(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  keyword: string,
+) {
+  const term = escapeIlikeTerm(keyword.trim());
+  const { data } = await supabase
+    .from("marketplace_demo_users")
+    .select("id")
+    .or(`display_name.ilike.%${term}%,handle.ilike.%${term}%`);
+
+  return data?.map((row) => row.id) ?? [];
+}
+
+function buildWorkKeywordOrFilter(keyword: string, creatorIds: string[]) {
+  const term = escapeIlikeTerm(keyword.trim());
+  const filters = [`title.ilike.%${term}%`];
+
+  if (creatorIds.length > 0) {
+    filters.push(`creator_id.in.(${creatorIds.join(",")})`);
+  }
+
+  return filters.join(",");
+}
+
+async function resolveWorkKeywordOrFilter(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  keyword: string,
+) {
+  const trimmed = keyword.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const creatorIds = await getCreatorIdsMatchingKeyword(supabase, trimmed);
+  return buildWorkKeywordOrFilter(trimmed, creatorIds);
+}
+
+export type SearchByKeywordResult = {
+  works: Work[];
+};
+
+/** 키워드 자동완성 검색 (작품) */
+export async function searchByKeyword(
+  keyword: string,
+  count = 4,
+): Promise<SearchByKeywordResult> {
+  const emptyResult: SearchByKeywordResult = { works: [] };
+
+  if (!hasSupabaseAdminEnv() || !keyword.trim()) {
+    return emptyResult;
+  }
+
+  try {
+    const supabase = createSupabaseAdminClient();
+    const trimmed = keyword.trim();
+    const workOrFilter = await resolveWorkKeywordOrFilter(supabase, trimmed);
+
+    if (!workOrFilter) {
+      return emptyResult;
+    }
+
+    const { data: workRows, error: worksError } = await supabase
+      .from("marketplace_demo_works")
+      .select(WORK_BASE_SELECT)
+      .or(workOrFilter)
+      .order("created_at", { ascending: false })
+      .limit(count);
+
+    return {
+      works: worksError
+        ? []
+        : (workRows as WorkWithRelations[] | null)?.map((row) => mapWork(row)) ??
+          [],
+    };
+  } catch (error) {
+    logSupabaseFallback("Failed to search by keyword", error);
+    return emptyResult;
+  }
+}
+
 /** 작품 목록 조회 (cursor 기반 페이지네이션) */
 export async function listWorks(
   options: ListWorksOptions = {},
@@ -288,7 +383,10 @@ export async function listWorks(
     }
 
     if (query?.trim()) {
-      dbQuery = dbQuery.ilike("title", `%${query.trim()}%`);
+      const workOrFilter = await resolveWorkKeywordOrFilter(supabase, query);
+      if (workOrFilter) {
+        dbQuery = dbQuery.or(workOrFilter);
+      }
     }
 
     if (typeof first === "number" && first > 0) {
@@ -328,6 +426,73 @@ export async function listWorks(
     logSupabaseFallback("Failed to load works", error);
     return emptyWorksConnection();
   }
+}
+
+/** 제작자의 다른 작품 목록 조회 */
+export async function listCreatorWorks(
+  options: ListCreatorWorksOptions,
+): Promise<Work[]> {
+  if (!hasSupabaseAdminEnv()) {
+    return [];
+  }
+
+  const { creatorId, first = 10, excludeWorkId } = options;
+
+  try {
+    const supabase = createSupabaseAdminClient();
+    let dbQuery = supabase
+      .from("marketplace_demo_works")
+      .select(WORK_BASE_SELECT)
+      .eq("creator_id", creatorId)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(first);
+
+    if (excludeWorkId) {
+      dbQuery = dbQuery.neq("id", excludeWorkId);
+    }
+
+    const { data, error } = await dbQuery;
+
+    if (error || !data) {
+      logSupabaseFallback("Failed to load creator works", error);
+      return [];
+    }
+
+    return (data as WorkWithRelations[]).map((row) => mapWork(row));
+  } catch (error) {
+    logSupabaseFallback("Failed to load creator works", error);
+    return [];
+  }
+}
+
+const RANDOM_WORKS_POOL_SIZE = 80;
+
+function shuffleWorks<T>(items: T[]): T[] {
+  const shuffled = [...items];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[randomIndex]] = [
+      shuffled[randomIndex],
+      shuffled[index],
+    ];
+  }
+
+  return shuffled;
+}
+
+/** 랜덤 작품 목록 조회 */
+export async function listRandomWorks(
+  options: ListRandomWorksOptions = {},
+): Promise<Work[]> {
+  const { first = 10, excludeWorkId } = options;
+  const connection = await listWorks({ first: RANDOM_WORKS_POOL_SIZE });
+  const pool = connection.edges
+    .map((edge) => edge.node)
+    .filter((work) => work.id !== excludeWorkId);
+
+  return shuffleWorks(pool).slice(0, first);
 }
 
 /** 작품 생성 */

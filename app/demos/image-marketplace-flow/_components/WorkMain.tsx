@@ -104,7 +104,13 @@ export default function WorkMain({ id }: { id: string }) {
 
             <div className="order-4 w-[calc(100%-365px)] max-lg:w-full">
               <HistoryWork work={data?.work} loading={isInitialLoading} />
-              <OtherWorks currentId={data?.work?.id} />
+              <OtherWorks
+                currentId={data?.work?.id}
+                creatorId={data?.work?.creator?.id}
+                creatorHandle={data?.work?.creator?.handle}
+                creatorName={data?.work?.creator?.name}
+                loading={isInitialLoading}
+              />
             </div>
           </article>
         </div>
