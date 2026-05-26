@@ -80,3 +80,18 @@ export type UpdateUserAvatarMutationResponse = {
 export type UpdateAskingPriceMutationResponse = {
   updateAskingPrice: Pick<Work, "id" | "listingStatus" | "askingPrice">;
 };
+
+export type SearchByKeywordWork = Pick<Work, "id" | "title" | "imageUrl"> & {
+  creator: Pick<Work["creator"], "id" | "name" | "handle" | "avatar">;
+};
+
+export type SearchByKeywordVariables = {
+  keyword: string;
+  count?: number;
+};
+
+export type SearchByKeywordResponse = {
+  searchByKeyword: {
+    works: SearchByKeywordWork[];
+  };
+};

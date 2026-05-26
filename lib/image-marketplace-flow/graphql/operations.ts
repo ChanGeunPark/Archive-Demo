@@ -50,6 +50,24 @@ export const WORKS_QUERY = gql`
   }
 `;
 
+export const SEARCH_BY_KEYWORD_QUERY = gql`
+  query SearchByKeyword($keyword: String!, $count: Int) {
+    searchByKeyword(keyword: $keyword, count: $count) {
+      works {
+        id
+        title
+        imageUrl
+        creator {
+          id
+          name
+          handle
+          avatar
+        }
+      }
+    }
+  }
+`;
+
 export const CREATOR_WORKS_QUERY = gql`
   query CreatorWorks(
     $creatorId: ID!

@@ -257,6 +257,90 @@ function emptyWorksConnection(): WorksConnection {
   };
 }
 
+function escapeIlikeTerm(value: string) {
+  return value.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
+}
+
+async function getCreatorIdsMatchingKeyword(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  keyword: string,
+) {
+  const term = escapeIlikeTerm(keyword.trim());
+  const { data } = await supabase
+    .from("marketplace_demo_users")
+    .select("id")
+    .or(`display_name.ilike.%${term}%,handle.ilike.%${term}%`);
+
+  return data?.map((row) => row.id) ?? [];
+}
+
+function buildWorkKeywordOrFilter(keyword: string, creatorIds: string[]) {
+  const term = escapeIlikeTerm(keyword.trim());
+  const filters = [`title.ilike.%${term}%`];
+
+  if (creatorIds.length > 0) {
+    filters.push(`creator_id.in.(${creatorIds.join(",")})`);
+  }
+
+  return filters.join(",");
+}
+
+async function resolveWorkKeywordOrFilter(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  keyword: string,
+) {
+  const trimmed = keyword.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const creatorIds = await getCreatorIdsMatchingKeyword(supabase, trimmed);
+  return buildWorkKeywordOrFilter(trimmed, creatorIds);
+}
+
+export type SearchByKeywordResult = {
+  works: Work[];
+};
+
+/** 키워드 자동완성 검색 (작품) */
+export async function searchByKeyword(
+  keyword: string,
+  count = 4,
+): Promise<SearchByKeywordResult> {
+  const emptyResult: SearchByKeywordResult = { works: [] };
+
+  if (!hasSupabaseAdminEnv() || !keyword.trim()) {
+    return emptyResult;
+  }
+
+  try {
+    const supabase = createSupabaseAdminClient();
+    const trimmed = keyword.trim();
+    const workOrFilter = await resolveWorkKeywordOrFilter(supabase, trimmed);
+
+    if (!workOrFilter) {
+      return emptyResult;
+    }
+
+    const { data: workRows, error: worksError } = await supabase
+      .from("marketplace_demo_works")
+      .select(WORK_BASE_SELECT)
+      .or(workOrFilter)
+      .order("created_at", { ascending: false })
+      .limit(count);
+
+    return {
+      works: worksError
+        ? []
+        : (workRows as WorkWithRelations[] | null)?.map((row) => mapWork(row)) ??
+          [],
+    };
+  } catch (error) {
+    logSupabaseFallback("Failed to search by keyword", error);
+    return emptyResult;
+  }
+}
+
 /** 작품 목록 조회 (cursor 기반 페이지네이션) */
 export async function listWorks(
   options: ListWorksOptions = {},
@@ -299,7 +383,10 @@ export async function listWorks(
     }
 
     if (query?.trim()) {
-      dbQuery = dbQuery.ilike("title", `%${query.trim()}%`);
+      const workOrFilter = await resolveWorkKeywordOrFilter(supabase, query);
+      if (workOrFilter) {
+        dbQuery = dbQuery.or(workOrFilter);
+      }
     }
 
     if (typeof first === "number" && first > 0) {

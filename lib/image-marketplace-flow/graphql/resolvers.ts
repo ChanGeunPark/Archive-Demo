@@ -9,6 +9,7 @@ import {
   listWorks,
   listCreatorWorks,
   listRandomWorks,
+  searchByKeyword as searchByKeywordInRepository,
   updateUserAvatar as updateUserAvatarInRepository,
   updateAskingPrice as updateAskingPriceInRepository,
 } from "../repository";
@@ -61,6 +62,11 @@ export const resolvers = {
       }),
     work: (_parent: unknown, args: { id: string }) => getWorkById(args.id),
     user: (_parent: unknown, args: { id: string }) => getUserById(args.id),
+    searchByKeyword: (
+      _parent: unknown,
+      args: { keyword: string; count?: number },
+    ) =>
+      searchByKeywordInRepository(args.keyword, args.count ?? 4),
   },
 
   Mutation: {
