@@ -2,7 +2,6 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { cls } from "@/lib/client/utils";
-import { DISCOVER_TABS } from "./discoverData";
 import {
   formatPriceFilterLabel,
   hasActivePriceFilter,
@@ -116,17 +115,12 @@ export default function DiscoverTabNav({
         <div className="flex w-full flex-col content-center items-start justify-between xl:flex-row">
           <section className="flex w-full items-center justify-between border-b border-zinc-100">
             <nav className="flex h-10 w-full items-center overflow-hidden overflow-x-auto">
-              {DISCOVER_TABS.map((tab) => (
-                <div
-                  key={tab.id}
-                  className="relative flex h-full items-center justify-center text-center"
-                >
-                  <span className="relative flex h-full cursor-default items-center justify-center break-keep px-3 text-center text-[13px] font-semibold whitespace-nowrap text-gray-700">
-                    <span className="absolute bottom-0 left-0 block h-[2px] w-full bg-[#F3CC00]" />
-                    {tab.label}
-                  </span>
-                </div>
-              ))}
+              <div className="relative flex h-full items-center justify-center text-center">
+                <span className="relative flex h-full cursor-default items-center justify-center break-keep px-3 text-center text-[13px] font-semibold whitespace-nowrap text-gray-700">
+                  <span className="absolute bottom-0 left-0 block h-[2px] w-full bg-[#F3CC00]" />
+                  작품
+                </span>
+              </div>
             </nav>
 
             <div ref={filterRef} className="relative shrink-0">
