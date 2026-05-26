@@ -117,7 +117,7 @@ export default function DiscoverTabNav({
             <nav className="flex h-10 w-full items-center overflow-hidden overflow-x-auto">
               <div className="relative flex h-full items-center justify-center text-center">
                 <span className="relative flex h-full cursor-default items-center justify-center break-keep px-3 text-center text-[13px] font-semibold whitespace-nowrap text-gray-700">
-                  <span className="absolute bottom-0 left-0 block h-[2px] w-full bg-[#F3CC00]" />
+                  <span className="absolute bottom-0 left-0 block h-[2px] w-full bg-zinc-800" />
                   작품
                 </span>
               </div>

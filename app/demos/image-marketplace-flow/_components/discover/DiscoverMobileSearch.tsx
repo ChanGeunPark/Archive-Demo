@@ -37,7 +37,7 @@ export default function DiscoverMobileSearch({
 
   return (
     <form onSubmit={handleSubmit} className="relative mb-4 md:hidden">
-      <div className="flex h-11 items-center rounded-md border border-[#D8DBDE] bg-white px-3">
+      <div className="flex h-11 items-center rounded-full border border-[#D8DBDE] bg-white px-3">
         <span className="mr-2 text-[#777D84]">⌕</span>
         <input
           ref={inputRef}
