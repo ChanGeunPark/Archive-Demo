@@ -2,10 +2,15 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import MasonryImageCard from "../card/MasonryImageCard";
 import OrderedMasonry from "../layout/OrderedMasonry";
-import { works } from "../chizuData";
 import KeyboardArrowRightIcon from "@/components/icons/arrow/KeyboardArrowRightIcon";
 import { creatorHandle, DEMO_AUCTION_END_TIME } from "./workUtils";
 import { Skeleton } from "./Skeleton";
+import { useQuery } from "@apollo/client/react";
+import {
+  WorksQueryResponse,
+  WorksQueryVariables,
+} from "@/lib/image-marketplace-flow/graphql/types";
+import { WORKS_QUERY } from "@/lib/image-marketplace-flow/graphql/operations";
 
 function OtherWorkItem({
   children,
@@ -54,14 +59,17 @@ function OtherWorksSkeleton() {
   );
 }
 
-export default function OtherWorks({
-  currentId,
-  loading,
-}: {
-  currentId?: string;
-  loading?: boolean;
-}) {
-  if (loading) {
+export default function OtherWorks({ currentId }: { currentId?: string }) {
+  const { data, loading: worksLoading } = useQuery<
+    WorksQueryResponse,
+    WorksQueryVariables
+  >(WORKS_QUERY, {
+    variables: {
+      first: 10,
+    },
+  });
+
+  if (worksLoading) {
     return <OtherWorksSkeleton />;
   }
 
@@ -86,26 +94,25 @@ export default function OtherWorks({
           columnClassName="flex min-w-0 flex-col gap-5 pl-5"
           breakpointCols={{ default: 3, 1280: 2, 1024: 2, 640: 1 }}
         >
-          {works
-            .filter((work) => work.id !== currentId)
-            .slice(0, 6)
+          {data?.works.edges
+            .map((edge) => edge.node)
             .map((work) => (
               <OtherWorkItem key={work.id} stdHeight={work.height / work.width}>
                 <MasonryImageCard
-                  imgUrl={work.image}
+                  imgUrl={work.imageUrl}
                   width={work.width}
                   height={work.height}
                   title={work.title}
                   link={`/demos/image-marketplace-flow/work/${work.id}`}
                   buyNowPrice={work.askingPrice || undefined}
                   auctionTime={
-                    work.status === "Auction" ? DEMO_AUCTION_END_TIME : null
+                    work.listingStatus === "LISTED"
+                      ? DEMO_AUCTION_END_TIME
+                      : null
                   }
                   userProfile={work.owner.avatar}
-                  userScreenName={
-                    work.owner.handle || creatorHandle(work.artist)
-                  }
-                  userAddress={work.owner.handle || creatorHandle(work.artist)}
+                  userScreenName={work.owner.handle || work.owner.id}
+                  userAddress={work.owner.handle || work.owner.id}
                   userName={work.owner.name}
                 />
               </OtherWorkItem>

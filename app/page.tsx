@@ -26,15 +26,15 @@ const demos = [
     href: "/demos/image-marketplace-flow",
     label: "Marketplace",
     description:
-      "이미지 작품 거래 플랫폼의 탐색·구매 경험을 재현합니다. Masonry 그리드, Socket+GraphQL 실시간 동기화, 라이선스 선택과 구매 플로우를 인터랙티브하게 확인할 수 있습니다.",
-    imageSrc: "/images/ai/aiThumb.png",
+      "CHIZU 마켓플레이스의 실시간 동기화 흐름을 재현합니다. Realtime 이벤트는 DB 변경 트리거만 전달하고, 화면 갱신은 GraphQL refetch로 처리합니다. Discover 탐색, 작품 상세, 구매·제안·등록 플로우를 함께 확인할 수 있습니다.",
+    imageSrc: "/images/marketplace/marketThumb.png",
     imageAlt: "CHIZU Image Marketplace Flow Demo preview",
-    note: "실시간 UI 일관성 · Storybook",
+    note: "Realtime trigger · GraphQL refetch",
     stats: [
+      "Supabase Realtime",
+      "GraphQL refetch",
       "Masonry grid",
-      "Socket + GraphQL",
-      "License flow",
-      "Image optimization",
+      "Buy · offer · create",
     ],
     accent: "amber",
   },
@@ -162,7 +162,12 @@ export default function Home() {
               <Typography variant="h2" weight={700} color="#09090b">
                 {item.value}
               </Typography>
-              <Typography variant="body2" weight={600} color="#09090b" className="mt-1">
+              <Typography
+                variant="body2"
+                weight={600}
+                color="#09090b"
+                className="mt-1"
+              >
                 {item.title}
               </Typography>
               <Typography variant="body3" color="#71717a" className="mt-1">

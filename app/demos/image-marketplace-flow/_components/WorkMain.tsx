@@ -37,8 +37,7 @@ export default function WorkMain({ id }: { id: string }) {
     notifyOnNetworkStatusChange: true,
   });
 
-  const isInitialLoading =
-    loading && (!data?.work || data.work.id !== id);
+  const isInitialLoading = loading && (!data?.work || data.work.id !== id);
 
   useEffect(() => {
     if (!forceUpdateTrigger || pendingWorkId !== id) {
@@ -90,16 +89,22 @@ export default function WorkMain({ id }: { id: string }) {
           <WorkMobileHeroImage work={data?.work} loading={isInitialLoading} />
 
           <article className="mx-auto flex flex-wrap px-[24px] lg:px-[96px] max-lg:flex-col">
-            <WorkDesktopHeroImage work={data?.work} loading={isInitialLoading} />
+            <WorkDesktopHeroImage
+              work={data?.work}
+              loading={isInitialLoading}
+            />
             <WorkPriceBlock work={data?.work} loading={isInitialLoading} />
 
             <section className="order-3 mt-14 w-[calc(100%-365px)] max-lg:order-2 max-lg:mt-6 max-lg:w-full">
-              <WorkContentsDetail work={data?.work} loading={isInitialLoading} />
+              <WorkContentsDetail
+                work={data?.work}
+                loading={isInitialLoading}
+              />
             </section>
 
             <div className="order-4 w-[calc(100%-365px)] max-lg:w-full">
               <HistoryWork work={data?.work} loading={isInitialLoading} />
-              <OtherWorks currentId={data?.work?.id} loading={isInitialLoading} />
+              <OtherWorks currentId={data?.work?.id} />
             </div>
           </article>
         </div>
