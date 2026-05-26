@@ -1,5 +1,6 @@
 import Link from "next/link";
 import KeyboardArrowLeftIcon from "@/components/icons/arrow/KeyboardArrowLeftIcon";
+import CreateArtworkLink from "../auth/CreateArtworkLink";
 import MarketplaceLogin from "../auth/MarketplaceLogin";
 
 type DiscoverHeaderProps = {
@@ -31,12 +32,7 @@ export default function DiscoverHeader({
           />
         </div>
         <div className="flex items-center gap-2">
-          <Link
-            href="/demos/image-marketplace-flow/create/artwork"
-            className="hidden h-10 items-center rounded-md border border-[#D8DBDE] bg-white px-3 text-sm font-bold text-[#3F444B] transition hover:border-[#17191C] sm:flex"
-          >
-            작품 등록
-          </Link>
+          <CreateArtworkLink />
           <MarketplaceLogin />
         </div>
       </div>

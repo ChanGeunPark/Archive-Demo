@@ -54,6 +54,7 @@ export default function OtherWorks({ currentId }: { currentId: string }) {
                   }
                   userProfile={work.owner.avatar}
                   userScreenName={work.owner.handle || creatorHandle(work.artist)}
+                  userAddress={work.owner.handle || creatorHandle(work.artist)}
                   userName={work.owner.name}
                 />
               </OtherWorkItem>

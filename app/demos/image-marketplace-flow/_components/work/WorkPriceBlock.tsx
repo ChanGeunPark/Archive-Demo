@@ -7,6 +7,7 @@ import type { WorkItem } from "../chizuData";
 import { useMarketplaceStore } from "@/lib/image-marketplace-flow/marketplaceStore";
 import type { MarketplaceOffer } from "@/lib/image-marketplace-flow/marketplaceTypes";
 import { formatKrw } from "./workUtils";
+import { useDeleteWork } from "@/lib/image-marketplace-flow/graphql/hooks";
 
 const EMPTY_OFFERS: MarketplaceOffer[] = [];
 
@@ -108,6 +109,8 @@ export default function WorkPriceBlock({ work }: { work: WorkItem }) {
       `${offer.bidder.name}의 제안을 수락했습니다. 소유권이 제안자에게 이전된 상태로 갱신됩니다.`,
     );
   };
+
+  const { deleteWork, ...deleteWorkState } = useDeleteWork();
 
   return (
     <section className="order-2 flex w-full flex-col lg:sticky lg:top-20 lg:w-[365px] lg:self-start lg:px-6 max-lg:order-3 mt-2 lg:mt-0">
@@ -255,6 +258,17 @@ export default function WorkPriceBlock({ work }: { work: WorkItem }) {
             className="mt-3 h-11 w-full rounded-xl border border-[#D8DBDE] text-sm font-bold text-[#3F444B] transition hover:border-[#141416]"
           >
             다른 사용자가 구매함
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              deleteWork(work.id);
+            }}
+            disabled={deleteWorkState.loading}
+            className="mt-3 h-11 w-full rounded-xl border border-[#D8DBDE] text-sm font-bold text-[#3F444B] transition hover:border-[#141416]"
+          >
+            {deleteWorkState.loading ? "작품 삭제 중..." : "작품 삭제"}
           </button>
 
           {notice ? (

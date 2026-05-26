@@ -10,11 +10,20 @@ export type WorksQueryWork = Pick<
   | "listingStatus"
   | "askingPrice"
 > & {
-  owner: Pick<Work["owner"], "id" | "name" | "avatar">;
+  owner: Pick<Work["owner"], "id" | "name" | "handle" | "avatar">;
 };
 export type WorksQueryResponse = {
   works: WorksQueryWork[];
 };
 export type WorkDetailQueryResponse = {
   work: Work | null;
+};
+export type CreateWorkMutationResponse = {
+  createWork: Pick<
+    Work,
+    "id" | "title" | "imageUrl" | "listingStatus" | "askingPrice"
+  >;
+};
+export type DeleteWorkMutationResponse = {
+  deleteWork: boolean;
 };

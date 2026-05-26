@@ -39,15 +39,11 @@ export default function WorkGrid({ works }: { works: WorksQueryWork[] }) {
             width={work.width}
             height={work.height}
             title={work.title}
-            link={
-              work.id.startsWith("work-")
-                ? `/demos/image-marketplace-flow/work/${work.id}`
-                : undefined
-            }
+            link={`/demos/image-marketplace-flow/work/${work.id}`}
             buyNowPrice={work.askingPrice ?? undefined}
-            userProfile={work.owner.avatar}
-            userScreenName={work.owner.name}
-            userAddress={work.owner.id}
+            userProfile={work.owner.avatar ?? ""}
+            userScreenName={work.owner.handle || work.owner.id}
+            userAddress={work.owner.handle || work.owner.id}
             userName={work.owner.name}
           />
         </MasonryWorkItem>

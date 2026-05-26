@@ -13,8 +13,49 @@ export const WORKS_QUERY = gql`
       owner {
         id
         name
+        handle
         avatar
       }
+    }
+  }
+`;
+
+export const CREATE_WORK_MUTATION = gql`
+  mutation CreateWork(
+    $id: ID!
+    $title: String!
+    $description: String
+    $imageUrl: String!
+    $imageId: String
+    $width: Int
+    $height: Int
+    $tags: [String!]
+    $creatorId: ID!
+    $ownerId: ID
+    $askingPrice: Int
+    $allowOffers: Boolean
+    $usageRights: [UsageRightInput!]
+  ) {
+    createWork(
+      id: $id
+      title: $title
+      description: $description
+      imageUrl: $imageUrl
+      imageId: $imageId
+      width: $width
+      height: $height
+      tags: $tags
+      creatorId: $creatorId
+      ownerId: $ownerId
+      askingPrice: $askingPrice
+      allowOffers: $allowOffers
+      usageRights: $usageRights
+    ) {
+      id
+      title
+      imageUrl
+      listingStatus
+      askingPrice
     }
   }
 `;
@@ -34,6 +75,10 @@ export const WORK_DETAIL_QUERY = gql`
       askingPrice
       lastSalePrice
       offerCount
+      usageRights {
+        label
+        enabled
+      }
       creator {
         id
         name
@@ -59,5 +104,11 @@ export const WORK_DETAIL_QUERY = gql`
         }
       }
     }
+  }
+`;
+
+export const DELETE_WORK_MUTATION = gql`
+  mutation DeleteWork($id: ID!) {
+    deleteWork(id: $id)
   }
 `;

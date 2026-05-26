@@ -18,6 +18,7 @@ export default function MasonryImageCard({
   link,
   userProfile,
   userScreenName,
+  userAddress,
   userName,
   ethClass,
   children,
@@ -88,7 +89,7 @@ export default function MasonryImageCard({
               )}
             >
               <Link
-                href={`/@${userScreenName}`}
+                href={`/@${userAddress || userScreenName}`}
                 className={cls(
                   "block h-fit overflow-hidden",
                   hasActionPrice ? "w-auto" : "w-full",
@@ -108,7 +109,7 @@ export default function MasonryImageCard({
                       {userName}
                     </h2>
                     <span className="w-full truncate text-[11px] text-gray-100 max-lg:hidden">
-                      @{userScreenName}
+                      @{userAddress || userScreenName}
                     </span>
                   </div>
                 </div>

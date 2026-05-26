@@ -315,6 +315,7 @@ export type Database = {
           description: string
           height: number
           id: string
+          image_id: string | null
           image_url: string
           last_sale_price: number | null
           listing_status: string
@@ -334,6 +335,7 @@ export type Database = {
           description?: string
           height?: number
           id: string
+          image_id?: string | null
           image_url: string
           last_sale_price?: number | null
           listing_status: string
@@ -353,6 +355,7 @@ export type Database = {
           description?: string
           height?: number
           id?: string
+          image_id?: string | null
           image_url?: string
           last_sale_price?: number | null
           listing_status?: string

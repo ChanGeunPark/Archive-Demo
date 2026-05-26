@@ -40,6 +40,7 @@ export type Work = {
   title: string;
   description: string;
   imageUrl: string;
+  imageId: string | null;
   width: number;
   height: number;
   tags: string[];
@@ -48,6 +49,7 @@ export type Work = {
   askingPrice: number | null;
   lastSalePrice: number | null;
   offerCount: number;
+  usageRights: UsageRight[];
   creator: MarketplaceUser;
   owner: MarketplaceUser;
   offers: Offer[];

@@ -1,17 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import {
-  licensePolicyToUsageRights,
-  resolveListingStatus,
-  type ArtworkLicensePolicy,
-} from "./artworkCreateUtils";
-import { marketplaceUsers } from "./demoUsers";
-import type {
-  ListingStatus,
-  UsageRight,
-  WorkOwnershipStatus,
-} from "./marketplaceTypes";
+import type { ArtworkLicensePolicy } from "./artworkCreateUtils";
 
 export type { ArtworkLicensePolicy } from "./artworkCreateUtils";
 
@@ -29,29 +19,10 @@ export type CreateArtworkStep =
 export interface ArtworkFormData {
   title?: string;
   description?: string;
+  artistId?: string;
   askingPrice?: number;
   allowOffers?: boolean;
   licensePolicy?: ArtworkLicensePolicy;
-}
-
-/** marketplace_demo_works row와 동일한 구조 */
-export interface CreatedWork {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl: string;
-  width: number;
-  height: number;
-  creatorId: string;
-  ownerId: string;
-  ownershipStatus: WorkOwnershipStatus;
-  listingStatus: ListingStatus;
-  askingPrice: number | null;
-  lastSalePrice: number | null;
-  offerCount: number;
-  tags: string[];
-  usageRights: UsageRight[];
-  createdAt: string;
 }
 
 type CreateArtworkState = {
@@ -63,7 +34,7 @@ type CreateArtworkState = {
   imageHeight: number;
   formData: ArtworkFormData;
   tags: string[];
-  createdWorks: CreatedWork[];
+  uploadError: string;
   setCurrentStep: (nextStep: CreateArtworkStep) => void;
   setArtworkId: (id: string) => void;
   setPreviewImage: (nextPreviewImage: string) => void;
@@ -72,14 +43,14 @@ type CreateArtworkState = {
   setFormData: (nextFormData: ArtworkFormData) => void;
   cleanFormData: () => void;
   setLicensePolicy: (nextPolicy: ArtworkLicensePolicy) => void;
+  setUploadError: (message: string) => void;
   addTag: (name: string) => void;
   deleteTag: (name: string) => void;
   cleanTags: () => void;
-  createArtwork: () => CreatedWork;
   cleanData: () => void;
 };
 
-export const useCreateArtworkStore = create<CreateArtworkState>((set, get) => ({
+export const useCreateArtworkStore = create<CreateArtworkState>((set) => ({
   currentStep: "FORM_IMAGE",
   artworkId: "",
   previewImage: "",
@@ -88,7 +59,7 @@ export const useCreateArtworkStore = create<CreateArtworkState>((set, get) => ({
   imageHeight: 1000,
   formData: {},
   tags: [],
-  createdWorks: [],
+  uploadError: "",
 
   setCurrentStep: (nextStep) => set({ currentStep: nextStep }),
   setArtworkId: (id) => set({ artworkId: id }),
@@ -105,6 +76,7 @@ export const useCreateArtworkStore = create<CreateArtworkState>((set, get) => ({
     set((state) => ({
       formData: { ...state.formData, licensePolicy: nextPolicy },
     })),
+  setUploadError: (message) => set({ uploadError: message }),
 
   addTag: (name) =>
     set((state) => {
@@ -119,43 +91,6 @@ export const useCreateArtworkStore = create<CreateArtworkState>((set, get) => ({
     set((state) => ({ tags: state.tags.filter((tag) => tag !== name) })),
   cleanTags: () => set({ tags: [] }),
 
-  createArtwork: () => {
-    const { formData, previewImage, tags, imageWidth, imageHeight } = get();
-    const askingPrice =
-      formData.askingPrice && formData.askingPrice > 0
-        ? formData.askingPrice
-        : null;
-    const allowOffers = formData.allowOffers ?? true;
-    const licensePolicy = formData.licensePolicy || "personal";
-    const creatorId = marketplaceUsers.guest.id;
-
-    const createdWork: CreatedWork = {
-      id: `work-${Date.now()}`,
-      title: formData.title || "Untitled Artwork",
-      description: formData.description || "",
-      imageUrl: previewImage,
-      width: imageWidth,
-      height: imageHeight,
-      creatorId,
-      ownerId: creatorId,
-      ownershipStatus: "OWNED_BY_CREATOR",
-      listingStatus: resolveListingStatus(askingPrice, allowOffers),
-      askingPrice,
-      lastSalePrice: null,
-      offerCount: 0,
-      tags,
-      usageRights: licensePolicyToUsageRights(licensePolicy),
-      createdAt: new Date().toISOString(),
-    };
-
-    set((state) => ({
-      artworkId: createdWork.id,
-      createdWorks: [createdWork, ...state.createdWorks],
-    }));
-
-    return createdWork;
-  },
-
   cleanData: () =>
     set({
       currentStep: "FORM_IMAGE",
@@ -166,5 +101,6 @@ export const useCreateArtworkStore = create<CreateArtworkState>((set, get) => ({
       imageHeight: 1000,
       formData: {},
       tags: [],
+      uploadError: "",
     }),
 }));

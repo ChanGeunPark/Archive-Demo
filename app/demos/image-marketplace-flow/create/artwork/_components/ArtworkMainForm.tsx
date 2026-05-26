@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef } from "react";
+import { forwardRef, useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import type { ArtworkFormData } from "@/lib/image-marketplace-flow/createArtworkStore";
 import { cls } from "@/lib/client/utils";
@@ -21,12 +21,19 @@ export default function ArtworkMainForm({
     handleSubmit,
     formState: { errors },
     control,
+    setValue,
   } = useForm<ArtworkFormData>({
     defaultValues: {
       allowOffers: true,
       ...defaultValues,
     },
   });
+
+  useEffect(() => {
+    if (defaultValues.artistId) {
+      setValue("artistId", defaultValues.artistId);
+    }
+  }, [defaultValues.artistId, setValue]);
 
   const descriptionLength = useWatch({ control, name: "description" })?.length || 0;
 
@@ -73,6 +80,17 @@ export default function ArtworkMainForm({
           </div>
 
           <TextField
+            label="아티스트 ID"
+            readOnly
+            placeholder="로그인 ID"
+            error={errors.artistId?.message}
+            {...register("artistId", {
+              required: "로그인 ID가 필요합니다.",
+            })}
+            className="bg-[#FAFAFB] text-[#3F444B]"
+          />
+
+          <TextField
             label="판매가"
             type="number"
             min={0}
@@ -81,7 +99,14 @@ export default function ArtworkMainForm({
             suffix="KRW"
             error={errors.askingPrice?.message}
             {...register("askingPrice", {
-              valueAsNumber: true,
+              setValueAs: (value) => {
+                if (value === "" || value === null || value === undefined) {
+                  return undefined;
+                }
+
+                const parsed = Number(value);
+                return Number.isNaN(parsed) ? undefined : parsed;
+              },
               min: { value: 0, message: "0원 이상으로 입력해 주세요." },
             })}
           />

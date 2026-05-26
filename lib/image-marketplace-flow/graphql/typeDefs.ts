@@ -8,24 +8,6 @@ export const typeDefs = gql`
     avatar: String
   }
 
-  type Work {
-    id: ID!
-    title: String!
-    description: String!
-    imageUrl: String!
-    width: Int!
-    height: Int!
-    tags: [String!]!
-    listingStatus: String!
-    ownershipStatus: String!
-    askingPrice: Int
-    lastSalePrice: Int
-    offerCount: Int!
-    creator: MarketplaceUser!
-    owner: MarketplaceUser!
-    offers: [Offer!]!
-  }
-
   type Offer {
     id: ID!
     amount: Int!
@@ -34,12 +16,42 @@ export const typeDefs = gql`
     createdAt: String!
   }
 
+  type UsageRight {
+    label: String!
+    enabled: Boolean!
+  }
+
+  type Work {
+    id: ID!
+    title: String!
+    description: String!
+    imageUrl: String!
+    imageId: String
+    width: Int!
+    height: Int!
+    tags: [String!]!
+    listingStatus: String!
+    ownershipStatus: String!
+    askingPrice: Int
+    lastSalePrice: Int
+    offerCount: Int!
+    usageRights: [UsageRight!]!
+    creator: MarketplaceUser!
+    owner: MarketplaceUser!
+    offers: [Offer!]!
+  }
+
   type OwnershipTransferEvent {
     type: String!
     workId: ID!
     newOwnerId: ID!
     transactionId: String!
     occurredAt: String!
+  }
+
+  input UsageRightInput {
+    label: String!
+    enabled: Boolean!
   }
 
   type Query {
@@ -56,9 +68,11 @@ export const typeDefs = gql`
       ownerId: ID!
     ): OwnershipTransferEvent!
     createWork(
+      id: ID
       title: String!
       description: String
       imageUrl: String!
+      imageId: String
       width: Int
       height: Int
       tags: [String!]
@@ -66,6 +80,8 @@ export const typeDefs = gql`
       ownerId: ID
       askingPrice: Int
       allowOffers: Boolean
+      usageRights: [UsageRightInput!]
     ): Work!
+    deleteWork(id: ID!): Boolean!
   }
 `;

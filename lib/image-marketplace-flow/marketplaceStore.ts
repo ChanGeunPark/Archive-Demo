@@ -2,6 +2,12 @@
 
 import { create } from "zustand";
 import { createDemoUserFromId, marketplaceUsers } from "./demoUsers";
+import {
+  clearStoredMarketplaceUserId,
+  normalizeMarketplaceUserId,
+  readStoredMarketplaceUserId,
+  writeStoredMarketplaceUserId,
+} from "./marketplaceAuth";
 import type {
   MarketplaceOffer,
   MarketplaceUser,
@@ -52,8 +58,15 @@ export const useMarketplaceStore = create<MarketplaceState>((set, get) => ({
   offersByWorkId: {},
   lastEvent: null,
 
-  loginWithId: (id) => set({ currentUser: createDemoUserFromId(id) }),
-  logout: () => set({ currentUser: null }),
+  loginWithId: (id) => {
+    const normalized = normalizeMarketplaceUserId(id) || marketplaceUsers.guest.id;
+    writeStoredMarketplaceUserId(normalized);
+    set({ currentUser: createDemoUserFromId(normalized) });
+  },
+  logout: () => {
+    clearStoredMarketplaceUserId();
+    set({ currentUser: null });
+  },
 
   buyWork: (workId, price) => {
     const currentUser = get().currentUser;
@@ -189,3 +202,20 @@ export const useMarketplaceStore = create<MarketplaceState>((set, get) => ({
     ...get().workStateById[workId],
   }),
 }));
+
+let authHydrated = false;
+
+export function hydrateMarketplaceAuthFromStorage() {
+  if (typeof window === "undefined" || authHydrated) {
+    return;
+  }
+
+  const storedId = readStoredMarketplaceUserId();
+  if (storedId) {
+    useMarketplaceStore.setState({
+      currentUser: createDemoUserFromId(storedId),
+    });
+  }
+
+  authHydrated = true;
+}

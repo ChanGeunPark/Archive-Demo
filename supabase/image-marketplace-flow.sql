@@ -11,6 +11,7 @@ create table if not exists public.marketplace_demo_works (
   title text not null,
   description text not null default '',
   image_url text not null,
+  image_id text,
   width integer not null default 1000,
   height integer not null default 1000,
   creator_id text not null references public.marketplace_demo_users(id),

@@ -23,12 +23,8 @@ export default function DiscoverMain() {
     loading: worksLoading,
     error: worksError,
   } = useQuery<WorksQueryResponse>(WORKS_QUERY, {
-    fetchPolicy: "cache-and-network",
+    fetchPolicy: "cache-first",
   });
-
-  if (worksError) {
-    return <div>Error: {worksError.message}</div>;
-  }
 
   return (
     <main className="min-h-screen bg-white text-[#17191C]">
@@ -45,6 +41,11 @@ export default function DiscoverMain() {
         />
 
         <section className="py-6">
+          {worksError && (
+            <div className="text-sm font-medium text-gray-500">
+              Error: {worksError.message}
+            </div>
+          )}
           {worksLoading ? (
             <div className="w-full flex justify-center items-center">
               <LoadingAni loop={true} className="w-[60px] h-[60px]" />
