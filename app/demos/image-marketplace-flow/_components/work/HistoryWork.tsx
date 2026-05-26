@@ -60,7 +60,7 @@ export default function HistoryWork({
           >
             <div className="flex min-w-0 items-center">
               <Image
-                src="/images/chizu/profile_default_180x180_00.png"
+                src="/images/marketplace/profile/profile_default_180x180_00.jpg"
                 alt=""
                 width={32}
                 height={32}

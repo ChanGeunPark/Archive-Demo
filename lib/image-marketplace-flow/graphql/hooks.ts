@@ -10,6 +10,7 @@ import {
   UPDATE_ASKING_PRICE_MUTATION,
   UPDATE_USER_AVATAR_MUTATION,
   USER_QUERY,
+  DEFAULT_WORKS_QUERY_VARIABLES,
   WORKS_QUERY,
 } from "./operations";
 import type {
@@ -56,19 +57,30 @@ export function useDeleteWork(options?: MutationOptions) {
         return;
       }
 
-      const existing = cache.readQuery<WorksQueryResponse>({
-        query: WORKS_QUERY,
-      });
-      if (!existing?.works) {
-        return;
-      }
-
-      cache.writeQuery({
-        query: WORKS_QUERY,
-        data: {
-          works: existing.works.filter((work) => work.id !== deletedId),
+      cache.updateQuery<WorksQueryResponse>(
+        {
+          query: WORKS_QUERY,
+          variables: DEFAULT_WORKS_QUERY_VARIABLES,
         },
-      });
+        (existing) => {
+          if (!existing?.works.edges) {
+            return existing;
+          }
+
+          return {
+            works: {
+              ...existing.works,
+              edges: existing.works.edges.filter(
+                (edge) => edge.node.id !== deletedId,
+              ),
+              totalCount:
+                existing.works.totalCount != null
+                  ? existing.works.totalCount - 1
+                  : null,
+            },
+          };
+        },
+      );
     },
   });
 
@@ -172,7 +184,9 @@ export function useUpdateUserAvatar(options?: MutationOptions) {
   const updateUserAvatar = async (variables: UpdateUserAvatarVariables) => {
     await mutate({
       variables,
-      refetchQueries: [{ query: WORKS_QUERY }],
+      refetchQueries: [
+        { query: WORKS_QUERY, variables: DEFAULT_WORKS_QUERY_VARIABLES },
+      ],
       onCompleted: (data) => {
         setCurrentUser(data.updateUserAvatar);
         options?.onCompleted?.();
@@ -199,7 +213,9 @@ export function useUpdateAskingPrice(options?: MutationOptions) {
   const updateAskingPrice = async (variables: UpdateAskingPriceVariables) => {
     await mutate({
       variables,
-      refetchQueries: [{ query: WORKS_QUERY }],
+      refetchQueries: [
+        { query: WORKS_QUERY, variables: DEFAULT_WORKS_QUERY_VARIABLES },
+      ],
       onCompleted: () => {
         requestWorkRefresh(variables.workId);
         options?.onCompleted?.();

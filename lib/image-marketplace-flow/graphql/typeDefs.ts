@@ -54,8 +54,29 @@ export const typeDefs = gql`
     enabled: Boolean!
   }
 
+  type WorkEdge {
+    cursor: String!
+    node: Work!
+  }
+
+  type PageInfo {
+    hasNextPage: Boolean!
+    endCursor: String
+  }
+
+  type WorkConnection {
+    edges: [WorkEdge!]!
+    pageInfo: PageInfo!
+    totalCount: Int
+  }
+
   type Query {
-    works: [Work!]!
+    works(
+      first: Int
+      after: String
+      query: String
+      buyNowOnly: Boolean
+    ): WorkConnection!
     work(id: ID!): Work
     user(id: ID!): MarketplaceUser
   }

@@ -16,6 +16,7 @@ import {
 } from "@/lib/image-marketplace-flow/marketplaceApiClient";
 import {
   CREATE_WORK_MUTATION,
+  DEFAULT_WORKS_QUERY_VARIABLES,
   WORKS_QUERY,
 } from "@/lib/image-marketplace-flow/graphql/operations";
 import type { CreateWorkMutationResponse } from "@/lib/image-marketplace-flow/graphql/types";
@@ -165,7 +166,9 @@ export default function ArtworkCreateClient() {
 
         const { data } = await createWorkMutation({
           variables,
-          refetchQueries: [{ query: WORKS_QUERY }],
+          refetchQueries: [
+            { query: WORKS_QUERY, variables: DEFAULT_WORKS_QUERY_VARIABLES },
+          ],
         });
 
         if (cancelled) {

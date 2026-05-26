@@ -143,7 +143,9 @@ function WorkPriceBlockContent({ work }: { work: Work }) {
   const { updateAskingPrice, loading: updatePriceLoading } =
     useUpdateAskingPrice({
       onCompleted: () => {
-        setNotice("판매가가 반영되었습니다. 서버에서 최신 작품 상태를 다시 불러왔습니다.");
+        setNotice(
+          "판매가가 반영되었습니다. 서버에서 최신 작품 상태를 다시 불러왔습니다.",
+        );
       },
       onError: (error) => {
         setNotice(error.message);
@@ -250,7 +252,7 @@ function WorkPriceBlockContent({ work }: { work: Work }) {
 
   return (
     <>
-      <section className="order-2 flex w-full flex-col lg:sticky lg:top-[64px] lg:w-[365px] lg:self-start lg:px-6 max-lg:order-3 mt-2 lg:mt-0 max-h-[calc(100vh-64px)] overflow-y-auto pb-20">
+      <section className="order-2 flex w-full flex-col lg:sticky lg:top-[64px] lg:w-[365px] lg:self-start lg:px-6 max-lg:order-3 mt-2 lg:mt-0 max-h-[calc(100vh-64px)] overflow-y-auto pb-10">
         <div className="mt-8 flex w-full flex-col max-lg:mt-0">
           <div className="max-lg:hidden">
             <div className="flex items-start justify-between gap-3">

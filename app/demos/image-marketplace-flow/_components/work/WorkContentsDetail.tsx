@@ -105,7 +105,7 @@ export default function WorkContentsDetail({
               className="mt-2 inline-flex max-w-full items-center rounded-lg transition-all hover:opacity-80"
             >
               <Image
-                src="/images/chizu/cover_default_1.png"
+                src="/images/marketplace/mock/mymyberries-autumn-9079361_1920.jpg"
                 alt="collection"
                 width={28}
                 height={28}

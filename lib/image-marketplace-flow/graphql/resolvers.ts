@@ -14,10 +14,25 @@ import type { CreateWorkInput } from "../repository";
 
 export const resolvers = {
   Query: {
-    works: () => listWorks(),
+    works: (
+      _parent: unknown,
+      args: {
+        first?: number;
+        after?: string;
+        query?: string;
+        buyNowOnly?: boolean;
+      },
+    ) =>
+      listWorks({
+        first: args.first,
+        after: args.after,
+        query: args.query,
+        buyNowOnly: args.buyNowOnly,
+      }),
     work: (_parent: unknown, args: { id: string }) => getWorkById(args.id),
     user: (_parent: unknown, args: { id: string }) => getUserById(args.id),
   },
+
   Mutation: {
     buyWork: (
       _parent: unknown,

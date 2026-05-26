@@ -12,8 +12,22 @@ export type WorksQueryWork = Pick<
 > & {
   owner: Pick<Work["owner"], "id" | "name" | "handle" | "avatar">;
 };
+export type WorksQueryVariables = {
+  first?: number;
+  after?: string;
+  query?: string;
+  buyNowOnly?: boolean;
+};
+
 export type WorksQueryResponse = {
-  works: WorksQueryWork[];
+  works: {
+    edges: { cursor: string; node: WorksQueryWork }[];
+    pageInfo: {
+      hasNextPage: boolean;
+      endCursor: string | null;
+    };
+    totalCount: number | null;
+  };
 };
 export type WorkDetailQueryResponse = {
   work: Work | null;

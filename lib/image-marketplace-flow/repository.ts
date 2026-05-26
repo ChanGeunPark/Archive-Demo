@@ -50,7 +50,8 @@ type WorkWithRelations = WorkRow & {
   marketplace_demo_offers?: (OfferRow & { bidder: UserRow | null })[];
 };
 
-const DEFAULT_AVATAR = "/images/chizu/profile_default_180x180_00.png";
+const DEFAULT_AVATAR =
+  "/images/marketplace/profile/profile_default_180x180_00.jpg";
 
 const WORK_BASE_SELECT = `
   *,
@@ -182,28 +183,140 @@ function mapWork(row: WorkWithRelations, includeOffers = false): Work {
   };
 }
 
-/** 작품 목록 조회 */
-export async function listWorks(): Promise<Work[]> {
-  if (!hasSupabaseAdminEnv()) {
-    return [];
+export type ListWorksOptions = {
+  first?: number;
+  after?: string;
+  query?: string;
+  buyNowOnly?: boolean;
+};
+
+export type WorkEdge = {
+  cursor: string;
+  node: Work;
+};
+
+export type WorksPageInfo = {
+  hasNextPage: boolean;
+  endCursor: string | null;
+};
+
+export type WorksConnection = {
+  edges: WorkEdge[];
+  pageInfo: WorksPageInfo;
+  totalCount: number | null;
+};
+
+type WorkCursorPayload = {
+  createdAt: string;
+  id: string;
+};
+
+function encodeWorkCursor(createdAt: string, id: string): string {
+  return Buffer.from(
+    JSON.stringify({ createdAt, id } satisfies WorkCursorPayload),
+  ).toString("base64url");
+}
+
+function decodeWorkCursor(cursor: string): WorkCursorPayload | null {
+  try {
+    const parsed = JSON.parse(
+      Buffer.from(cursor, "base64url").toString("utf8"),
+    ) as Partial<WorkCursorPayload>;
+
+    if (
+      typeof parsed.createdAt === "string" &&
+      typeof parsed.id === "string"
+    ) {
+      return { createdAt: parsed.createdAt, id: parsed.id };
+    }
+  } catch {
+    // invalid cursor
   }
+
+  return null;
+}
+
+function emptyWorksConnection(): WorksConnection {
+  return {
+    edges: [],
+    pageInfo: { hasNextPage: false, endCursor: null },
+    totalCount: null,
+  };
+}
+
+/** 작품 목록 조회 (cursor 기반 페이지네이션) */
+export async function listWorks(
+  options: ListWorksOptions = {},
+): Promise<WorksConnection> {
+  if (!hasSupabaseAdminEnv()) {
+    return emptyWorksConnection();
+  }
+
+  const { first, after, query, buyNowOnly } = options;
 
   try {
     const supabase = createSupabaseAdminClient();
-    const { data, error } = await supabase
+    let dbQuery = supabase
       .from("marketplace_demo_works")
-      .select(WORK_BASE_SELECT)
-      .order("created_at", { ascending: false });
+      .select(WORK_BASE_SELECT, { count: "exact" })
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false });
+
+    if (after) {
+      const cursor = decodeWorkCursor(after);
+      if (cursor) {
+        const createdAtFilter = `"${cursor.createdAt}"`;
+        const idFilter = `"${cursor.id}"`;
+        dbQuery = dbQuery.or(
+          `created_at.lt.${createdAtFilter},and(created_at.eq.${createdAtFilter},id.lt.${idFilter})`,
+        );
+      }
+    }
+
+    if (buyNowOnly) {
+      dbQuery = dbQuery.eq("listing_status", "LISTED").gt("asking_price", 0);
+    }
+
+    if (query?.trim()) {
+      dbQuery = dbQuery.ilike("title", `%${query.trim()}%`);
+    }
+
+    if (typeof first === "number" && first > 0) {
+      dbQuery = dbQuery.limit(first + 1);
+    }
+
+    const { data, error, count } = await dbQuery;
 
     if (error || !data) {
       logSupabaseFallback("Failed to load works", error);
-      return [];
+      return emptyWorksConnection();
     }
 
-    return data.map((row) => mapWork(row as WorkWithRelations));
+    const rows = data as WorkWithRelations[];
+    const hasNextPage =
+      typeof first === "number" && first > 0 && rows.length > first;
+    const pageRows = hasNextPage ? rows.slice(0, first) : rows;
+
+    const edges: WorkEdge[] = pageRows.map((row) => ({
+      cursor: encodeWorkCursor(row.created_at, row.id),
+      node: mapWork(row),
+    }));
+
+    const lastRow = pageRows.at(-1);
+
+    return {
+      edges,
+      pageInfo: {
+        hasNextPage,
+        endCursor: lastRow
+          ? encodeWorkCursor(lastRow.created_at, lastRow.id)
+          : null,
+      },
+      totalCount: count,
+    };
   } catch (error) {
     logSupabaseFallback("Failed to load works", error);
-    return [];
+    return emptyWorksConnection();
   }
 }
 

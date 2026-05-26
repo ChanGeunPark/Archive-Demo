@@ -1,21 +1,47 @@
 import { gql } from "@apollo/client";
 
+export const WORKS_PAGE_SIZE = 40;
+
+export const DEFAULT_WORKS_QUERY_VARIABLES = {
+  first: WORKS_PAGE_SIZE,
+} as const;
+
 export const WORKS_QUERY = gql`
-  query Works {
-    works {
-      id
-      title
-      imageUrl
-      width
-      height
-      listingStatus
-      askingPrice
-      owner {
-        id
-        name
-        handle
-        avatar
+  query Works(
+    $first: Int
+    $after: String
+    $query: String
+    $buyNowOnly: Boolean
+  ) {
+    works(
+      first: $first
+      after: $after
+      query: $query
+      buyNowOnly: $buyNowOnly
+    ) {
+      edges {
+        cursor
+        node {
+          id
+          title
+          imageUrl
+          width
+          height
+          listingStatus
+          askingPrice
+          owner {
+            id
+            name
+            handle
+            avatar
+          }
+        }
       }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      totalCount
     }
   }
 `;

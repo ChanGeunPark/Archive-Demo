@@ -4,13 +4,14 @@ import { notFound } from "next/navigation";
 import WorkGrid from "../../_components/discover/WorkGrid";
 import { marketplaceUsers } from "@/lib/image-marketplace-flow/demoUsers";
 import { listWorks } from "@/lib/image-marketplace-flow/repository";
+import type { Work } from "@/lib/image-marketplace-flow/marketplaceTypes";
 import type { WorksQueryWork } from "@/lib/image-marketplace-flow/graphql/types";
 
 type UserProfilePageProps = {
   params: Promise<{ handle: string }>;
 };
 
-function toWorksQueryWork(work: Awaited<ReturnType<typeof listWorks>>[number]): WorksQueryWork {
+function toWorksQueryWork(work: Work): WorksQueryWork {
   return {
     id: work.id,
     title: work.title,
@@ -31,7 +32,7 @@ function toWorksQueryWork(work: Awaited<ReturnType<typeof listWorks>>[number]): 
 export default async function UserProfilePage({ params }: UserProfilePageProps) {
   const { handle } = await params;
   const normalizedHandle = handle.trim().toLowerCase();
-  const works = await listWorks();
+  const works = (await listWorks()).edges.map((edge) => edge.node);
   const userWorks = works.filter(
     (work) =>
       work.owner.handle.toLowerCase() === normalizedHandle ||
