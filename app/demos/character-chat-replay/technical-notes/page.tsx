@@ -1,7 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import KeyboardArrowLeftIcon from "@/components/icons/arrow/KeyboardArrowLeftIcon";
 import Typography from "@/components/typography/Typography";
 import { TechnicalNotes } from "../_components/TechnicalNotes";
+import { buildPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "AI Chat 기술 노트",
+  description:
+    "CHIZU COMICS AI 캐릭터 채팅 데모의 BFF, LangChain, Supabase, 스트리밍 응답 구조를 정리한 기술 노트입니다.",
+  path: "/demos/character-chat-replay/technical-notes",
+});
 
 export default function CharacterChatTechnicalNotesPage() {
   return (

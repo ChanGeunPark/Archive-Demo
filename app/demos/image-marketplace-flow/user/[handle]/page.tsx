@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -6,10 +7,44 @@ import { marketplaceUsers } from "@/lib/image-marketplace-flow/demoUsers";
 import { listWorks } from "@/lib/image-marketplace-flow/repository";
 import type { Work } from "@/lib/image-marketplace-flow/marketplaceTypes";
 import type { WorksQueryWork } from "@/lib/image-marketplace-flow/graphql/types";
+import { buildPageMetadata } from "@/lib/seo";
 
 type UserProfilePageProps = {
   params: Promise<{ handle: string }>;
 };
+
+export async function generateMetadata({
+  params,
+}: UserProfilePageProps): Promise<Metadata> {
+  const { handle } = await params;
+  const normalizedHandle = handle.trim().toLowerCase();
+  const user = Object.values(marketplaceUsers).find(
+    (candidate) => candidate.handle.toLowerCase() === normalizedHandle,
+  );
+
+  if (!user) {
+    return buildPageMetadata({
+      title: "사용자를 찾을 수 없음",
+      description: "요청하신 사용자 프로필이 존재하지 않습니다.",
+      path: `/demos/image-marketplace-flow/user/${handle}`,
+      noIndex: true,
+    });
+  }
+
+  return buildPageMetadata({
+    title: `${user.name} (@${user.handle})`,
+    description: `${user.name}의 CHIZU 마켓플레이스 데모 프로필과 등록 작품을 확인할 수 있습니다.`,
+    path: `/demos/image-marketplace-flow/user/${user.handle}`,
+    openGraph: {
+      images: [
+        {
+          url: user.avatar,
+          alt: user.name,
+        },
+      ],
+    },
+  });
+}
 
 function toWorksQueryWork(work: Work): WorksQueryWork {
   return {

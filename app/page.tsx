@@ -1,7 +1,24 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import Typography from "@/components/typography/Typography";
 import ArrowRightIcon from "@/components/icons/arrow/ArrowRightIcon";
+import JsonLd from "@/components/seo/JsonLd";
+import { buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "포트폴리오 데모 아카이브",
+  description:
+    "CHIZU COMICS AI 채팅과 CHIZU 이미지 마켓플레이스 데모를 직접 체험할 수 있는 인터랙티브 포트폴리오 아카이브입니다.",
+  path: "/",
+  keywords: [
+    "포트폴리오",
+    "Next.js 데모",
+    "AI 캐릭터 채팅",
+    "이미지 마켓플레이스",
+    "CHIZU",
+  ],
+});
 
 const demos = [
   {
@@ -75,7 +92,16 @@ const highlights = [
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#f4f0ea] text-zinc-950">
+    <>
+      <JsonLd
+        data={buildWebPageJsonLd({
+          title: "포트폴리오 데모 아카이브",
+          description:
+            "CHIZU COMICS AI 채팅과 CHIZU 이미지 마켓플레이스 데모를 직접 체험할 수 있는 인터랙티브 포트폴리오 아카이브입니다.",
+          path: "/",
+        })}
+      />
+      <main className="relative min-h-screen overflow-hidden bg-[#f4f0ea] text-zinc-950">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 overflow-hidden"
@@ -203,6 +229,7 @@ export default function Home() {
         </footer>
       </div>
     </main>
+    </>
   );
 }
 

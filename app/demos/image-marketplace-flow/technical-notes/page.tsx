@@ -1,7 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import KeyboardArrowLeftIcon from "@/components/icons/arrow/KeyboardArrowLeftIcon";
 import Typography from "@/components/typography/Typography";
 import { TechnicalNotes } from "../_components/TechnicalNotes";
+import { buildPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "Marketplace 기술 노트",
+  description:
+    "CHIZU 이미지 마켓플레이스 데모의 Realtime 트리거, GraphQL refetch, 구매·제안 플로우를 정리한 기술 노트입니다.",
+  path: "/demos/image-marketplace-flow/technical-notes",
+});
 
 export default function ImageMarketplaceTechnicalNotesPage() {
   return (
