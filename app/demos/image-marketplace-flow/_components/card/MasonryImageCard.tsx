@@ -9,6 +9,7 @@ import { resolveMarketplaceAvatar } from "@/lib/image-marketplace-flow/marketpla
 import { marketplaceRoutes } from "@/lib/image-marketplace-flow/routes";
 
 import { formatKrw } from "@/lib/image-marketplace-flow/format";
+import { prefetchWorkDetail } from "@/lib/image-marketplace-flow/graphql/prefetchWorkDetail";
 
 export default function MasonryImageCard({
   imgUrl,
@@ -16,6 +17,7 @@ export default function MasonryImageCard({
   height,
   title,
   link,
+  workId,
   userProfile,
   userScreenName,
   userAddress,
@@ -28,6 +30,12 @@ export default function MasonryImageCard({
   const isLandscape = safeWidth > safeHeight;
   const hasBuyNowPrice = typeof buyNowPrice === "number" && buyNowPrice > 0;
   const profileSrc = resolveMarketplaceAvatar(userProfile);
+
+  const handlePrefetch = () => {
+    if (workId) {
+      prefetchWorkDetail(workId);
+    }
+  };
 
   return (
     <>
@@ -69,6 +77,8 @@ export default function MasonryImageCard({
               href={`${link}`}
               className="w-full h-full absolute left-0 top-0 z-10 bg-transparent"
               aria-label={title ? `View ${title}` : "View image"}
+              onMouseEnter={handlePrefetch}
+              onFocus={handlePrefetch}
             />
           ) : null}
 
@@ -118,6 +128,8 @@ export default function MasonryImageCard({
                     "hover:!bg-[#F3CC00] group-hover/card:bg-[#FFE55C] group-hover/card:text-black",
                     "max-lg:ml-0 max-lg:mt-2 max-lg:w-full",
                   )}
+                  onMouseEnter={handlePrefetch}
+                  onFocus={handlePrefetch}
                 >
                   {formatKrw(buyNowPrice)}
                 </Link>

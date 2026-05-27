@@ -5,6 +5,7 @@ export interface MasonryImgProps {
   userScreenName?: string;
   userAddress?: string;
   link?: string;
+  workId?: string;
   buyNowPrice?: number;
   height?: number;
   width?: number;
