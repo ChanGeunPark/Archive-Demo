@@ -82,7 +82,6 @@ function WorkCards({ works }: { works: WorksQueryWork[] }) {
             width={work.width}
             height={work.height}
             title={work.title}
-            workId={work.id}
             link={marketplaceRoutes.work(work.id)}
             buyNowPrice={work.askingPrice || undefined}
             userProfile={work.owner.avatar}

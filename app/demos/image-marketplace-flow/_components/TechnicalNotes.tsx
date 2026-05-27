@@ -34,7 +34,7 @@ const serviceComparison = [
   {
     item: "작품 상세 진입",
     production: "클라이언트 GraphQL refetch 중심 (network-only)",
-    demo: "loading.tsx + 서버 fetch 1회 + Apollo cache seed + hover prefetch",
+    demo: "loading.tsx + 서버 fetch 1회 + Apollo cache seed (tap 시 revalidate)",
   },
   {
     item: "인증 · 거래",
@@ -180,11 +180,6 @@ if (initialWork?.id === id) {
 useQuery(WORK_DETAIL_QUERY, {
   fetchPolicy: "cache-and-network", // 캐시 즉시 표시 + 백그라운드 revalidate
 });`;
-
-const demoPrefetch = `// MasonryImageCard — hover/focus prefetch
-onMouseEnter={() => prefetchWorkDetail(workId)}
-// client.query(WORK_DETAIL_QUERY, { fetchPolicy: "cache-first" })
-// 클릭 전에 캐시를 채워 두면 진입이 더 빨라짐`;
 
 export function TechnicalNotes() {
   return (
@@ -445,7 +440,7 @@ export function TechnicalNotes() {
       <div className="space-y-5">
         <SectionHeading
           title="작품 상세 진입 로딩"
-          description="Discover 카드 클릭 후 상세 화면까지의 체감 지연을 줄이기 위해, 서버 fetch 중복 제거·즉시 피드백·Apollo cache seed·hover prefetch를 조합했습니다."
+          description="Discover 카드 클릭 후 상세 화면까지의 체감 지연을 줄이기 위해, 서버 fetch 중복 제거·즉시 피드백·Apollo cache seed를 조합했습니다."
         />
         <div className="rounded-2xl border border-[#EDEEEF] bg-white p-4 shadow-[0_8px_30px_rgba(15,23,42,0.04)] sm:p-5">
           <Typography
@@ -476,7 +471,7 @@ export function TechnicalNotes() {
             color="#52525b"
             className="mt-3 break-keep leading-relaxed"
           >
-            개선 후 흐름은 네 단계입니다.{" "}
+            개선 후 흐름은 세 단계입니다.{" "}
             <Typography as="span" variant="body3" weight={600} color="#17191C">
               (1) loading.tsx
             </Typography>
@@ -488,11 +483,8 @@ export function TechnicalNotes() {
             <Typography as="span" variant="body3" weight={600} color="#17191C">
               (3) initialWork → seedWorkDetailCache
             </Typography>
-            로 첫 paint부터 상세 UI 렌더,{" "}
-            <Typography as="span" variant="body3" weight={600} color="#17191C">
-              (4) prefetchWorkDetail
-            </Typography>
-            로 hover 시 캐시 선점입니다. GraphQL은{" "}
+            로 첫 paint부터 상세 UI 렌더합니다. hover prefetch는 불필요한
+            GraphQL 호출을 늘릴 수 있어 사용하지 않습니다. GraphQL은{" "}
             <Typography as="span" variant="body3" weight={600} color="#17191C">
               cache-and-network
             </Typography>
@@ -515,10 +507,6 @@ export function TechnicalNotes() {
           <CodeBlock
             title="Demo — Apollo cache seed + revalidate"
             code={demoSeedCache}
-          />
-          <CodeBlock
-            title="Demo — MasonryImageCard hover prefetch"
-            code={demoPrefetch}
           />
           <CodeBlock
             title="CHIZU — network-only 상세 refetch"
@@ -779,8 +767,8 @@ export function TechnicalNotes() {
                 >
                   상세 진입 UX:{" "}
                 </Typography>
-                loading.tsx, React.cache, Apollo seed, hover prefetch로 카드
-                클릭 후 체감 지연을 줄였습니다.
+                loading.tsx, React.cache, Apollo seed로 카드 클릭 후 체감
+                지연을 줄였습니다.
               </Typography>
             </li>
             <li>
