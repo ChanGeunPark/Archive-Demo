@@ -343,10 +343,14 @@ export function TechnicalNotes() {
                   weight={600}
                   color="#17191C"
                 >
-                  작품 상세 — network-only:{" "}
+                  작품 상세 — cache-and-network + refetchQueries:{" "}
                 </Typography>
-                소유자, 가격, 제안 수처럼 거래 정합성이 중요한 값은 Realtime
-                신호 이후에도 서버 기준으로 다시 받아옵니다.
+                캐시를 먼저 보여주고 백그라운드에서 서버와 맞춥니다. 구매·제안
+                등 mutation은{" "}
+                <Typography as="span" variant="body3" weight={600} color="#17191C">
+                  WORK_DETAIL_QUERY refetch
+                </Typography>
+                로 갱신하고, Realtime 신호도 동일한 refetch로 처리합니다.
               </Typography>
             </li>
             <li>

@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@apollo/client/react";
 import { useEffect } from "react";
-import { useWorkDetailStore } from "../workDetailStore";
 import { useMarketplaceStore } from "../marketplaceStore";
+import { workDetailRefetchQuery } from "./cacheUtils";
 import {
   ACCEPT_OFFER_MUTATION,
   BUY_WORK_MUTATION,
@@ -42,10 +42,6 @@ type MutationOptions = {
   onError?: (error: Error) => void;
 };
 
-function requestWorkRefresh(workId: string) {
-  useWorkDetailStore.getState().requestRefresh(workId);
-}
-
 export function useDeleteWork(options?: MutationOptions) {
   const [mutate, state] = useMutation<
     DeleteWorkMutationResponse,
@@ -81,6 +77,11 @@ export function useDeleteWork(options?: MutationOptions) {
           };
         },
       );
+
+      cache.evict({
+        id: cache.identify({ __typename: "Work", id: deletedId }),
+      });
+      cache.gc();
     },
   });
 
@@ -104,10 +105,8 @@ export function useBuyWork(options?: MutationOptions) {
   const buyWork = async (variables: BuyWorkVariables) => {
     await mutate({
       variables,
-      onCompleted: () => {
-        requestWorkRefresh(variables.workId);
-        options?.onCompleted?.();
-      },
+      refetchQueries: [workDetailRefetchQuery(variables.workId)],
+      onCompleted: options?.onCompleted,
       onError: options?.onError,
     });
   };
@@ -124,10 +123,8 @@ export function useCreateOffer(options?: MutationOptions) {
   const createOffer = async (variables: CreateOfferVariables) => {
     await mutate({
       variables,
-      onCompleted: () => {
-        requestWorkRefresh(variables.workId);
-        options?.onCompleted?.();
-      },
+      refetchQueries: [workDetailRefetchQuery(variables.workId)],
+      onCompleted: options?.onCompleted,
       onError: options?.onError,
     });
   };
@@ -144,10 +141,8 @@ export function useAcceptOffer(options?: MutationOptions) {
   const acceptOffer = async (variables: AcceptOfferVariables) => {
     await mutate({
       variables,
-      onCompleted: () => {
-        requestWorkRefresh(variables.workId);
-        options?.onCompleted?.();
-      },
+      refetchQueries: [workDetailRefetchQuery(variables.workId)],
+      onCompleted: options?.onCompleted,
       onError: options?.onError,
     });
   };
@@ -215,11 +210,9 @@ export function useUpdateAskingPrice(options?: MutationOptions) {
       variables,
       refetchQueries: [
         { query: WORKS_QUERY, variables: DEFAULT_WORKS_QUERY_VARIABLES },
+        workDetailRefetchQuery(variables.workId),
       ],
-      onCompleted: () => {
-        requestWorkRefresh(variables.workId);
-        options?.onCompleted?.();
-      },
+      onCompleted: options?.onCompleted,
       onError: options?.onError,
     });
   };
