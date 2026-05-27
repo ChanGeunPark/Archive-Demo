@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { MARKETPLACE_BASE_PATH } from "./lib/image-marketplace-flow/routes";
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -12,7 +13,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/@:handle",
-        destination: "/demos/image-marketplace-flow/user/:handle",
+        destination: `${MARKETPLACE_BASE_PATH}/user/:handle`,
       },
     ];
   },

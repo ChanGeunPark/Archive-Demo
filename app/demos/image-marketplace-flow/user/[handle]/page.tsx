@@ -8,6 +8,7 @@ import { listWorks } from "@/lib/image-marketplace-flow/repository";
 import type { Work } from "@/lib/image-marketplace-flow/marketplaceTypes";
 import type { WorksQueryWork } from "@/lib/image-marketplace-flow/graphql/types";
 import { buildPageMetadata } from "@/lib/seo";
+import { marketplaceRoutes } from "@/lib/image-marketplace-flow/routes";
 
 type UserProfilePageProps = {
   params: Promise<{ handle: string }>;
@@ -26,7 +27,7 @@ export async function generateMetadata({
     return buildPageMetadata({
       title: "사용자를 찾을 수 없음",
       description: "요청하신 사용자 프로필이 존재하지 않습니다.",
-      path: `/demos/image-marketplace-flow/user/${handle}`,
+      path: marketplaceRoutes.user(handle),
       noIndex: true,
     });
   }
@@ -34,7 +35,7 @@ export async function generateMetadata({
   return buildPageMetadata({
     title: `${user.name} (@${user.handle})`,
     description: `${user.name}의 CHIZU 마켓플레이스 데모 프로필과 등록 작품을 확인할 수 있습니다.`,
-    path: `/demos/image-marketplace-flow/user/${user.handle}`,
+    path: marketplaceRoutes.user(user.handle),
     openGraph: {
       images: [
         {
@@ -95,7 +96,7 @@ export default async function UserProfilePage({
     <main className="min-h-screen bg-[#F4F5F6] px-4 py-8 text-[#17191C] lg:px-6 lg:py-12">
       <div className="mx-auto max-w-[1200px]">
         <Link
-          href="/demos/image-marketplace-flow"
+          href={marketplaceRoutes.discover}
           className="text-sm font-semibold text-[#3F444B] transition hover:text-[#17191C]"
         >
           Discover로 돌아가기

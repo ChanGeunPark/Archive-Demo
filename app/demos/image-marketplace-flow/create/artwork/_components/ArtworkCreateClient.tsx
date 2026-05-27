@@ -24,6 +24,7 @@ import {
   hydrateMarketplaceAuthFromStorage,
   useMarketplaceStore,
 } from "@/lib/image-marketplace-flow/marketplaceStore";
+import { marketplaceRoutes } from "@/lib/image-marketplace-flow/routes";
 import MarketplaceLogin from "../../../_components/auth/MarketplaceLogin";
 import { cls } from "@/lib/client/utils";
 import ArtworkPreview from "./ArtworkPreview";
@@ -181,7 +182,7 @@ export default function ArtworkCreateClient() {
 
         setArtworkId(data.createWork.id);
         router.replace(
-          `/demos/image-marketplace-flow/work/${data.createWork.id}`,
+          marketplaceRoutes.work(data.createWork.id),
         );
         return;
       } catch (error) {
@@ -312,7 +313,7 @@ export default function ArtworkCreateClient() {
         <div className="mx-auto max-w-[1024px]">
           <header className="mb-6 flex items-center justify-between gap-3">
             <Link
-              href="/demos/image-marketplace-flow"
+              href={marketplaceRoutes.discover}
               className="text-sm font-semibold text-[#3F444B] transition hover:text-[#17191C]"
             >
               뒤로가기
@@ -348,7 +349,7 @@ export default function ArtworkCreateClient() {
       <div className="mx-auto max-w-[1024px]">
         <header className="mb-6 flex items-center justify-between gap-3">
           <Link
-            href="/demos/image-marketplace-flow"
+            href={marketplaceRoutes.discover}
             className="text-sm font-semibold text-[#3F444B] transition hover:text-[#17191C]"
           >
             뒤로가기

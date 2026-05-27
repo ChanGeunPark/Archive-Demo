@@ -1,5 +1,6 @@
 import Link from "next/link";
 import WorkHeader from "./_components/work/WorkHeader";
+import { marketplaceRoutes } from "@/lib/image-marketplace-flow/routes";
 
 export default function MarketplaceNotFound() {
   return (
@@ -21,7 +22,7 @@ export default function MarketplaceNotFound() {
 
         <div className="mt-8 flex w-full max-w-xs flex-col gap-3">
           <Link
-            href="/demos/image-marketplace-flow"
+            href={marketplaceRoutes.discover}
             className="flex h-12 items-center justify-center rounded-xl bg-[#141416] text-sm font-bold text-white transition hover:bg-[#FFE55C] hover:text-black"
           >
             마켓플레이스로 이동

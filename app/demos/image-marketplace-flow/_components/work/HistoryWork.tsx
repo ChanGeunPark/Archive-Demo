@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { formatKrw } from "./workUtils";
+import { formatKrw } from "@/lib/image-marketplace-flow/format";
 import { Work } from "@/lib/image-marketplace-flow/marketplaceTypes";
 import { resolveMarketplaceAvatar } from "@/lib/image-marketplace-flow/marketplaceAvatar";
 import { Skeleton } from "./Skeleton";

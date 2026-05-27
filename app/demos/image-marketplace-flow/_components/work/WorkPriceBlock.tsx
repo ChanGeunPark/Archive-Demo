@@ -8,7 +8,8 @@ import type {
   Offer,
   Work,
 } from "@/lib/image-marketplace-flow/marketplaceTypes";
-import { formatKrw } from "./workUtils";
+import { formatKrw } from "@/lib/image-marketplace-flow/format";
+import { marketplaceRoutes } from "@/lib/image-marketplace-flow/routes";
 import {
   useAcceptOffer,
   useBuyWork,
@@ -238,7 +239,7 @@ function WorkPriceBlockContent({ work }: { work: Work }) {
 
   const { deleteWork, ...deleteWorkState } = useDeleteWork({
     onCompleted: () => {
-      router.push("/demos/image-marketplace-flow");
+      router.push(marketplaceRoutes.discover);
     },
   });
 
@@ -292,7 +293,7 @@ function WorkPriceBlockContent({ work }: { work: Work }) {
             <div className="border-t border-zinc-100 px-5 py-4">
               <div className="grid grid-cols-2 gap-3">
                 <Link
-                  href={`/@${work.creator.handle}`}
+                  href={marketplaceRoutes.userProfile(work.creator.handle)}
                   className="group rounded-xl bg-zinc-50 p-3 transition hover:bg-zinc-100"
                 >
                   <p className="text-[11px] font-medium text-gray-500">
@@ -313,7 +314,7 @@ function WorkPriceBlockContent({ work }: { work: Work }) {
                 </Link>
 
                 <Link
-                  href={`/@${owner.handle}`}
+                  href={marketplaceRoutes.userProfile(owner.handle)}
                   className="group rounded-xl bg-zinc-50 p-3 transition hover:bg-zinc-100"
                 >
                   <p className="text-[11px] font-medium text-gray-500">

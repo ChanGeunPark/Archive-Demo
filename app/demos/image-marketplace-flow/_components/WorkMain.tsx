@@ -17,7 +17,9 @@ import { WORK_DETAIL_QUERY } from "@/lib/image-marketplace-flow/graphql/operatio
 import { useWorkDetailStore } from "@/lib/image-marketplace-flow/workDetailStore";
 import { useWorkRealtime } from "@/lib/image-marketplace-flow/useWorkRealtime";
 
-const DISCOVER_PATH = "/demos/image-marketplace-flow";
+import { marketplaceRoutes } from "@/lib/image-marketplace-flow/routes";
+
+const DISCOVER_PATH = marketplaceRoutes.discover;
 
 export default function WorkMain({ id }: { id: string }) {
   const router = useRouter();

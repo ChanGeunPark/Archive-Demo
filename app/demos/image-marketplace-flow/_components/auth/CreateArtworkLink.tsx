@@ -5,6 +5,7 @@ import {
   hydrateMarketplaceAuthFromStorage,
   useMarketplaceStore,
 } from "@/lib/image-marketplace-flow/marketplaceStore";
+import { marketplaceRoutes } from "@/lib/image-marketplace-flow/routes";
 
 export default function CreateArtworkLink() {
   hydrateMarketplaceAuthFromStorage();
@@ -12,7 +13,7 @@ export default function CreateArtworkLink() {
   if (!currentUser) {
     return (
       <Link
-        href="/demos/image-marketplace-flow/create/artwork"
+        href={marketplaceRoutes.createArtwork}
         className="hidden h-10 items-center rounded-full border border-[#D8DBDE] bg-zinc-50 px-4 text-xs font-bold text-[#8A9097] sm:inline-flex"
         title="로그인 후 작품을 등록할 수 있습니다."
       >
@@ -23,7 +24,7 @@ export default function CreateArtworkLink() {
 
   return (
     <Link
-      href="/demos/image-marketplace-flow/create/artwork"
+      href={marketplaceRoutes.createArtwork}
       className="hidden h-10 items-center rounded-full border border-[#D8DBDE] bg-white px-4 text-xs font-bold text-[#3F444B] transition hover:border-[#17191C] hover:bg-zinc-50 sm:inline-flex"
     >
       작품 등록

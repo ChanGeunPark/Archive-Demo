@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { marketplaceRoutes } from "@/lib/image-marketplace-flow/routes";
 import DiscoverHeader from "./discover/DiscoverHeader";
 import DiscoverMobileSearch from "./discover/DiscoverMobileSearch";
 import DiscoverTabNav from "./discover/DiscoverTabNav";
@@ -342,7 +343,7 @@ export default function DiscoverMain() {
               수 있습니다.
             </Typography>
             <Link
-              href="/demos/image-marketplace-flow/technical-notes"
+              href={marketplaceRoutes.technicalNotes}
               className="inline-flex shrink-0 items-center justify-center rounded-full border border-zinc-800/10 bg-zinc-800 px-3 py-1.5 shadow-sm transition hover:bg-zinc-700 active:scale-[0.98]"
             >
               <Typography as="span" variant="body3" weight={600} color="white">

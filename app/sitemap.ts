@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { marketplaceSitemapPaths } from "@/lib/image-marketplace-flow/routes";
 import { absoluteUrl } from "@/lib/seo";
 
 const staticRoutes = [
@@ -6,9 +7,7 @@ const staticRoutes = [
   "/demos/character-chat-replay",
   "/demos/character-chat-replay/create",
   "/demos/character-chat-replay/technical-notes",
-  "/demos/image-marketplace-flow",
-  "/demos/image-marketplace-flow/create/artwork",
-  "/demos/image-marketplace-flow/technical-notes",
+  ...marketplaceSitemapPaths,
 ] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {

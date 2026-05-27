@@ -1,3 +1,5 @@
+import { formatKrw } from "@/lib/image-marketplace-flow/format";
+
 export type PriceFilterRange = {
   minPrice?: number;
   maxPrice?: number;
@@ -47,8 +49,8 @@ export function formatPriceFilterLabel(range: PriceFilterRange) {
     return preset.label;
   }
 
-  const min = range.minPrice != null ? `${range.minPrice.toLocaleString("ko-KR")}원` : "";
-  const max = range.maxPrice != null ? `${range.maxPrice.toLocaleString("ko-KR")}원` : "";
+  const min = range.minPrice != null ? formatKrw(range.minPrice) : "";
+  const max = range.maxPrice != null ? formatKrw(range.maxPrice) : "";
 
   if (min && max) {
     return `${min} ~ ${max}`;

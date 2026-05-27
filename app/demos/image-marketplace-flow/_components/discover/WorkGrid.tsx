@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import MasonryImageCard from "../card/MasonryImageCard";
 import OrderedMasonry from "../layout/OrderedMasonry";
 import { WorksQueryWork } from "@/lib/image-marketplace-flow/graphql/types";
+import { marketplaceRoutes } from "@/lib/image-marketplace-flow/routes";
 
 function getStdHeight(width: number, height: number) {
   if (width > 0 && height > 0) {
@@ -57,12 +58,11 @@ export default function WorkGrid({ works }: { works: WorksQueryWork[] }) {
             width={work.width}
             height={work.height}
             title={work.title}
-            link={`/demos/image-marketplace-flow/work/${work.id}`}
+            link={marketplaceRoutes.work(work.id)}
             buyNowPrice={work.askingPrice ?? undefined}
             userProfile={work.owner.avatar}
             userScreenName={work.owner.handle || work.owner.id}
             userAddress={work.owner.handle || work.owner.id}
-            userName={work.owner.name}
           />
         </MasonryWorkItem>
       ))}

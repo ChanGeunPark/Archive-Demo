@@ -4,6 +4,7 @@ import Link from "next/link";
 import Typography from "@/components/typography/Typography";
 import ArrowRightIcon from "@/components/icons/arrow/ArrowRightIcon";
 import JsonLd from "@/components/seo/JsonLd";
+import { marketplaceRoutes } from "@/lib/image-marketplace-flow/routes";
 import { buildPageMetadata, buildWebPageJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -44,7 +45,7 @@ const demos = [
   },
   {
     title: "CHIZU",
-    href: "/demos/image-marketplace-flow",
+    href: marketplaceRoutes.discover,
     label: "Image marketplace",
     period: "2022.09 - 2023.08",
     project:
