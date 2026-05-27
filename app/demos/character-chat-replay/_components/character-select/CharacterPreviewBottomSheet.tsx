@@ -1,9 +1,15 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { useLockBodyScroll } from "@/lib/client/useLockBodyScroll";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion, type PanInfo } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useDragControls,
+  type PanInfo,
+} from "framer-motion";
 import {
   useCreateDemoChatRoomMutation,
   useDeleteDemoCharacterMutation,
@@ -34,6 +40,8 @@ export function CharacterPreviewBottomSheet({
   const [isEnteringChat, setIsEnteringChat] = useState(false);
   const enteringChat = isEnteringChat || createRoomMutation.isPending;
   const deleteLoading = deleteCharacterMutation.isPending;
+  const dragControls = useDragControls();
+  useLockBodyScroll(Boolean(character));
 
   // --- Normalization ---
   const normalizedRoomId = useMemo(
@@ -114,7 +122,7 @@ export function CharacterPreviewBottomSheet({
       {character && (
         <>
           <motion.div
-            className="fixed inset-0 z-40 bg-black/35 backdrop-blur-sm"
+            className="fixed inset-0 z-40 touch-none overscroll-none bg-black/35 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -129,13 +137,21 @@ export function CharacterPreviewBottomSheet({
             exit={{ y: "100%", x: "-50%" }}
             transition={{ duration: 0.42, ease: [0.32, 0.72, 0, 1] }}
             drag={enteringChat ? false : "y"}
+            dragControls={dragControls}
+            dragListener={false}
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={{ top: 0, bottom: 0.35 }}
             onDragEnd={enteringChat ? undefined : handleDragEnd}
             aria-busy={enteringChat}
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="sticky -top-4 z-10 -mt-4 mb-3 flex h-9 items-center justify-center bg-white ">
+            <div
+              className="sticky -top-4 z-10 -mt-4 mb-3 flex h-9 cursor-grab touch-none items-center justify-center bg-white active:cursor-grabbing"
+              onPointerDown={(event) => {
+                if (enteringChat) return;
+                dragControls.start(event);
+              }}
+            >
               <span className="h-1 w-12 rounded-full bg-[#D8DBDE]" />
             </div>
             <CharacterPreviewHero character={character} />
@@ -184,14 +200,10 @@ export function CharacterPreviewBottomSheet({
               type="submit"
               disabled={!normalizedRoomId || enteringChat}
               whileTap={
-                !normalizedRoomId || enteringChat
-                  ? undefined
-                  : { scale: 0.97 }
+                !normalizedRoomId || enteringChat ? undefined : { scale: 0.97 }
               }
               whileHover={
-                !normalizedRoomId || enteringChat
-                  ? undefined
-                  : { scale: 1.01 }
+                !normalizedRoomId || enteringChat ? undefined : { scale: 1.01 }
               }
               transition={{ duration: 0.16 }}
               className="mt-4 h-12 w-full rounded-full rounded-tr-none bg-[#FFE55C] text-base font-bold text-[#17191C] transition-colors disabled:bg-[#EDEEEF] disabled:text-[#AEB2B8]"
