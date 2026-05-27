@@ -48,6 +48,11 @@ export type ListRandomWorksOptions = {
   excludeWorkId?: string;
 };
 
+export type ListWorksByUserIdOptions = {
+  userId: string;
+  first?: number;
+};
+
 export type WorkEdge = {
   cursor: string;
   node: Work;

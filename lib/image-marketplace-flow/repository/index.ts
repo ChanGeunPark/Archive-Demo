@@ -8,6 +8,7 @@ export type {
   CreateWorkInput,
   ListCreatorWorksOptions,
   ListRandomWorksOptions,
+  ListWorksByUserIdOptions,
   ListWorksOptions,
   SearchByKeywordResult,
   WorkEdge,
@@ -19,12 +20,13 @@ export { searchByKeyword } from "./search";
 export {
   listWorks,
   listCreatorWorks,
+  listWorksByUserId,
   listRandomWorks,
   createWork,
   getWorkById,
   updateAskingPrice,
   deleteWork,
 } from "./works";
-export { getUserById, updateUserAvatar } from "./users";
+export { getUserById, getUserByHandle, updateUserAvatar } from "./users";
 export { createOffer, acceptOffer } from "./offers";
 export { buyWork } from "./transactions";

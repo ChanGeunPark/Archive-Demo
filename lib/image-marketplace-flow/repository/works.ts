@@ -22,6 +22,7 @@ import type {
   CreateWorkInput,
   ListCreatorWorksOptions,
   ListRandomWorksOptions,
+  ListWorksByUserIdOptions,
   ListWorksOptions,
   WorkEdge,
   WorkWithRelations,
@@ -164,6 +165,43 @@ export async function listCreatorWorks(
     return (data as WorkWithRelations[]).map((row) => mapWork(row));
   } catch (error) {
     logSupabaseFallback("Failed to load creator works", error);
+    return [];
+  }
+}
+
+/** 사용자(creator 또는 owner)의 작품 목록 조회 */
+export async function listWorksByUserId(
+  options: ListWorksByUserIdOptions,
+): Promise<Work[]> {
+  if (!hasSupabaseAdminEnv()) {
+    return [];
+  }
+
+  const { userId, first } = options;
+
+  try {
+    const supabase = createSupabaseAdminClient();
+    let dbQuery = supabase
+      .from("marketplace_demo_works")
+      .select(WORK_BASE_SELECT)
+      .or(`creator_id.eq.${userId},owner_id.eq.${userId}`)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false });
+
+    if (typeof first === "number" && first > 0) {
+      dbQuery = dbQuery.limit(first);
+    }
+
+    const { data, error } = await dbQuery;
+
+    if (error || !data) {
+      logSupabaseFallback(`Failed to load works for user ${userId}`, error);
+      return [];
+    }
+
+    return (data as WorkWithRelations[]).map((row) => mapWork(row));
+  } catch (error) {
+    logSupabaseFallback(`Failed to load works for user ${userId}`, error);
     return [];
   }
 }

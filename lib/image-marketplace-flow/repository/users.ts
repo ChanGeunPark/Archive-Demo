@@ -2,7 +2,7 @@ import {
   createSupabaseAdminClient,
   hasSupabaseAdminEnv,
 } from "@/lib/supabase/admin";
-import { createDemoUserFromId } from "../demoUsers";
+import { createDemoUserFromId, marketplaceUsers } from "../demoUsers";
 import type { MarketplaceUser } from "../marketplaceTypes";
 import { logSupabaseFallback } from "./logging";
 import { mapUser } from "./mappers";
@@ -84,4 +84,48 @@ export async function updateUserAvatar(
   }
 
   return mapUser(data as UserRow);
+}
+
+function findDemoUserByHandle(handle: string): MarketplaceUser | null {
+  const normalizedHandle = handle.trim().toLowerCase();
+  if (!normalizedHandle) {
+    return null;
+  }
+
+  return (
+    Object.values(marketplaceUsers).find(
+      (user) => user.handle.toLowerCase() === normalizedHandle,
+    ) ?? null
+  );
+}
+
+/** handle로 사용자 단건 조회 (DB → demoUsers fallback) */
+export async function getUserByHandle(
+  handle: string,
+): Promise<MarketplaceUser | null> {
+  const normalizedHandle = handle.trim().toLowerCase();
+  if (!normalizedHandle) {
+    return null;
+  }
+
+  if (hasSupabaseAdminEnv()) {
+    try {
+      const supabase = createSupabaseAdminClient();
+      const { data, error } = await supabase
+        .from("marketplace_demo_users")
+        .select("*")
+        .ilike("handle", normalizedHandle)
+        .maybeSingle();
+
+      if (error) {
+        logSupabaseFallback(`Failed to load user @${normalizedHandle}`, error);
+      } else if (data) {
+        return mapUser(data as UserRow);
+      }
+    } catch (error) {
+      logSupabaseFallback(`Failed to load user @${normalizedHandle}`, error);
+    }
+  }
+
+  return findDemoUserByHandle(normalizedHandle);
 }

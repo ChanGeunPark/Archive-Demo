@@ -3,8 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import WorkGrid from "../../_components/discover/WorkGrid";
-import { marketplaceUsers } from "@/lib/image-marketplace-flow/demoUsers";
-import { listWorks } from "@/lib/image-marketplace-flow/repository";
+import {
+  getUserByHandle,
+  listWorksByUserId,
+} from "@/lib/image-marketplace-flow/repository";
 import type { Work } from "@/lib/image-marketplace-flow/marketplaceTypes";
 import type { WorksQueryWork } from "@/lib/image-marketplace-flow/graphql/types";
 import { buildPageMetadata } from "@/lib/seo";
@@ -14,14 +16,29 @@ type UserProfilePageProps = {
   params: Promise<{ handle: string }>;
 };
 
+function toWorksQueryWork(work: Work): WorksQueryWork {
+  return {
+    id: work.id,
+    title: work.title,
+    imageUrl: work.imageUrl,
+    width: work.width,
+    height: work.height,
+    askingPrice: work.askingPrice,
+    listingStatus: work.listingStatus,
+    owner: {
+      id: work.owner.id,
+      name: work.owner.name,
+      handle: work.owner.handle,
+      avatar: work.owner.avatar,
+    },
+  };
+}
+
 export async function generateMetadata({
   params,
 }: UserProfilePageProps): Promise<Metadata> {
   const { handle } = await params;
-  const normalizedHandle = handle.trim().toLowerCase();
-  const user = Object.values(marketplaceUsers).find(
-    (candidate) => candidate.handle.toLowerCase() === normalizedHandle,
-  );
+  const user = await getUserByHandle(handle);
 
   if (!user) {
     return buildPageMetadata({
@@ -47,50 +64,17 @@ export async function generateMetadata({
   });
 }
 
-function toWorksQueryWork(work: Work): WorksQueryWork {
-  return {
-    id: work.id,
-    title: work.title,
-    imageUrl: work.imageUrl,
-    width: work.width,
-    height: work.height,
-    askingPrice: work.askingPrice,
-    listingStatus: work.listingStatus,
-    owner: {
-      id: work.owner.id,
-      name: work.owner.name,
-      handle: work.owner.handle,
-      avatar: work.owner.avatar,
-    },
-  };
-}
-
 export default async function UserProfilePage({
   params,
 }: UserProfilePageProps) {
   const { handle } = await params;
-  const normalizedHandle = handle.trim().toLowerCase();
-  const works = (await listWorks()).edges.map((edge) => edge.node);
-  const userWorks = works.filter(
-    (work) =>
-      work.owner.handle.toLowerCase() === normalizedHandle ||
-      work.creator.handle.toLowerCase() === normalizedHandle,
-  );
-
-  const user =
-    Object.values(marketplaceUsers).find(
-      (candidate) => candidate.handle.toLowerCase() === normalizedHandle,
-    ) ??
-    userWorks.find(
-      (work) => work.owner.handle.toLowerCase() === normalizedHandle,
-    )?.owner ??
-    userWorks.find(
-      (work) => work.creator.handle.toLowerCase() === normalizedHandle,
-    )?.creator;
+  const user = await getUserByHandle(handle);
 
   if (!user) {
     notFound();
   }
+
+  const userWorks = await listWorksByUserId({ userId: user.id });
 
   return (
     <main className="min-h-screen bg-[#F4F5F6] px-4 py-8 text-[#17191C] lg:px-6 lg:py-12">
