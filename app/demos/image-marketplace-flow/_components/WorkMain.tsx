@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import HistoryWork from "./work/HistoryWork";
 import OtherWorks from "./work/OtherWorks";
@@ -14,49 +14,32 @@ import WorkPriceBlock from "./work/WorkPriceBlock";
 import { useQuery } from "@apollo/client/react";
 import { WorkDetailQueryResponse } from "@/lib/image-marketplace-flow/graphql/types";
 import { WORK_DETAIL_QUERY } from "@/lib/image-marketplace-flow/graphql/operations";
-import { useWorkDetailStore } from "@/lib/image-marketplace-flow/workDetailStore";
 import { useWorkRealtime } from "@/lib/image-marketplace-flow/useWorkRealtime";
-
-const DISCOVER_PATH = "/demos/image-marketplace-flow";
+import { marketplaceRoutes } from "@/lib/image-marketplace-flow/routes";
 
 export default function WorkMain({ id }: { id: string }) {
   const router = useRouter();
-  const forceUpdateTrigger = useWorkDetailStore(
-    (state) => state.forceUpdateTrigger,
-  );
-  const pendingWorkId = useWorkDetailStore((state) => state.pendingWorkId);
-  const clearRefresh = useWorkDetailStore((state) => state.clearRefresh);
 
   const { data, loading, error, refetch } = useQuery<
     WorkDetailQueryResponse,
     { id: string }
   >(WORK_DETAIL_QUERY, {
     variables: { id },
-    fetchPolicy: "network-only",
+    fetchPolicy: "cache-and-network",
     skip: !id,
     notifyOnNetworkStatusChange: true,
   });
 
   const isInitialLoading = loading && (!data?.work || data.work.id !== id);
 
-  useEffect(() => {
-    if (!forceUpdateTrigger || pendingWorkId !== id) {
-      return;
-    }
-
-    void refetch({ id }).finally(() => {
-      clearRefresh();
-    });
-  }, [clearRefresh, forceUpdateTrigger, id, pendingWorkId, refetch]);
-
   const handleWorkDeleted = useCallback(() => {
-    router.replace(DISCOVER_PATH);
+    router.replace(marketplaceRoutes.discover);
   }, [router]);
 
   const handleWorkChange = useCallback(async () => {
     const result = await refetch({ id });
     if (!result.data?.work) {
-      router.replace(DISCOVER_PATH);
+      router.replace(marketplaceRoutes.discover);
     }
   }, [id, refetch, router]);
 

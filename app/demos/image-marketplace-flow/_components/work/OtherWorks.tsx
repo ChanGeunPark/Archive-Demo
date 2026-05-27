@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import MasonryImageCard from "../card/MasonryImageCard";
 import OrderedMasonry from "../layout/OrderedMasonry";
 import KeyboardArrowRightIcon from "@/components/icons/arrow/KeyboardArrowRightIcon";
-import { DEMO_AUCTION_END_TIME } from "./workUtils";
+import { marketplaceRoutes } from "@/lib/image-marketplace-flow/routes";
 import { Skeleton } from "./Skeleton";
 import { useQuery } from "@apollo/client/react";
 import type { WorksQueryWork } from "@/lib/image-marketplace-flow/graphql/types";
@@ -19,7 +19,7 @@ import {
 } from "@/lib/image-marketplace-flow/graphql/operations";
 
 const OTHER_WORKS_LIMIT = 10;
-const DISCOVER_PATH = "/demos/image-marketplace-flow";
+const DISCOVER_PATH = marketplaceRoutes.discover;
 
 function OtherWorkItem({
   children,
@@ -82,15 +82,11 @@ function WorkCards({ works }: { works: WorksQueryWork[] }) {
             width={work.width}
             height={work.height}
             title={work.title}
-            link={`/demos/image-marketplace-flow/work/${work.id}`}
+            link={marketplaceRoutes.work(work.id)}
             buyNowPrice={work.askingPrice || undefined}
-            auctionTime={
-              work.listingStatus === "LISTED" ? DEMO_AUCTION_END_TIME : null
-            }
             userProfile={work.owner.avatar}
             userScreenName={work.owner.handle || work.owner.id}
             userAddress={work.owner.handle || work.owner.id}
-            userName={work.owner.name}
           />
         </OtherWorkItem>
       ))}
@@ -172,7 +168,7 @@ export default function OtherWorks({
   const moreLinkPath = isRandomFallback
     ? DISCOVER_PATH
     : creatorHandle
-      ? `/demos/image-marketplace-flow/user/${creatorHandle}`
+      ? marketplaceRoutes.user(creatorHandle)
       : DISCOVER_PATH;
 
   return (

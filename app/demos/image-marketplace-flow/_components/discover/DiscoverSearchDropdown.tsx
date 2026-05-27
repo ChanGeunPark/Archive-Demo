@@ -7,6 +7,7 @@ import type {
   SearchByKeywordResponse,
   SearchByKeywordVariables,
 } from "@/lib/image-marketplace-flow/graphql/types";
+import { marketplaceRoutes } from "@/lib/image-marketplace-flow/routes";
 import LoadingAni from "../animation/LoadingAni";
 import DiscoverSearchItem from "./DiscoverSearchItem";
 
@@ -82,7 +83,7 @@ export default function DiscoverSearchDropdown({
         {works.map((work) => (
           <DiscoverSearchItem
             key={work.id}
-            href={`/demos/image-marketplace-flow/work/${work.id}`}
+            href={marketplaceRoutes.work(work.id)}
             title={work.title}
             subtitle={work.creator.handle}
             imageUrl={work.imageUrl}

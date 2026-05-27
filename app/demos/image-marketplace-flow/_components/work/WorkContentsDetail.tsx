@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getArtworkTagLabel } from "@/lib/image-marketplace-flow/artworkTags";
 import { Work } from "@/lib/image-marketplace-flow/marketplaceTypes";
+import { marketplaceRoutes } from "@/lib/image-marketplace-flow/routes";
 import { Skeleton } from "./Skeleton";
 import { IoCheckmark } from "react-icons/io5";
 
@@ -104,7 +105,7 @@ export default function WorkContentsDetail({
               {work.tags.map((tag) => (
                 <Link
                   key={tag}
-                  href="/demos/image-marketplace-flow"
+                  href={marketplaceRoutes.discover}
                   className="inline-flex rounded-full bg-[#F3F4F8] px-3 py-1 text-xs font-semibold text-gray-800 transition hover:bg-[#FFE55C]"
                 >
                   #{getArtworkTagLabel(tag)}

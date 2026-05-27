@@ -6,10 +6,9 @@ import { useState } from "react";
 import Image from "next/image";
 import { cls } from "@/lib/client/utils";
 import { resolveMarketplaceAvatar } from "@/lib/image-marketplace-flow/marketplaceAvatar";
+import { marketplaceRoutes } from "@/lib/image-marketplace-flow/routes";
 
-function formatKrw(price: number) {
-  return price.toLocaleString("ko-KR");
-}
+import { formatKrw } from "@/lib/image-marketplace-flow/format";
 
 export default function MasonryImageCard({
   imgUrl,
@@ -20,22 +19,14 @@ export default function MasonryImageCard({
   userProfile,
   userScreenName,
   userAddress,
-  userName,
-  ethClass,
   children,
-  auctionTime,
   buyNowPrice,
 }: MasonryImgProps) {
   const [loaded, setLoaded] = useState<boolean>(false);
   const safeWidth = width && width > 0 ? width : 4;
   const safeHeight = height && height > 0 ? height : 5;
   const isLandscape = safeWidth > safeHeight;
-
-  // Auction Setting
-  const assetAuctionTime = new Date(auctionTime ? auctionTime : "");
-  const currentTime = new Date();
-  const isAuction = assetAuctionTime > currentTime ? true : false;
-  const hasActionPrice = isAuction || !!buyNowPrice;
+  const hasBuyNowPrice = typeof buyNowPrice === "number" && buyNowPrice > 0;
   const profileSrc = resolveMarketplaceAvatar(userProfile);
 
   return (
@@ -84,7 +75,7 @@ export default function MasonryImageCard({
           {userScreenName ? (
             <div
               style={{
-                maxWidth: isLandscape && !hasActionPrice ? "50%" : undefined,
+                maxWidth: isLandscape && !hasBuyNowPrice ? "50%" : undefined,
               }}
               className={cls(
                 "absolute bottom-3 right-3 z-20 flex h-fit w-[calc(100%-24px)] items-center justify-between overflow-hidden rounded-[26px] bg-[rgba(0,0,0,.4)] px-2 py-[6px] backdrop-blur-[10px]",
@@ -93,10 +84,10 @@ export default function MasonryImageCard({
               )}
             >
               <Link
-                href={`/@${userAddress || userScreenName}`}
+                href={marketplaceRoutes.userProfile(userAddress || userScreenName)}
                 className={cls(
                   "block h-fit overflow-hidden",
-                  hasActionPrice ? "w-auto" : "w-full",
+                  hasBuyNowPrice ? "w-auto" : "w-full",
                   "max-lg:ml-0 max-lg:w-full",
                 )}
               >
@@ -119,17 +110,16 @@ export default function MasonryImageCard({
                 </div>
               </Link>
 
-              {hasActionPrice ? (
+              {hasBuyNowPrice ? (
                 <Link
                   href={link || "#"}
                   className={cls(
                     "ml-2 flex h-10 shrink-0 items-center justify-center rounded-full bg-[#141416] px-4 text-sm font-semibold whitespace-nowrap text-white transition-all duration-300 ease-in-out",
                     "hover:!bg-[#F3CC00] group-hover/card:bg-[#FFE55C] group-hover/card:text-black",
                     "max-lg:ml-0 max-lg:mt-2 max-lg:w-full",
-                    ethClass ? ethClass : "",
                   )}
                 >
-                  {isAuction ? "구매" : `${formatKrw(buyNowPrice || 0)}원`}
+                  {formatKrw(buyNowPrice)}
                 </Link>
               ) : (
                 <div className="w-px" />

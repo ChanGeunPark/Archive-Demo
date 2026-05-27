@@ -31,7 +31,8 @@ export function CharacterPreviewBottomSheet({
   const [deleteId, setDeleteId] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [deleteMessage, setDeleteMessage] = useState("");
-  const loading = createRoomMutation.isPending;
+  const [isEnteringChat, setIsEnteringChat] = useState(false);
+  const enteringChat = isEnteringChat || createRoomMutation.isPending;
   const deleteLoading = deleteCharacterMutation.isPending;
 
   // --- Normalization ---
@@ -47,9 +48,10 @@ export function CharacterPreviewBottomSheet({
   // --- Event Handlers ---
   async function handleStartChat(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!character || !normalizedRoomId || loading) return;
+    if (!character || !normalizedRoomId || enteringChat) return;
 
     setErrorMessage("");
+    setIsEnteringChat(true);
 
     try {
       const { roomId, characterId } = await createRoomMutation.mutateAsync({
@@ -61,6 +63,7 @@ export function CharacterPreviewBottomSheet({
         `/demos/character-chat-replay/chat/${characterId}?roomId=${encodeURIComponent(roomId)}`,
       );
     } catch (error) {
+      setIsEnteringChat(false);
       setErrorMessage(
         error instanceof Error ? error.message : "채팅방을 만들지 못했습니다.",
       );
@@ -116,19 +119,20 @@ export function CharacterPreviewBottomSheet({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.28, ease: "easeInOut" }}
-            onClick={onClose}
+            onClick={enteringChat ? undefined : onClose}
           />
           <motion.form
             onSubmit={handleStartChat}
-            className="fixed bottom-0 left-1/2 z-50 max-h-[80vh] w-full max-w-[500px] overflow-y-auto rounded-t-2xl bg-white p-4 pb-6 shadow-[0_-12px_40px_rgba(0,0,0,0.16)]"
+            className="fixed bottom-0 left-1/2 z-50 max-h-[80vh] w-full max-w-[500px] overflow-y-auto rounded-t-2xl bg-white p-4 pb-6 shadow-[0_-12px_40px_rgba(0,0,0,0.16)] scrollbar-hide"
             initial={{ y: "100%", x: "-50%" }}
             animate={{ y: 0, x: "-50%" }}
             exit={{ y: "100%", x: "-50%" }}
             transition={{ duration: 0.42, ease: [0.32, 0.72, 0, 1] }}
-            drag="y"
+            drag={enteringChat ? false : "y"}
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={{ top: 0, bottom: 0.35 }}
-            onDragEnd={handleDragEnd}
+            onDragEnd={enteringChat ? undefined : handleDragEnd}
+            aria-busy={enteringChat}
             onClick={(event) => event.stopPropagation()}
           >
             <div className="sticky -top-4 z-10 -mt-4 mb-3 flex h-9 items-center justify-center bg-white ">
@@ -149,7 +153,8 @@ export function CharacterPreviewBottomSheet({
                 value={roomId}
                 onChange={(event) => setRoomId(event.target.value)}
                 placeholder="예: my-first-chat"
-                className="mt-2 h-12 w-full rounded-lg border-2 border-[#F4F5F6] px-3 text-sm outline-none placeholder:text-[#AEB2B8] focus:border-[#FFE55C]"
+                disabled={enteringChat}
+                className="mt-2 h-12 w-full rounded-lg border-2 border-[#F4F5F6] px-3 text-sm outline-none placeholder:text-[#AEB2B8] focus:border-[#FFE55C] disabled:bg-[#F9FAFB] disabled:text-[#AEB2B8]"
               />
               {roomId && normalizedRoomId !== roomId && (
                 <Typography
@@ -177,12 +182,16 @@ export function CharacterPreviewBottomSheet({
 
             <motion.button
               type="submit"
-              disabled={!normalizedRoomId || loading}
+              disabled={!normalizedRoomId || enteringChat}
               whileTap={
-                !normalizedRoomId || loading ? undefined : { scale: 0.97 }
+                !normalizedRoomId || enteringChat
+                  ? undefined
+                  : { scale: 0.97 }
               }
               whileHover={
-                !normalizedRoomId || loading ? undefined : { scale: 1.01 }
+                !normalizedRoomId || enteringChat
+                  ? undefined
+                  : { scale: 1.01 }
               }
               transition={{ duration: 0.16 }}
               className="mt-4 h-12 w-full rounded-full rounded-tr-none bg-[#FFE55C] text-base font-bold text-[#17191C] transition-colors disabled:bg-[#EDEEEF] disabled:text-[#AEB2B8]"
@@ -193,9 +202,7 @@ export function CharacterPreviewBottomSheet({
                 weight={700}
                 color="inherit"
               >
-                {loading
-                  ? "채팅방 생성 중..."
-                  : `${character.name}와(과) 대화하기`}
+                {`${character.name}와(과) 대화하기`}
               </Typography>
             </motion.button>
 
@@ -251,6 +258,7 @@ export function CharacterPreviewBottomSheet({
                 <input
                   value={deleteId}
                   onChange={(event) => setDeleteId(event.target.value)}
+                  disabled={enteringChat}
                   onKeyDown={(event) => {
                     if (event.key === "Enter") {
                       event.preventDefault();
@@ -258,7 +266,7 @@ export function CharacterPreviewBottomSheet({
                     }
                   }}
                   placeholder="생성 ID 또는 관리자 ID"
-                  className="mt-2 h-11 w-full rounded-lg border-2 border-[#F1D5D8] bg-white px-3 text-sm outline-none placeholder:text-[#C39A9E] focus:border-[#EE4553]"
+                  className="mt-2 h-11 w-full rounded-lg border-2 border-[#F1D5D8] bg-white px-3 text-sm outline-none placeholder:text-[#C39A9E] focus:border-[#EE4553] disabled:bg-[#F9FAFB] disabled:text-[#AEB2B8]"
                 />
                 {deleteId && normalizedDeleteId !== deleteId && (
                   <Typography
@@ -284,7 +292,7 @@ export function CharacterPreviewBottomSheet({
               )}
               <button
                 type="button"
-                disabled={!normalizedDeleteId || deleteLoading}
+                disabled={!normalizedDeleteId || deleteLoading || enteringChat}
                 onClick={handleDeleteCharacter}
                 className="mt-3 h-10 w-full rounded-full bg-[#EE4553] text-sm font-bold text-white disabled:bg-[#EDEEEF] disabled:text-[#AEB2B8]"
               >
@@ -299,6 +307,42 @@ export function CharacterPreviewBottomSheet({
               </button>
             </div>
           </motion.form>
+
+          <AnimatePresence>
+            {enteringChat && (
+              <motion.div
+                className="fixed inset-0 z-[60] flex items-center justify-center bg-black/25 backdrop-blur-md"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                role="status"
+                aria-live="polite"
+                aria-label="채팅방 들어가는 중"
+              >
+                <motion.div
+                  className="flex flex-col items-center gap-4 rounded-2xl bg-white px-10 py-8 shadow-[0_12px_40px_rgba(0,0,0,0.12)]"
+                  initial={{ opacity: 0, scale: 0.96, y: 8 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.96, y: 8 }}
+                  transition={{ duration: 0.22, ease: "easeOut" }}
+                >
+                  <span
+                    className="h-11 w-11 animate-spin rounded-full border-[3px] border-[#EDEEEF] border-t-[#FFE55C]"
+                    aria-hidden
+                  />
+                  <Typography
+                    variant="body1"
+                    weight={700}
+                    color="#17191C"
+                    className="text-center"
+                  >
+                    채팅방 들어가는 중...
+                  </Typography>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </>
       )}
     </AnimatePresence>

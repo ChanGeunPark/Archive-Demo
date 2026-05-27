@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import DiscoverMain from "./_components/DiscoverMain";
+import { marketplaceRoutes } from "@/lib/image-marketplace-flow/routes";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "CHIZU Image Marketplace Demo",
   description:
     "Discover 탐색, 작품 상세, 구매·제안·등록 플로우를 Supabase Realtime과 GraphQL refetch로 재현한 CHIZU 마켓플레이스 데모입니다.",
-  path: "/demos/image-marketplace-flow",
+  path: marketplaceRoutes.discover,
   keywords: [
     "이미지 마켓플레이스",
     "Supabase Realtime",

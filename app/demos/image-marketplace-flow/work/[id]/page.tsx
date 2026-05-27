@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import WorkMain from "../../_components/WorkMain";
 import { getWorkById } from "@/lib/image-marketplace-flow/repository";
+import { marketplaceRoutes } from "@/lib/image-marketplace-flow/routes";
 import { buildPageMetadata } from "@/lib/seo";
 
 type WorkPageProps = {
@@ -20,7 +21,7 @@ export async function generateMetadata({
     return buildPageMetadata({
       title: "작품을 찾을 수 없음",
       description: "요청하신 작품이 존재하지 않습니다.",
-      path: `/demos/image-marketplace-flow/work/${id}`,
+      path: marketplaceRoutes.work(id),
       noIndex: true,
     });
   }
@@ -28,7 +29,7 @@ export async function generateMetadata({
   return buildPageMetadata({
     title: work.title,
     description: `${work.owner.name}(@${work.owner.handle})의 작품 · CHIZU 마켓플레이스 데모`,
-    path: `/demos/image-marketplace-flow/work/${id}`,
+    path: marketplaceRoutes.work(id),
     openGraph: {
       images: [
         {

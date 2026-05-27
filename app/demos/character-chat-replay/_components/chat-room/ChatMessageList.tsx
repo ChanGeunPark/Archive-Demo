@@ -46,7 +46,7 @@ export function ChatMessageList({
         <ChatBubble key={message.id} character={character} message={message} />
       ))}
 
-      {awaitingFirstToken && <ChatLoadingDots />}
+      {awaitingFirstToken && <ChatLoadingDots character={character} />}
     </div>
   );
 }

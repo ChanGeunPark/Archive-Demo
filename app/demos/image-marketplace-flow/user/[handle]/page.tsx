@@ -3,48 +3,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import WorkGrid from "../../_components/discover/WorkGrid";
-import { marketplaceUsers } from "@/lib/image-marketplace-flow/demoUsers";
-import { listWorks } from "@/lib/image-marketplace-flow/repository";
+import {
+  getUserByHandle,
+  listWorksByUserId,
+} from "@/lib/image-marketplace-flow/repository";
 import type { Work } from "@/lib/image-marketplace-flow/marketplaceTypes";
 import type { WorksQueryWork } from "@/lib/image-marketplace-flow/graphql/types";
 import { buildPageMetadata } from "@/lib/seo";
+import { marketplaceRoutes } from "@/lib/image-marketplace-flow/routes";
 
 type UserProfilePageProps = {
   params: Promise<{ handle: string }>;
 };
-
-export async function generateMetadata({
-  params,
-}: UserProfilePageProps): Promise<Metadata> {
-  const { handle } = await params;
-  const normalizedHandle = handle.trim().toLowerCase();
-  const user = Object.values(marketplaceUsers).find(
-    (candidate) => candidate.handle.toLowerCase() === normalizedHandle,
-  );
-
-  if (!user) {
-    return buildPageMetadata({
-      title: "사용자를 찾을 수 없음",
-      description: "요청하신 사용자 프로필이 존재하지 않습니다.",
-      path: `/demos/image-marketplace-flow/user/${handle}`,
-      noIndex: true,
-    });
-  }
-
-  return buildPageMetadata({
-    title: `${user.name} (@${user.handle})`,
-    description: `${user.name}의 CHIZU 마켓플레이스 데모 프로필과 등록 작품을 확인할 수 있습니다.`,
-    path: `/demos/image-marketplace-flow/user/${user.handle}`,
-    openGraph: {
-      images: [
-        {
-          url: user.avatar,
-          alt: user.name,
-        },
-      ],
-    },
-  });
-}
 
 function toWorksQueryWork(work: Work): WorksQueryWork {
   return {
@@ -64,38 +34,53 @@ function toWorksQueryWork(work: Work): WorksQueryWork {
   };
 }
 
+export async function generateMetadata({
+  params,
+}: UserProfilePageProps): Promise<Metadata> {
+  const { handle } = await params;
+  const user = await getUserByHandle(handle);
+
+  if (!user) {
+    return buildPageMetadata({
+      title: "사용자를 찾을 수 없음",
+      description: "요청하신 사용자 프로필이 존재하지 않습니다.",
+      path: marketplaceRoutes.user(handle),
+      noIndex: true,
+    });
+  }
+
+  return buildPageMetadata({
+    title: `${user.name} (@${user.handle})`,
+    description: `${user.name}의 CHIZU 마켓플레이스 데모 프로필과 등록 작품을 확인할 수 있습니다.`,
+    path: marketplaceRoutes.user(user.handle),
+    openGraph: {
+      images: [
+        {
+          url: user.avatar,
+          alt: user.name,
+        },
+      ],
+    },
+  });
+}
+
 export default async function UserProfilePage({
   params,
 }: UserProfilePageProps) {
   const { handle } = await params;
-  const normalizedHandle = handle.trim().toLowerCase();
-  const works = (await listWorks()).edges.map((edge) => edge.node);
-  const userWorks = works.filter(
-    (work) =>
-      work.owner.handle.toLowerCase() === normalizedHandle ||
-      work.creator.handle.toLowerCase() === normalizedHandle,
-  );
-
-  const user =
-    Object.values(marketplaceUsers).find(
-      (candidate) => candidate.handle.toLowerCase() === normalizedHandle,
-    ) ??
-    userWorks.find(
-      (work) => work.owner.handle.toLowerCase() === normalizedHandle,
-    )?.owner ??
-    userWorks.find(
-      (work) => work.creator.handle.toLowerCase() === normalizedHandle,
-    )?.creator;
+  const user = await getUserByHandle(handle);
 
   if (!user) {
     notFound();
   }
 
+  const userWorks = await listWorksByUserId({ userId: user.id });
+
   return (
     <main className="min-h-screen bg-[#F4F5F6] px-4 py-8 text-[#17191C] lg:px-6 lg:py-12">
       <div className="mx-auto max-w-[1200px]">
         <Link
-          href="/demos/image-marketplace-flow"
+          href={marketplaceRoutes.discover}
           className="text-sm font-semibold text-[#3F444B] transition hover:text-[#17191C]"
         >
           Discover로 돌아가기
