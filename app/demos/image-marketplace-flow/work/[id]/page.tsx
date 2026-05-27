@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import WorkMain from "../../_components/WorkMain";
-import { getWorkById } from "@/lib/image-marketplace-flow/repository";
+import { getCachedWorkById } from "@/lib/image-marketplace-flow/repository/cachedWorks";
 import { marketplaceRoutes } from "@/lib/image-marketplace-flow/routes";
 import { buildPageMetadata } from "@/lib/seo";
 
@@ -15,7 +15,7 @@ export async function generateMetadata({
   params,
 }: WorkPageProps): Promise<Metadata> {
   const { id } = await params;
-  const work = await getWorkById(id);
+  const work = await getCachedWorkById(id);
 
   if (!work) {
     return buildPageMetadata({
@@ -43,12 +43,11 @@ export async function generateMetadata({
 
 export default async function WorkPage({ params }: WorkPageProps) {
   const { id } = await params;
+  const work = await getCachedWorkById(id);
 
-  // GraphQL `work(id)` resolver와 동일한 서버 데이터 소스
-  const work = await getWorkById(id);
   if (!work) {
     notFound();
   }
 
-  return <WorkMain id={id} />;
+  return <WorkMain id={id} initialWork={work} />;
 }

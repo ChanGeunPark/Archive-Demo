@@ -13,6 +13,7 @@ import {
   DISCOVER_SCROLL_RESTORE_MAX_FRAMES,
   DISCOVER_SCROLL_SAVE_DEBOUNCE_MS,
   getMaxScrollY,
+  isDiscoverPath,
   waitForNextFrame,
 } from "./discoverScrollUtils";
 
@@ -37,6 +38,7 @@ export function useDiscoverScrollRestore({
 }: UseDiscoverScrollRestoreOptions) {
   const hasRestoredScrollRef = useRef(false);
   const lastScrollYRef = useRef(0);
+  const isLeavingForWorkRef = useRef(false);
   const loadMoreRef = useRef(loadMore);
 
   useEffect(() => {
@@ -44,19 +46,39 @@ export function useDiscoverScrollRestore({
   }, [loadMore]);
 
   useLayoutEffect(() => {
+    const previous =
+      "scrollRestoration" in history ? history.scrollRestoration : null;
+
     if ("scrollRestoration" in history) {
       history.scrollRestoration = "manual";
     }
+
+    return () => {
+      if ("scrollRestoration" in history && previous) {
+        history.scrollRestoration = previous;
+      }
+    };
   }, []);
 
   useEffect(() => {
     let saveTimeout: ReturnType<typeof setTimeout> | undefined;
 
     const saveScrollPosition = () => {
+      if (!isDiscoverPath(window.location.pathname)) {
+        return;
+      }
+
       sessionStorage.setItem(DISCOVER_SCROLL_KEY, String(lastScrollYRef.current));
     };
 
     const onScroll = () => {
+      if (
+        isLeavingForWorkRef.current ||
+        !isDiscoverPath(window.location.pathname)
+      ) {
+        return;
+      }
+
       lastScrollYRef.current = window.scrollY;
 
       if (saveTimeout) {
@@ -83,6 +105,11 @@ export function useDiscoverScrollRestore({
         return;
       }
 
+      isLeavingForWorkRef.current = true;
+      if (saveTimeout) {
+        clearTimeout(saveTimeout);
+        saveTimeout = undefined;
+      }
       saveScrollPosition();
     };
 
@@ -94,7 +121,11 @@ export function useDiscoverScrollRestore({
       if (saveTimeout) {
         clearTimeout(saveTimeout);
       }
-      if (lastScrollYRef.current > 0) {
+      if (
+        !isLeavingForWorkRef.current &&
+        lastScrollYRef.current > 0 &&
+        isDiscoverPath(window.location.pathname)
+      ) {
         sessionStorage.setItem(
           DISCOVER_SCROLL_KEY,
           String(lastScrollYRef.current),
