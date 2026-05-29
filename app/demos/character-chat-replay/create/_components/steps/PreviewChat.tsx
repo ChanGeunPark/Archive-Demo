@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import SendFillIcon from "@/components/icons/SendFillIcon";
 import { usePreviewChatMutation } from "@/lib/ai-chat-demo/api";
@@ -37,6 +37,20 @@ export function PreviewChat({
   );
   const limitReached =
     messages.filter((message) => message.role === "human").length >= 5;
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior,
+      });
+    });
+  }, []);
+
+  useLayoutEffect(() => {
+    scrollToBottom("smooth");
+  }, [messages, isThinking, scrollToBottom]);
 
   async function submitPreviewMessage(message: string) {
     const content = message.trim();
@@ -125,7 +139,10 @@ export function PreviewChat({
         >
           채팅 테스트는 최대 5회의 대화까지 가능합니다.
         </Typography>
-        <div className="flex-1 space-y-3 overflow-y-auto p-4">
+        <div
+          ref={scrollRef}
+          className="flex-1 space-y-3 overflow-y-auto p-4"
+        >
           <Typography
             variant="body2"
             color="#60656C"
