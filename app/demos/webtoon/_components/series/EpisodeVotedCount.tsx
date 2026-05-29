@@ -1,7 +1,7 @@
 import { cls } from "@/lib/client/utils";
 import type { VoteOption } from "@/lib/webtoon-demo/types";
 import KeyboardArrowDownIcon from "@/components/icons/arrow/KeyboardArrowDownIcon";
-import VoteOutlinedIcon from "../icons/VoteOutlinedIcon";
+import { IoStarOutline } from "react-icons/io5";
 
 type EpisodeVotedCountProps = {
   isVoting?: boolean;
@@ -34,12 +34,13 @@ export default function EpisodeVotedCount({
     >
       {episodeType !== "ORDINARY" ? (
         <>
-          <VoteOutlinedIcon
+          <IoStarOutline
             className={cls(
               "mr-1 h-4 w-4 shrink-0 -translate-y-px",
-              isViewed ? "fill-gray-300" : "fill-gray-400",
-              showVote ? "!fill-gray-700" : ""
+              isViewed ? "text-gray-300" : "text-gray-400",
+              showVote ? "!text-gray-700" : "",
             )}
+            aria-hidden
           />
           <p
             className={cls(

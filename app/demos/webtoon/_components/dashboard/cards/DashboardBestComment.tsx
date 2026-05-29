@@ -1,7 +1,11 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import Typography from "@/components/typography/Typography";
 import ArrowRightIcon from "@/components/icons/arrow/ArrowRightIcon";
 import { cls } from "@/lib/client/utils";
 import { enterTextFormatter } from "@/lib/webtoon-demo/formatters";
+import { demoSeries } from "@/lib/webtoon-demo/mockData";
 import type { BestCommentItem } from "../dashboard.types";
 import CardBox from "../../ui/CardBox";
 import { GoldTiaraIcon } from "../icons/DashboardIcons";
@@ -15,12 +19,14 @@ export default function DashboardBestComment({
   bestCommentInfo,
   maxWidth,
 }: DashboardBestCommentProps) {
+  const router = useRouter();
+
   if (!bestCommentInfo.length) return null;
 
   return (
     <CardBox>
       <div className={maxWidth}>
-        <GoldTiaraIcon className="mt-4 h-6 w-8 fill-primaryDark" />
+        <GoldTiaraIcon className="mt-4 h-6 w-8 text-primaryDark" />
         <Typography variant="h3" className="mb-4">
           내가 적은
           <br />
@@ -35,7 +41,9 @@ export default function DashboardBestComment({
               "relative mb-4 flex w-full items-center justify-between rounded-xl bg-gray-50 p-4 text-left transition-all"
             )}
             onClick={() => {
-              alert(`데모: ${item.episodeIndex}화 댓글 페이지는 아직 연결되지 않았습니다.`);
+              router.push(
+                `/demos/webtoon/${demoSeries.seoId}/${item.episodeIndex}/comments`,
+              );
             }}
           >
             <div className="flex items-start justify-start space-x-4">

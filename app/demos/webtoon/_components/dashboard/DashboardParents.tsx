@@ -102,7 +102,7 @@ export default function DashboardParents({
           onClick={handleRefresh}
         >
           <RefreshIcon
-            className={cls("h-5 w-5 fill-gray-600", refreshAni ? "animate-spin" : "")}
+            className={cls("h-5 w-5 text-gray-600", refreshAni ? "animate-spin" : "")}
           />
         </button>
       </div>

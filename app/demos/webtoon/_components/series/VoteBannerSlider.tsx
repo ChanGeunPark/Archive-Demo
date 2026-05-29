@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Autoplay } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -13,6 +14,8 @@ type VoteBannerSliderProps = {
 };
 
 export default function VoteBannerSlider({ seoId, banners }: VoteBannerSliderProps) {
+  const router = useRouter();
+
   if (!banners.length) return null;
 
   return (
@@ -25,7 +28,7 @@ export default function VoteBannerSlider({ seoId, banners }: VoteBannerSliderPro
           const voteExpireAt = new Date(item.currentVoteExpireAt).getTime();
           const genres = item.genre.reduce(
             (acc, cur) => `${acc} #${formatGenreType(cur)}`,
-            ""
+            "",
           );
 
           return (
@@ -40,7 +43,9 @@ export default function VoteBannerSlider({ seoId, banners }: VoteBannerSliderPro
                 voteExpireAt={voteExpireAt}
                 genre={genres}
                 onClick={() => {
-                  window.scrollTo({ top: 400, behavior: "smooth" });
+                  router.push(
+                    `/demos/webtoon/${item.seoId}/${item.currentEpisodeIndex}`,
+                  );
                 }}
               />
             </SwiperSlide>

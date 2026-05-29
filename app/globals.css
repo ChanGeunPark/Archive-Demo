@@ -68,3 +68,41 @@ body {
     background-color: rgb(199 199 199);
   }
 }
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes likeFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-100px);
+  }
+}
+
+@utility animate-radient {
+  animation: gradient 5s ease infinite;
+}
+
+@utility animate-like {
+  animation: likeFloat 3s ease-in-out infinite;
+}

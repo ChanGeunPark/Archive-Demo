@@ -48,6 +48,67 @@ export interface Episode {
   voteResult?: VoteOption[];
   voterCount?: number;
   likeCount?: number;
+  contentImageCount?: number;
+  contentImages?: string[];
+  authorComment?: string;
+  commentCount?: number;
+}
+
+export type CommentFilterType = "POPULAR" | "VOTER" | "ALL";
+
+export interface CommentUser {
+  id: string;
+  nickname: string;
+  profileImage?: string;
+}
+
+export interface Comment {
+  id: string;
+  content: string;
+  config?: string;
+  user: CommentUser;
+  voteSelection?: number;
+  bestRank?: number;
+  likeCount: number;
+  likedByMe?: boolean;
+  childCommentCount: number;
+  parentCommentId?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export type TabMenu = "EPISODE" | "DASHBOARD" | "INFO" | "NOTICE";
+
+export type VoteType = "FULL" | "MINIMUM";
+
+export type VoteStatusType = "WIN" | "LOSE" | "DRAW" | "PENDING";
+
+export interface VoteCandidate {
+  id: string;
+  selectionNumber: number;
+  title: string;
+  content?: string;
+  voteImage: string;
+  voteSum: number;
+  type: VoteType;
+  status?: VoteStatusType;
+}
+
+export interface UserVote {
+  voteId: string;
+  selectionNumber: number;
+}
+
+export interface VoteSessionInfo {
+  remainingVoteCount: number;
+  userCakeCount: number;
+  seriesCakePrice: number;
+}
+
+export interface EpisodeDetail extends Episode {
+  series: Series;
+  voteCandidates?: VoteCandidate[];
+  maxVoteCount?: number;
 }
 
 export interface SeriesNotification {
@@ -108,5 +169,3 @@ export interface BadgeInfo {
   CAKE_1000?: BadgeStatus;
   freeCakeCount?: number;
 }
-
-export type TabMenu = "EPISODE" | "DASHBOARD" | "INFO" | "NOTICE";

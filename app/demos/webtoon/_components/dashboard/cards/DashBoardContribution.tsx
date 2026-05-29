@@ -29,7 +29,7 @@ export default function DashBoardContribution({
           기여도 점수
           <Tooltip
             horizontal="center"
-            icon={<InformationIcon className="ml-0.5 h-4 w-4 fill-gray-400" />}
+            icon={<InformationIcon className="ml-0.5 h-4 w-4 text-gray-400" />}
           >
             <p className="text-center text-xs font-normal">업적 점수 + 활동 점수 = 기여도 점수</p>
           </Tooltip>
@@ -44,7 +44,7 @@ export default function DashBoardContribution({
               업적 점수
               <Tooltip
                 horizontal="center"
-                icon={<InformationIcon className="ml-0.5 h-4 w-4 fill-gray-400" />}
+                icon={<InformationIcon className="ml-0.5 h-4 w-4 text-gray-400" />}
               >
                 <div className="text-left">
                   <p className="text-xs font-normal">
@@ -61,7 +61,7 @@ export default function DashBoardContribution({
               </Tooltip>
             </div>
           </div>
-          <PlusIcon className="h-5 w-5 fill-gray-300" />
+          <PlusIcon className="h-5 w-5 text-gray-300" />
           <div className="flex w-full flex-col items-center justify-center">
             <h4 className="h-7 text-lg font-bold text-gray-900">
               <CountUpAnimation count={seriesPoint} duration={700} />
@@ -71,7 +71,7 @@ export default function DashBoardContribution({
               icon={
                 <div className="flex items-center text-xs font-medium text-gray-600">
                   활동 점수
-                  <InformationIcon className="ml-0.5 h-4 w-4 fill-gray-400" />
+                  <InformationIcon className="ml-0.5 h-4 w-4 text-gray-400" />
                 </div>
               }
             >

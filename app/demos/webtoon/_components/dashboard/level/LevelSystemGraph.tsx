@@ -58,7 +58,7 @@ export default function LevelSystemGraph({
             <p className="text-[7px] text-gray-600">[{expPercentage}%]</p>
           </div>
           <RefreshIcon
-            className={cls("h-3 w-3 fill-gray-600", refreshAni ? "animate-spin" : "")}
+            className={cls("h-3 w-3 text-gray-600", refreshAni ? "animate-spin" : "")}
           />
         </div>
       </button>

@@ -7,7 +7,7 @@ type LevelBadgeIconProps = {
 
 export default function LevelBadgeIcon({ level, className }: LevelBadgeIconProps) {
   if (Number(level) < 10) {
-    return <LevelStarterBadge className={className} width={24} height={24} />;
+    return <LevelStarterBadge className={className} size={24} />;
   }
-  return <Level10Badge className={className} width={24} height={24} />;
+  return <Level10Badge className={className} size={24} />;
 }
