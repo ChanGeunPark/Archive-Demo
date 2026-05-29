@@ -70,7 +70,6 @@ export interface TypographyProps
   /** @deprecated Use `weight` instead. */
   fontWeight?: TextPropertyType | FontWeightType;
   color?: TypographyColor;
-  darkColor?: TextPropertyType | "white" | string;
   wordBreak?: TypographyWordBreak;
   ellipsis?: TypographyEllipsis;
   style?: CSSProperties;

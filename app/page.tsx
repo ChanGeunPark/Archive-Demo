@@ -64,12 +64,33 @@ const demos = [
       "Zustand",
     ],
   },
+  {
+    title: "CHIZU COMICS",
+    href: "/demos/webtoon",
+    label: "Interactive webtoon",
+    period: "2021.09 - 2022.08",
+    project:
+      "독자가 회차를 읽고 투표로 스토리를 결정하는 투표형 웹툰 플랫폼 서비스입니다.",
+    description:
+      "이 데모는 시리즈 페이지, 투표 배너, 회차 목록, 웹툰일지, 정보, 공지 탭 등 실서비스 시리즈 홈의 핵심 UI 흐름을 데모 데이터로 재현합니다.",
+    imageSrc: "/images/webtoon/banner.jpg",
+    imageAlt: "CHIZU COMICS Webtoon Series Demo preview",
+    stack: [
+      "Next.js",
+      "React",
+      "TypeScript",
+      "Apollo Client",
+      "GraphQL",
+      "Framer Motion",
+      "Swiper",
+    ],
+  },
 ] as const;
 
 const archiveNotes = [
   {
     title: "구성",
-    value: "실서비스 기반 데모 2개",
+    value: "실서비스 기반 데모 3개",
   },
   {
     title: "중점",

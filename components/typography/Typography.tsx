@@ -21,7 +21,6 @@ function Typography(props: TypographyProps) {
     weight,
     fontWeight,
     color = 900,
-    darkColor,
     truncate = false,
     wordBreak,
     ellipsis,
@@ -30,10 +29,7 @@ function Typography(props: TypographyProps) {
   } = props;
 
   const resolvedWeight = weight ?? fontWeight;
-  const { className: colorClassName, style: colorStyle } = resolveColorClass(
-    color,
-    darkColor
-  );
+  const { className: colorClassName, style: colorStyle } = resolveColorClass(color);
 
   const styleClass = cls(
     colorClassName,

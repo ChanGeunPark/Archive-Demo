@@ -7,23 +7,23 @@ import {
 } from "./typography.type";
 
 export const GRAY_COLOR_CLASS: Record<TextPropertyType, string> = {
-  900: "text-gray-900 dark:text-white",
-  800: "text-gray-800 dark:text-gray-100",
-  700: "text-gray-700 dark:text-gray-200",
-  600: "text-gray-600 dark:text-gray-300",
-  500: "text-gray-500 dark:text-gray-400",
-  400: "text-gray-400 dark:text-gray-300",
-  300: "text-gray-300 dark:text-gray-500",
-  200: "text-gray-200 dark:text-gray-300",
-  100: "text-gray-100 dark:text-gray-200",
+  900: "text-gray-900",
+  800: "text-gray-800",
+  700: "text-gray-700",
+  600: "text-gray-600",
+  500: "text-gray-500",
+  400: "text-gray-400",
+  300: "text-gray-300",
+  200: "text-gray-200",
+  100: "text-gray-100",
 };
 
 export const SEMANTIC_COLOR_CLASS: Record<SemanticColorType, string> = {
-  tertiary: "text-tertiaryDark dark:text-tertiarySub",
-  alert: "text-alertMain dark:text-alertSub",
-  primary: "text-primaryDark dark:text-primaryMain",
-  secondary: "text-secondaryDark dark:text-secondaryMain",
-  approve: "text-approveDark dark:text-approveMain",
+  tertiary: "text-tertiaryDark",
+  alert: "text-alertMain",
+  primary: "text-primaryDark",
+  secondary: "text-secondaryDark",
+  approve: "text-approveDark",
 };
 
 export const FONT_WEIGHT_NUMERIC_CLASS: Record<number, string> = {
@@ -108,7 +108,6 @@ const GRAY_COLOR_SCALE = new Set<number>(
 
 export function resolveColorClass(
   color: TextPropertyType | "white" | string = 900,
-  darkColor?: TextPropertyType | "white" | string,
 ): { className: string; style?: CSSProperties } {
   if (color === "white") {
     return { className: "text-white" };
@@ -122,24 +121,6 @@ export function resolveColorClass(
 
   const numericColor = Number(color);
   if (!Number.isNaN(numericColor) && GRAY_COLOR_SCALE.has(numericColor)) {
-    if (darkColor !== undefined) {
-      const numericDarkColor = Number(darkColor);
-      if (
-        !Number.isNaN(numericDarkColor) &&
-        GRAY_COLOR_SCALE.has(numericDarkColor)
-      ) {
-        const lightClass =
-          GRAY_COLOR_CLASS[numericColor as TextPropertyType].split(" ")[0];
-        const darkClass = GRAY_COLOR_CLASS[numericDarkColor as TextPropertyType]
-          .split(" ")
-          .find((token) => token.startsWith("dark:"));
-
-        return {
-          className: [lightClass, darkClass].filter(Boolean).join(" "),
-        };
-      }
-    }
-
     return {
       className: GRAY_COLOR_CLASS[numericColor as TextPropertyType],
     };
