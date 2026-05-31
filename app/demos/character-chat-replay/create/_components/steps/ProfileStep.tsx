@@ -45,7 +45,7 @@ export function ProfileStep({
         >
           (배경 이미지: 선택항목)
         </Typography>
-        <div className="relative mt-4 aspect-square w-full max-w-[400px] overflow-hidden rounded-lg border border-dashed border-[#D8DBDE] bg-white p-2">
+        <div className="relative mt-4 aspect-square w-full max-w-[350px] overflow-hidden rounded-lg border border-dashed border-[#D8DBDE] bg-white p-2">
           <label className="absolute inset-2 z-0 cursor-pointer overflow-hidden rounded-lg bg-[#F4F5F6]">
             {bannerPreview ? (
               <Image
@@ -68,7 +68,7 @@ export function ProfileStep({
                 </Typography>
                 <Typography
                   as="span"
-                  variant="h1"
+                  variant="h2"
                   weight={300}
                   color="#AEB2B8"
                   className="mt-10"
@@ -173,7 +173,12 @@ export function ProfileStep({
               onClick={addTag}
               className="h-12 rounded-lg bg-[#FFE55C] px-4 text-sm font-bold text-[#17191C] disabled:bg-[#EDEEEF] disabled:text-[#AEB2B8]"
             >
-              <Typography as="span" variant="body2" weight={700} color="inherit">
+              <Typography
+                as="span"
+                variant="body2"
+                weight={700}
+                color="inherit"
+              >
                 추가
               </Typography>
             </button>
@@ -191,7 +196,12 @@ export function ProfileStep({
                   onClick={() => removeTag(tag)}
                   className="rounded-full bg-[#17191C] px-3 py-1.5 text-xs font-bold text-white"
                 >
-                  <Typography as="span" variant="body3" weight={700} color="white">
+                  <Typography
+                    as="span"
+                    variant="body3"
+                    weight={700}
+                    color="white"
+                  >
                     #{tag} ×
                   </Typography>
                 </button>

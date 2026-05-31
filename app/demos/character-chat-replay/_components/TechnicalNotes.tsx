@@ -1,26 +1,32 @@
 import Typography from "@/components/typography/Typography";
 import Image from "next/image";
 
-const tradeoffs = [
+const designDecisions = [
   {
     title: "BFF (Next.js API Route)",
-    gain: "API 키·시스템 프롬프트·secretContext를 브라우저에 노출하지 않습니다.",
-    cost: "채팅 요청마다 브라우저 → Next.js → AI 모델로 경로가 한 단계 더 늘어납니다.",
+    reason:
+      "API 키·시스템 프롬프트·secretContext를 브라우저에 노출하지 않습니다.",
+    result:
+      "채팅 요청마다 브라우저 → Next.js → AI 모델로 경로가 한 단계 더 늘어납니다.",
   },
   {
     title: "LangChain in-memory session",
-    gain: "같은 roomId의 연속 대화에서는 DB 히스토리를 매 턴 읽지 않고 세션의 historyMessages를 재사용합니다.",
-    cost: "세션은 서버 RAM에만 있어 재배포·dev 서버 재시작·cold start 시 Map이 비워집니다. 저장된 메시지(DB)는 남지만, 다음 턴에 DB에서 history를 다시 읽어 세션을 재구성합니다.",
+    reason:
+      "같은 roomId의 연속 대화에서는 DB 히스토리를 매 턴 읽지 않고 세션의 historyMessages를 재사용합니다.",
+    result:
+      "세션은 서버 RAM에만 있어 재배포·dev 서버 재시작·cold start 시 Map이 비워집니다. 저장된 메시지(DB)는 남지만, 다음 턴에 DB에서 history를 다시 읽어 세션을 재구성합니다.",
   },
   {
     title: "SSE + smooth reveal",
-    gain: "GPT·Gemini처럼 chunk 크기가 다른 provider도 비슷한 타이핑 UX로 보이게 합니다.",
-    cost: "실제 SSE 수신과 화면 표시가 분리되어, presentation layer 코드가 추가됩니다.",
+    reason:
+      "GPT·Gemini처럼 chunk 크기가 다른 provider도 비슷한 타이핑 UX로 보이게 합니다.",
+    result:
+      "실제 SSE 수신과 화면 표시가 분리되어, presentation layer 코드가 추가됩니다.",
   },
   {
     title: "React Query refetchOnMount",
-    gain: "같은 roomId로 재입장해도 Supabase 기준 최신 history를 보여줍니다.",
-    cost: "채팅방을 열 때마다 GET /history를 다시 호출합니다.",
+    reason: "같은 roomId로 재입장해도 Supabase 기준 최신 history를 보여줍니다.",
+    result: "채팅방을 열 때마다 GET /history를 다시 호출합니다.",
   },
 ] as const;
 
@@ -89,6 +95,7 @@ function FlowBadgeTrail() {
             as="span"
             variant="caption"
             weight={600}
+            color="#52525B"
             className={`inline-flex rounded-sm border px-2 py-0.5 ${flowBadgeClass}`}
           >
             {label}
@@ -237,15 +244,16 @@ export function TechnicalNotes() {
 
       <div className="space-y-5">
         <SectionHeading
-          title="Trade-offs"
-          description="실제 서비스 구조를 데모 환경에 맞게 재구성하며 선택한 설계입니다."
+          title="Decisions"
+          description="데모 구현에서 내린 결정, 그 이유와 결과입니다."
         />
-        <div className="grid gap-3 sm:grid-cols-2">
-          {tradeoffs.map((item, index) => (
+        <div className="flex flex-col gap-3">
+          {designDecisions.map((item, index) => (
             <article
               key={item.title}
               className={`rounded-2xl border border-[#EDEEEF] bg-white p-4 shadow-[0_8px_30px_rgba(15,23,42,0.04)] ${
-                index === tradeoffs.length - 1 && tradeoffs.length % 2 !== 0
+                index === designDecisions.length - 1 &&
+                designDecisions.length % 2 !== 0
                   ? "sm:col-span-2"
                   : ""
               }`}
@@ -276,9 +284,9 @@ export function TechnicalNotes() {
                         weight={600}
                         color="#059669"
                       >
-                        선택{" "}
+                        이유{" "}
                       </Typography>
-                      {item.gain}
+                      {item.reason}
                     </Typography>
                     <Typography
                       variant="body3"
@@ -291,9 +299,9 @@ export function TechnicalNotes() {
                         weight={600}
                         color="#D97706"
                       >
-                        대가{" "}
+                        결과{" "}
                       </Typography>
-                      {item.cost}
+                      {item.result}
                     </Typography>
                   </div>
                 </div>

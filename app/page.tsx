@@ -68,16 +68,16 @@ const demos = [
 
 const archiveNotes = [
   {
-    title: "Scope",
-    value: "2 production-inspired demos",
+    title: "구성",
+    value: "실서비스 기반 데모 2개",
   },
   {
-    title: "Focus",
-    value: "User flow, data sync, realtime UX",
+    title: "중점",
+    value: "사용자 흐름, 데이터 동기화, 실시간 UX",
   },
   {
-    title: "Role",
-    value: "Frontend architecture and implementation",
+    title: "역할",
+    value: "프론트엔드 설계 및 구현",
   },
 ] as const;
 
@@ -114,6 +114,14 @@ export default function Home() {
                 GitHub
               </Link>
 
+              <Link
+                href="https://www.notion.so/306c7cdb1c5f8085a323ca39a2f3e604?source=copy_link"
+                target="_blank"
+                className="text-sm font-semibold text-zinc-700 underline decoration-zinc-300 underline-offset-4 transition hover:text-zinc-950 border-l border-zinc-950/15 pl-3"
+              >
+                Portfolio
+              </Link>
+
               <Typography
                 as="span"
                 variant="body3"
@@ -126,7 +134,7 @@ export default function Home() {
             </div>
           </header>
 
-          <section className="grid gap-8 border-b border-zinc-950/10 py-14 sm:py-16 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16 lg:py-20">
+          <section className=" gap-8 border-b border-zinc-950/10 py-14">
             <div>
               <Typography
                 as="span"
@@ -142,23 +150,25 @@ export default function Home() {
                 variant="h1"
                 weight={700}
                 color="#09090b"
+                wordBreak="keep"
                 className="mt-5 max-w-3xl text-[44px] sm:text-[54px]"
                 style={{ lineHeight: "1.1" }}
               >
                 서비스의 핵심 흐름을 다시 설계한 데모 아카이브
               </Typography>
-            </div>
 
-            <Typography
-              variant="body1"
-              weight={400}
-              color="#52525b"
-              className="max-w-xl self-end break-keep"
-            >
-              CHIZU COMICS와 CHIZU에서 다룬 핵심 제품 경험을 실제로 조작 가능한
-              웹 데모로 정리했습니다. 각 프로젝트가 어떤 서비스였는지, 어떤
-              기술로 구현했는지 한 화면에서 확인할 수 있습니다.
-            </Typography>
+              <Typography
+                variant="body1"
+                weight={400}
+                color="#52525b"
+                wordBreak="keep"
+                className="mt-5 max-w-3xl"
+              >
+                CHIZU COMICS와 CHIZU에서 다룬 핵심 제품 경험을 실제로 조작
+                가능한 웹 데모로 정리했습니다. 각 프로젝트가 어떤 서비스였는지,
+                어떤 기술로 구현했는지 한 화면에서 확인할 수 있습니다.
+              </Typography>
+            </div>
           </section>
 
           <section className="grid border-b border-zinc-950/10 sm:grid-cols-3">
@@ -228,7 +238,7 @@ function DemoCard({ demo, index }: { demo: Demo; index: number }) {
   return (
     <Link
       href={demo.href}
-      className="group block rounded-lg border border-zinc-950/10 bg-white transition duration-300 hover:border-zinc-950/30 hover:shadow-[0_18px_50px_rgba(24,24,27,0.08)] focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:outline-none"
+      className="group block rounded-lg border border-zinc-950/10 bg-white transition duration-300 hover:border-zinc-950/30 hover:shadow-[0_18px_50px_rgba(24,24,27,0.08)] focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:outline-none overflow-hidden"
     >
       <article className="grid min-h-[360px] overflow-hidden lg:grid-cols-[0.92fr_1.08fr]">
         <div className="relative min-h-64 overflow-hidden bg-zinc-100 sm:min-h-80 lg:min-h-full">
