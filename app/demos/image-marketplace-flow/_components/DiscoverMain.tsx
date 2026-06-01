@@ -21,8 +21,14 @@ export default function DiscoverMain() {
     DEFAULT_PRICE_FILTER_OPTION.range,
   );
 
-  const { works, pageInfo, worksError, isInitialLoading, sentinelRef } =
-    useDiscoverWorksFeed(query, priceFilter);
+  const {
+    works,
+    pageInfo,
+    worksError,
+    isInitialLoading,
+    isLoadingMore,
+    sentinelRef,
+  } = useDiscoverWorksFeed(query, priceFilter);
 
   return (
     <main className="min-h-screen bg-white text-[#17191C]">
@@ -75,11 +81,17 @@ export default function DiscoverMain() {
           ) : (
             <>
               <WorkGrid works={works} />
-              {pageInfo?.hasNextPage && (
-                <div
-                  ref={sentinelRef}
-                  className="flex w-full justify-center py-8"
-                />
+              {isLoadingMore ? (
+                <div className="mt-5">
+                  <WorkGridSkeleton />
+                </div>
+              ) : (
+                pageInfo?.hasNextPage && (
+                  <div
+                    ref={sentinelRef}
+                    className="flex w-full justify-center py-8"
+                  />
+                )
               )}
             </>
           )}

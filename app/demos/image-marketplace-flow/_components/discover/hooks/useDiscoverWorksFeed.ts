@@ -14,6 +14,7 @@ export function useDiscoverWorksFeed(
     pageInfo,
     worksError,
     isInitialLoading,
+    isLoadingMore,
     filterKey,
     loadMore,
     pageInfoRef,
@@ -42,6 +43,7 @@ export function useDiscoverWorksFeed(
     pageInfo,
     worksError,
     isInitialLoading,
+    isLoadingMore,
     sentinelRef,
   };
 }
