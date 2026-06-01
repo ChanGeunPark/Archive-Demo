@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type {
   DemoChatMessage,
   DemoPublicCharacter,
@@ -10,7 +11,10 @@ type ChatBubbleProps = {
   message: DemoChatMessage;
 };
 
-export function ChatBubble({ character, message }: ChatBubbleProps) {
+export const ChatBubble = memo(function ChatBubble({
+  character,
+  message,
+}: ChatBubbleProps) {
   const isHuman = message.role === "human";
 
   return (
@@ -43,4 +47,4 @@ export function ChatBubble({ character, message }: ChatBubbleProps) {
       </div>
     </div>
   );
-}
+});

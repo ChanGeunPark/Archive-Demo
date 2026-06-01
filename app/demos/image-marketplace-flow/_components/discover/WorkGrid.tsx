@@ -5,6 +5,7 @@ import MasonryImageCard from "../card/MasonryImageCard";
 import OrderedMasonry from "../layout/OrderedMasonry";
 import { WorksQueryWork } from "@/lib/image-marketplace-flow/graphql/types";
 import { marketplaceRoutes } from "@/lib/image-marketplace-flow/routes";
+import { WORK_GRID_BREAKPOINT_COLS } from "./workGridBreakpoints";
 
 function getStdHeight(width: number, height: number) {
   if (width > 0 && height > 0) {
@@ -40,13 +41,7 @@ export default function WorkGrid({ works }: { works: WorksQueryWork[] }) {
     <OrderedMasonry
       className="-ml-5 flex w-auto"
       columnClassName="flex min-w-0 flex-col gap-5 pl-5"
-      breakpointCols={{
-        default: 5,
-        1536: 4,
-        1280: 3,
-        1024: 2,
-        640: 1,
-      }}
+      breakpointCols={WORK_GRID_BREAKPOINT_COLS}
     >
       {works.map((work) => (
         <MasonryWorkItem

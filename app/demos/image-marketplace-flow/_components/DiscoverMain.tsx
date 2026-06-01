@@ -12,7 +12,7 @@ import {
 } from "./discover/discoverPriceFilter";
 import { useDiscoverWorksFeed } from "./discover/hooks/useDiscoverWorksFeed";
 import WorkGrid from "./discover/WorkGrid";
-import LoadingAni from "./animation/LoadingAni";
+import WorkGridSkeleton from "./discover/WorkGridSkeleton";
 import Typography from "@/components/typography/Typography";
 
 export default function DiscoverMain() {
@@ -21,8 +21,14 @@ export default function DiscoverMain() {
     DEFAULT_PRICE_FILTER_OPTION.range,
   );
 
-  const { works, pageInfo, worksError, isInitialLoading, sentinelRef } =
-    useDiscoverWorksFeed(query, priceFilter);
+  const {
+    works,
+    pageInfo,
+    worksError,
+    isInitialLoading,
+    isLoadingMore,
+    sentinelRef,
+  } = useDiscoverWorksFeed(query, priceFilter);
 
   return (
     <main className="min-h-screen bg-white text-[#17191C]">
@@ -71,17 +77,21 @@ export default function DiscoverMain() {
             </div>
           )}
           {isInitialLoading ? (
-            <div className="flex w-full items-center justify-center">
-              <LoadingAni loop={true} className="h-[60px] w-[60px]" />
-            </div>
+            <WorkGridSkeleton />
           ) : (
             <>
               <WorkGrid works={works} />
-              {pageInfo?.hasNextPage && (
-                <div
-                  ref={sentinelRef}
-                  className="flex w-full justify-center py-8"
-                />
+              {isLoadingMore ? (
+                <div className="mt-5">
+                  <WorkGridSkeleton />
+                </div>
+              ) : (
+                pageInfo?.hasNextPage && (
+                  <div
+                    ref={sentinelRef}
+                    className="flex w-full justify-center py-8"
+                  />
+                )
               )}
             </>
           )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
+import { NetworkStatus } from "@apollo/client";
 import { useQuery } from "@apollo/client/react";
 import {
   DEFAULT_WORKS_QUERY_VARIABLES,
@@ -42,9 +43,9 @@ export function useWorksInfiniteQuery(
 
   const {
     data: worksData,
-    loading: worksLoading,
     error: worksError,
     fetchMore,
+    networkStatus,
   } = useQuery<WorksQueryResponse, WorksQueryVariables>(WORKS_QUERY, {
     variables,
     fetchPolicy: "cache-first",
@@ -53,7 +54,12 @@ export function useWorksInfiniteQuery(
 
   const works = worksData?.works.edges.map((edge) => edge.node) ?? [];
   const pageInfo = worksData?.works.pageInfo;
-  const isInitialLoading = worksLoading && works.length === 0;
+  const isInitialLoading =
+    works.length === 0 &&
+    (networkStatus === NetworkStatus.loading ||
+      networkStatus === NetworkStatus.setVariables ||
+      networkStatus === NetworkStatus.refetch);
+  const isLoadingMore = networkStatus === NetworkStatus.fetchMore;
 
   useEffect(() => {
     pageInfoRef.current = pageInfo;
@@ -90,6 +96,7 @@ export function useWorksInfiniteQuery(
     pageInfo,
     worksError,
     isInitialLoading,
+    isLoadingMore,
     filterKey,
     loadMore,
     pageInfoRef,
