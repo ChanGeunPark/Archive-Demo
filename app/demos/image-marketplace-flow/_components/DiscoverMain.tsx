@@ -12,7 +12,7 @@ import {
 } from "./discover/discoverPriceFilter";
 import { useDiscoverWorksFeed } from "./discover/hooks/useDiscoverWorksFeed";
 import WorkGrid from "./discover/WorkGrid";
-import LoadingAni from "./animation/LoadingAni";
+import WorkGridSkeleton from "./discover/WorkGridSkeleton";
 import Typography from "@/components/typography/Typography";
 
 export default function DiscoverMain() {
@@ -71,9 +71,7 @@ export default function DiscoverMain() {
             </div>
           )}
           {isInitialLoading ? (
-            <div className="flex w-full items-center justify-center">
-              <LoadingAni loop={true} className="h-[60px] w-[60px]" />
-            </div>
+            <WorkGridSkeleton />
           ) : (
             <>
               <WorkGrid works={works} />
