@@ -1,11 +1,9 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import OrderedMasonry from "../layout/OrderedMasonry";
-import {
-  getWorkGridColumnCount,
-  WORK_GRID_BREAKPOINT_COLS,
-} from "./workGridBreakpoints";
+import { useWorkGridColumnCount } from "./hooks/useWorkGridColumnCount";
+import { WORK_GRID_BREAKPOINT_COLS } from "./workGridBreakpoints";
 
 const SKELETON_ASPECT_RATIOS = [
   { width: 4, height: 5 },
@@ -38,24 +36,6 @@ function MasonrySkeletonItem({
   );
 }
 
-export function useWorkGridSkeletonCount() {
-  const [skeletonCount, setSkeletonCount] = useState(
-    WORK_GRID_BREAKPOINT_COLS.default,
-  );
-
-  useLayoutEffect(() => {
-    const updateSkeletonCount = () => {
-      setSkeletonCount(getWorkGridColumnCount());
-    };
-
-    updateSkeletonCount();
-    window.addEventListener("resize", updateSkeletonCount);
-    return () => window.removeEventListener("resize", updateSkeletonCount);
-  }, []);
-
-  return skeletonCount;
-}
-
 export function buildWorkGridSkeletonItems(skeletonCount: number): ReactNode[] {
   return Array.from({ length: skeletonCount }, (_, index) => {
     const ratio =
@@ -73,11 +53,14 @@ export function buildWorkGridSkeletonItems(skeletonCount: number): ReactNode[] {
 }
 
 export function useWorkGridSkeletonItems(enabled: boolean) {
-  const skeletonCount = useWorkGridSkeletonCount();
+  const columnCount = useWorkGridColumnCount();
 
   return useMemo(
-    () => (enabled ? buildWorkGridSkeletonItems(skeletonCount) : []),
-    [enabled, skeletonCount],
+    () =>
+      enabled && columnCount != null
+        ? buildWorkGridSkeletonItems(columnCount)
+        : [],
+    [enabled, columnCount],
   );
 }
 
