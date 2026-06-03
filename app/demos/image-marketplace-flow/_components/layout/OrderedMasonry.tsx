@@ -57,10 +57,8 @@ const OrderedMasonry = ({
     return breakpointCols as OrderedMasonryBreakpoint;
   }, [breakpointCols]);
 
-  const [columnCount, setColumnCount] = useState<number>(
-    () => normalizedBreakpointCols.default,
-  );
-  const columnCountRef = useRef<number>(normalizedBreakpointCols.default);
+  const [columnCount, setColumnCount] = useState<number | null>(null);
+  const columnCountRef = useRef<number | null>(null);
   /**
    * ==============================
    * Grid change on resize functions
@@ -104,7 +102,7 @@ const OrderedMasonry = ({
    * ==============================
    */
   const getSortedSourceColumns = () => {
-    if (children == undefined) {
+    if (children == undefined || columnCount == null) {
       return [];
     }
     const currentColumnCount = columnCount;
@@ -136,6 +134,9 @@ const OrderedMasonry = ({
   };
 
   const renderColumns = () => {
+    if (columnCount == null) {
+      return null;
+    }
     const childrenInColumns = getSortedSourceColumns();
     if (childrenInColumns.length === 0) {
       return null;
