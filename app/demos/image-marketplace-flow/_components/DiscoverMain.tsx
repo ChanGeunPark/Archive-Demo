@@ -80,18 +80,12 @@ export default function DiscoverMain() {
             <WorkGridSkeleton />
           ) : (
             <>
-              <WorkGrid works={works} />
-              {isLoadingMore ? (
-                <div className="mt-5">
-                  <WorkGridSkeleton />
-                </div>
-              ) : (
-                pageInfo?.hasNextPage && (
-                  <div
-                    ref={sentinelRef}
-                    className="flex w-full justify-center py-8"
-                  />
-                )
+              <WorkGrid works={works} isLoadingMore={isLoadingMore} />
+              {!isLoadingMore && pageInfo?.hasNextPage && (
+                <div
+                  ref={sentinelRef}
+                  className="flex w-full justify-center py-8"
+                />
               )}
             </>
           )}

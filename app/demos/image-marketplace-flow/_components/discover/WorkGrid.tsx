@@ -6,6 +6,7 @@ import OrderedMasonry from "../layout/OrderedMasonry";
 import { WorksQueryWork } from "@/lib/image-marketplace-flow/graphql/types";
 import { marketplaceRoutes } from "@/lib/image-marketplace-flow/routes";
 import { WORK_GRID_BREAKPOINT_COLS } from "./workGridBreakpoints";
+import { useWorkGridSkeletonItems } from "./WorkGridSkeleton";
 
 function getStdHeight(width: number, height: number) {
   if (width > 0 && height > 0) {
@@ -28,8 +29,16 @@ function MasonryWorkItem({
   );
 }
 
-export default function WorkGrid({ works }: { works: WorksQueryWork[] }) {
-  if (works.length === 0) {
+export default function WorkGrid({
+  works,
+  isLoadingMore = false,
+}: {
+  works: WorksQueryWork[];
+  isLoadingMore?: boolean;
+}) {
+  const skeletonItems = useWorkGridSkeletonItems(isLoadingMore);
+
+  if (works.length === 0 && !isLoadingMore) {
     return (
       <div className="flex min-h-80 items-center justify-center rounded-lg border border-[#E6E1D8] bg-white text-sm font-bold text-[#777D84]">
         No works found
@@ -61,6 +70,7 @@ export default function WorkGrid({ works }: { works: WorksQueryWork[] }) {
           />
         </MasonryWorkItem>
       ))}
+      {skeletonItems}
     </OrderedMasonry>
   );
 }
