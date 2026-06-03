@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useState, type ReactNode } from "react";
 import OrderedMasonry from "../layout/OrderedMasonry";
 import {
   getWorkGridColumnCount,
@@ -38,7 +38,7 @@ function MasonrySkeletonItem({
   );
 }
 
-export default function WorkGridSkeleton() {
+export function useWorkGridSkeletonCount() {
   const [skeletonCount, setSkeletonCount] = useState(
     WORK_GRID_BREAKPOINT_COLS.default,
   );
@@ -53,23 +53,36 @@ export default function WorkGridSkeleton() {
     return () => window.removeEventListener("resize", updateSkeletonCount);
   }, []);
 
-  const skeletonItems = useMemo(
-    () =>
-      Array.from({ length: skeletonCount }, (_, index) => {
-        const ratio =
-          SKELETON_ASPECT_RATIOS[index % SKELETON_ASPECT_RATIOS.length];
+  return skeletonCount;
+}
 
-        return (
-          <MasonrySkeletonItem
-            key={index}
-            stdHeight={ratio.height / ratio.width}
-            width={ratio.width}
-            height={ratio.height}
-          />
-        );
-      }),
-    [skeletonCount],
+export function buildWorkGridSkeletonItems(skeletonCount: number): ReactNode[] {
+  return Array.from({ length: skeletonCount }, (_, index) => {
+    const ratio =
+      SKELETON_ASPECT_RATIOS[index % SKELETON_ASPECT_RATIOS.length];
+
+    return (
+      <MasonrySkeletonItem
+        key={`skeleton-${index}`}
+        stdHeight={ratio.height / ratio.width}
+        width={ratio.width}
+        height={ratio.height}
+      />
+    );
+  });
+}
+
+export function useWorkGridSkeletonItems(enabled: boolean) {
+  const skeletonCount = useWorkGridSkeletonCount();
+
+  return useMemo(
+    () => (enabled ? buildWorkGridSkeletonItems(skeletonCount) : []),
+    [enabled, skeletonCount],
   );
+}
+
+export default function WorkGridSkeleton() {
+  const skeletonItems = useWorkGridSkeletonItems(true);
 
   return (
     <div aria-busy="true" aria-label="작품 목록 불러오는 중">
